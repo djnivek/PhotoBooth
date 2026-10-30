@@ -1,5 +1,9 @@
 # PhotoBooth
 
+> **Périmètre actualisé : anniversaire d’Estelle demain.** Voir [la progression](docs/PROGRESS.md)
+> et [le handoff actif](docs/HANDOFF.md). Le chiffrage initial décrit une version durable ;
+> la livraison en cours vise une borne personnelle avec simulation complète puis validation matérielle.
+
 Photomaton Windows pour **Canon EOS 4000D**, **DNP DS620** et papier **4 × 6 pouces**.
 Une ou quatre photos, originales ou transformées par IA dans un style surprise,
 une seule planche imprimable et un QR code pour télécharger les photos.
