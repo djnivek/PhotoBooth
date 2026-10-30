@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-30T16:02:44.602296Z",
+  "generatedAt": "2026-10-30T17:08:25.589954Z",
   "title": "Design System: Estell’Art",
   "extensions": {
     "colorMeta": {
@@ -134,7 +134,7 @@
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "Home headline; bundled regular/upright variable Bricolage face, with SemiBold requested by native code."
+        "purpose": "Home headline; bundled regular/upright variable Bricolage Grotesque face, with SemiBold requested by native code. The font-hook alias was corrected to this full family name without suppressing the check."
       },
       "headline": {
         "displayName": "Headline",
@@ -239,9 +239,9 @@
       "name": "PIN field",
       "kind": "input",
       "refersTo": "text-field",
-      "description": "Size and type reflect the native TextBox overrides. Browser-owned input chrome is illustrative; Fluent owns the actual border, fill, selection and focus states.",
-      "html": "<input class=\"ds-pin\" type=\"password\" maxlength=\"12\" placeholder=\"Votre code\" aria-label=\"Code de sortie\">",
-      "css": ".ds-pin{font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;min-height:50px;color-scheme:dark}.ds-pin:focus-visible{outline:revert}"
+      "description": "Permanent unlock label and masked native TextBox; no placeholder. The owned dialog is 480 × 430 and keeps its visible error and both actions in view. Browser chrome here is illustrative; actual Fluent states remain authoritative.",
+      "html": "<label class=\"ds-pin-group\"><span class=\"ds-pin-label\">Code de sortie</span><input class=\"ds-pin\" type=\"password\" maxlength=\"12\" aria-label=\"Code de sortie\"></label>",
+      "css": ".ds-pin-group{display:flex;flex-direction:column;gap:20px;font-family:\"Segoe UI\",Arial,sans-serif}.ds-pin-label{font-size:18px;font-weight:600}.ds-pin{font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;min-height:50px;color-scheme:dark}.ds-pin:focus-visible{outline:revert}"
     },
     {
       "name": "Paper photo frame",
@@ -258,11 +258,19 @@
       "description": "Static specimen of the native badge. The actual app uses the bundled Bricolage font and pulse equation documented in motion metadata; a panel without that font will use its local sans-serif fallback.",
       "html": "<div class=\"ds-stage\"><div class=\"ds-countdown\" aria-label=\"Trois secondes\">3</div></div>",
       "css": ".ds-stage{display:flex;align-items:center;justify-content:center;min-height:230px;background:#150F1C}.ds-countdown{background:#241931;color:#FFFFFF;border-radius:16px;padding:0 26px;font-family:\"Bricolage Grotesque\",sans-serif;font-size:152px;font-weight:700}"
+    },
+    {
+      "name": "Cloud connection field",
+      "kind": "input",
+      "refersTo": "text-field",
+      "description": "Persistent label and masked field from the scrolling native settings dialog (690 × 680). No placeholder or PIN-length cap. This specimen documents the local control, not a validated connected cloud journey.",
+      "html": "<label class=\"ds-cloud-group\"><span class=\"ds-cloud-label\">Code de connexion de la borne · pas la clé OpenAI</span><input class=\"ds-cloud-code\" type=\"password\" aria-label=\"Code de connexion de la borne · pas la clé OpenAI\"></label>",
+      "css": ".ds-cloud-group{display:flex;flex-direction:column;gap:18px;font-family:\"Segoe UI\",Arial,sans-serif}.ds-cloud-label{font-size:20px;font-weight:600}.ds-cloud-code{font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;min-height:50px;color-scheme:dark}.ds-cloud-code:focus-visible{outline:revert}"
     }
   ],
   "narrative": {
     "northStar": "Piste de fête chromatique",
-    "overview": "“Piste de fête chromatique” is the working visual direction: a dark aubergine room, a clear lemon action, and generous photography. Estell’Art is personal and festive without reducing the room available for posing. Large flat areas and direct French labels give the guest a short, readable path.\n\nThis system records the implemented Avalonia desktop rehearsal, targeting Windows with the same UI rehearsed on macOS. The name and direction are working choices under the delegated delivery brief; an unanswered preference is not approval. Code-led preparation for this delivery is not a confirmed standing workflow preference. No web, iOS, or Android design is asserted here.\n\nSource authority is `src/PhotoBooth.App/App.axaml` and `src/PhotoBooth.App/MainWindow.cs`, with capture timing in `src/PhotoBooth.Core/Session.cs` and `src/PhotoBooth.Runtime/BoothController.cs`. The latest finish review accepted the corrected capture veil within the native rehearsal scope. It does not establish hardware, printing, online sharing, or Windows-device validation.",
+    "overview": "“Piste de fête chromatique” is the working visual direction: a dark aubergine room, a clear lemon action, and generous photography. Estell’Art is personal and festive without reducing the room available for posing. Large flat areas and direct French labels give the guest a short, readable path.\n\nThis system records the implemented Avalonia desktop interface, targeting Windows with native local states rehearsed on macOS. The name and direction are working choices under the delegated delivery brief; an unanswered preference is not approval. Code-led preparation for this delivery is not a confirmed standing workflow preference. No web, iOS, or Android design is asserted here.\n\nSource authority is `src/PhotoBooth.App/App.axaml` and `src/PhotoBooth.App/MainWindow.cs`, with capture timing in `src/PhotoBooth.Core/Session.cs` and `src/PhotoBooth.Runtime/BoothController.cs`. The latest targeted finish review accepted the permanent field labels, accurate cloud-disable confirmation, and native local dialog/result states. The result at 1024 × 768 and the visible unlock error were reviewed. Connected QR sharing, physical printing, Canon/Windows operation, and the prepared but undeployed web gallery are not visually validated journeys.",
     "keyCharacteristics": [
       "Aubergine surfaces, pale lavender text, and a lemon primary action.",
       "Expressive Bricolage Grotesque display text with familiar desktop body text.",
@@ -292,9 +300,9 @@
       }
     ],
     "dos": [
-      "**Do** preserve the native Button, TextBox, owned-dialog, file-picker, and keyboard interaction semantics.",
+      "**Do** preserve native controls, owned dialogs, scrolling, file-picker, and keyboard interaction semantics, with permanent labels for code fields.",
       "**Do** use the exact composed image for the result preview and keep photographic content proportionate with uniform scaling.",
-      "**Do** keep the explicit rehearsal status visible and distinguish local calibration images from real guest photography.",
+      "**Do** keep camera, printing, and cloud status explicit and distinguish local calibration images from real guest photography.",
       "**Do** preserve the brief, single capture cue and the readable badge over the framing image.",
       "**Do** check the actual desktop window sizes when changing copy, spacing, or controls; there is no implemented breakpoint system."
     ],
@@ -303,7 +311,7 @@
       "**Don't** turn the capture cue into a repeating strobe or an opaque frame that hides the photograph.",
       "**Don't** describe calibration geometry or rehearsal filters as personal photos or generated AI artwork.",
       "**Don't** treat the HTML documentation specimens as a web product or as exact reproductions of platform-owned Fluent control states.",
-      "**Don't** infer an approved permanent workflow, phone layout, compact breakpoint, or reduced-motion variant from this delivery."
+      "**Don't** infer a validated connected QR or web-gallery journey, an approved permanent workflow, a phone layout, a compact breakpoint, or a reduced-motion variant from this delivery."
     ]
   }
 }

@@ -1,84 +1,53 @@
-# Contrat API cible
+# API déployée
 
-La spécification [OpenAPI](../contracts/openapi.json) définit le backend à construire.
-**La présence d’un chemin dans ce fichier ne signifie pas qu’il est implémenté ou déployé.**
-L’état réel est dans [INFRASTRUCTURE.md](INFRASTRUCTURE.md).
+Base : `https://frkckrvsdsiwivdfyjau.supabase.co/functions/v1/photobooth-api`.
+Le contrat [OpenAPI](../contracts/openapi.json) décrit cette implémentation personnelle.
 
-## Surface
-
-| Méthode et route | Autorité | Rôle |
+| Méthode et route | Protection | Rôle |
 | --- | --- | --- |
-| `GET /health` | Public, métadonnées uniquement | État de préparation et version |
-| `POST /sessions` | Borne enregistrée | Créer/retrouver une séance 1/4, original/surprise |
-| `POST /sessions/{id}/uploads` | Borne propriétaire | Obtenir des destinations signées imposées par le serveur |
-| `POST /sessions/{id}/complete` | Borne propriétaire | Vérifier les uploads et mettre le traitement en file ; réponse 202 |
-| `GET /sessions/{id}` | Borne propriétaire | Statut, progression, résultats individuels disponibles |
-| `POST /sessions/{id}/sheet-upload` | Borne propriétaire | Upload signé de la planche composée localement |
-| `POST /sessions/{id}/publish` | Borne propriétaire | Vérifier planche et photos avant de rendre la séance partageable |
-| `POST /sessions/{id}/share` | Borne propriétaire | Créer un accès révocable à la galerie |
-| `POST /downloads/resolve` | Jeton de partage secret | Résoudre le QR en liens de téléchargement temporaires |
+| GET /health | Public | Version et disponibilité de configuration, pas un test payant |
+| GET /booth/check | Code borne | Vérifier la connexion et la présence de la clé OpenAI |
+| POST /sessions | Code borne | UUID client, 1/4 poses, original/surprise ; création idempotente |
+| PUT /sessions/{id}/assets/{name} | Borne propriétaire | Original, résultat, planche ou ZIP ; SHA-256 immutable |
+| POST /sessions/{id}/photos/{index} | Borne propriétaire | Lancer une édition de l’original déjà téléversé ; JSON `{}` |
+| GET /sessions/{id}/photos/{index} | Borne propriétaire | État distant et URL signée du résultat ; aucune nouvelle édition |
+| POST /sessions/{id}/share | Borne propriétaire | Publier après présence de tous les fichiers requis |
+| POST /downloads/resolve | Jeton de partage secret | URLs temporaires pour la page mobile préparée |
 
-L’impression ne possède pas de route publique : elle est locale sur Windows.
-Une API Internet « ouverte » signifie joignable par HTTPS ; les créations et générations
-doivent rester authentifiées et plafonnées. Un QR n’autorise jamais à lancer une génération.
+L’impression est locale et n’a aucune route Internet. Le mode Original n’appelle pas OpenAI.
+Le gateway JWT est désactivé parce que l’API valide son propre Bearer aléatoire ; il ne s’agit
+pas d’un proxy anonyme. Le code borne est réservé aux créations/mutations, le jeton QR donne
+uniquement accès aux téléchargements d’une séance.
 
-## Authentification et isolation
+## Fichiers et enchaînement
 
-Prévoir une identité Supabase Auth par borne provisionnée par l’opérateur. Le serveur valide
-le JWT, le compte enregistré et actif, les droits sur la séance et les plafonds. La clé
-publishable seule ne suffit pas. Les visiteurs n’ont pas à créer de compte.
-JWT court et refresh token protégé par Windows ; aucune clé privilégiée dans l’application.
+`photo-1.jpg` à `photo-4.jpg`, `original-1.jpg` à `original-4.jpg` (séance IA), `sheet.jpg`,
+`archive.zip`. Index de génération de 0 à 3 ; noms photo de 1 à 4. JPEG limités à 10 Mio,
+ZIP à 50 Mio. Le serveur vérifie signature binaire, taille et SHA ; le client décode les images
+et contrôle dimensions/orientation. Les chemins sont construits par le serveur, jamais libres.
 
-Modèle de données prévu : `booths`, `events`, `sessions`, `photos`, `generation_jobs`,
-`share_tokens`, `usage_ledger`, `idempotency_records`. UUID non prédictibles, index de
-propriété, contraintes sur nombre de prises et unicité `(session_id, shot_index)` et
-`(session_id, shot_index, variant)`. RLS sur toutes les tables exposées ; accès service
-côté serveur seulement pour les mutations sensibles.
+1. Créer/retrouver la séance (UUID + mêmes options). Style persistant tiré au sort.
+2. Pour IA : téléverser chaque original, puis demander son édition. Le serveur transmet à
+   OpenAI une URL signée de cet original, sans nouvel upload depuis le PC.
+3. Interroger le même travail. États : queued, starting, running, ready, failed, uncertain.
+4. Composer et vérifier la planche localement. Téléverser résultats/planche/ZIP.
+5. Publier avec un jeton aléatoire de 32 octets. Retour : ZIP signé jusqu’à l’expiration de séance.
 
-## Upload et finalisation
+Le client journalise les originaux déjà envoyés et les appels image tentés. La réservation
+SQL est transactionnelle, unique par séance/pose, avec plafond de 2400 images. Une interruption
+ambiguë ne remet jamais un travail en attente. Les uploads répétés avec un contenu identique
+sont acceptés ; un autre SHA pour le même fichier retourne 409. Partage idempotent avec le même
+jeton ; une séance reste liée au hash du code borne avec lequel elle a été créée.
 
-- Les chemins Storage sont générés par le serveur à partir de la borne/séance/prise, jamais
-  fournis librement par le client ; bucket privé.
-- URL signée à usage et durée limités, fichiers JPEG, taille maximale initiale 10 Mio par copie,
-  40 Mio par séance. Vérifier taille réelle, signature binaire, décodage et dimensions.
-- Vérifier le SHA-256 reçu, le nombre exact et la propriété avant la mise en file.
-- Pas d’URL arbitraire à télécharger côté serveur, pour éviter qu’un client pointe vers un
-  service interne. Ne pas remplacer un objet déjà validé au cours d’un autre travail.
-- Un fichier téléversé n’est pas une séance finalisée. La transition et l’insertion des tâches
-  doivent être atomiques ; un doublon `complete` ne génère pas un nouveau travail.
-- Mode Original : zéro appel OpenAI. Mode Surprise : un style tiré au sort et persisté,
-  une tâche par prise, même version de prompt. La planche reste composée par la borne.
+## Secrets, erreurs et conservation
 
-Quand toutes les photos sont prêtes, le backend passe à `awaiting_sheet`. La borne
-compose la planche, obtient un upload signé, la transfère puis appelle `publish`.
-Seul l’état `ready` autorise le partage. L’état local d’aperçu/impression peut exister
-avant cette publication distante, notamment hors ligne.
+`OPENAI_API_KEY` et service_role restent côté Supabase. Le code borne est protégé via DPAPI
+sur Windows ; ne pas l’inclure dans le paquet. Sur Mac de développement le fichier est mode0600,
+mais son encodage local n’est pas un chiffrement et ne doit pas être transféré comme une clé Windows.
+Le token de partage est hashé en base ; les réponses sensibles sont no-store/no-referrer.
+Les erreurs exposent `code` et `retryable:false`, sans réponses brutes du fournisseur ni secrets.
 
-## Reprises et erreurs
-
-`Idempotency-Key` obligatoire sur les mutations de borne ; portée identité/route,
-empreinte du payload, résultat initial renvoyé à l’identique. Même clé avec un autre contenu :
-409. Conserver ces enregistrements aussi longtemps que la reprise locale peut être effectuée.
-La réponse de partage contenant un jeton doit être chiffrée si elle est conservée pour rejeu ;
-la table de recherche des partages ne conserve que son hash.
-
-Erreurs structurées : `code`, `message`, `retryable`, `request_id`. 401/403 pour identité,
-404 pour une séance absente ou non accessible, 409 pour conflit d’état, 413 pour taille,
-422 pour contenu invalide, 429 pour plafond/rate limit, 503 pour indisponibilité. Ne pas exposer
-les prompts complets, secrets ou réponses brutes du fournisseur.
-
-Les 429 temporaires respectent `Retry-After` avec backoff et nombre de reprises borné.
-Les quotas épuisés, refus de modération, fichiers invalides et erreurs d’identité n’entraînent
-pas une relance automatique inchangée. Un timeout après appel image est un résultat incertain,
-pas la preuve que rien n’a été facturé.
-
-## Partage
-
-Exemple de forme cible : `https://<galerie>/g/#<jeton-aleatoire>`. La page envoie le jeton
-dans le corps de `POST /downloads/resolve`, avec cache désactivé. Le serveur contrôle hash,
-expiration et révocation avant de produire des URL signées (proposition : dix minutes).
-Le jeton de partage ne contient aucune clé d’administration. Aucun index public des séances.
-
-Les durées 7 jours cloud / 30 jours local sont des propositions à valider avant activation.
-La suppression doit passer par l’API Storage pour les objets, puis par la base pour les
-métadonnées. Définir la reprise d’une purge interrompue et le nettoyage des uploads abandonnés.
+La séance expire après 7 jours. Les URLs d’image intermédiaires expirent après 5 minutes ;
+l’entrée OpenAI après 30 minutes ; le ZIP partagé après la durée restante de la séance.
+Pas de purge automatique, pas de révocation immédiate d’un ZIP déjà signé : son URL reste
+valable jusqu’à expiration, sauf suppression de l’objet. Pas de listing public du bucket.

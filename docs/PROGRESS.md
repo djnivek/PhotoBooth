@@ -12,8 +12,8 @@ commerciale, la flotte de bornes et la maintenance longue durée ne sont pas le 
 | [PR 1](https://github.com/djnivek/PhotoBooth/pull/1) — périmètre et handoff | Fusionnée, `c42162f` | Plan anniversaire, portes de validation claires |
 | [PR 2](https://github.com/djnivek/PhotoBooth/pull/2) — traitement image et fichiers | Fusionnée | Orientation, grille, JPEG final unique, persistance et tests pixels |
 | [PR 3](https://github.com/djnivek/PhotoBooth/pull/3) — interface et simulation | Fusionnée | Parcours tactile animé, mode simulé sans appel payant, aperçu imprimable |
-| PR 4 — adaptateurs Windows | Codés, préparation impression testée ; matériel non testé | Canon EDSDK, GDI DNP, journal anti-doublon |
-| PR 5 — API et partage | À faire | OpenAI asynchrone, Supabase privé, QR |
+| [PR 4](https://github.com/djnivek/PhotoBooth/pull/4) — adaptateurs Windows | Fusionnée ; CI Windows réussie, matériel non testé | Canon EDSDK, GDI DNP, journal anti-doublon |
+| [PR 5](https://github.com/djnivek/PhotoBooth/pull/5) — API et partage | Codée, tests locaux passés, backend déployé ; revue/CI en cours | Originaux + résultats privés, OpenAI asynchrone, QR ZIP |
 | PR 6 — paquet Windows | À faire | EXE autonome, téléchargement et handoff |
 
 Chaque livraison passe par une PR, les vérifications applicables, puis un merge.

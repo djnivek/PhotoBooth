@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src https://frkckrvsdsiwivdfyjau.supabase.co; img-src 'self' https://frkckrvsdsiwivdfyjau.supabase.co blob:; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'none'">
+<title>Vos souvenirs · Estell’Art</title>
+<link rel="stylesheet" href="style.css">
+<body>
+<main>
+  <h1>Estell’Art.</h1>
+  <p class="intro">La fête continue dans vos photos.</p>
+  <p id="status" role="status" aria-live="polite">Ouverture de vos souvenirs…</p>
+  <a id="archive" class="button" hidden>Télécharger toutes les photos</a>
+  <button id="retry" type="button" hidden>Actualiser les liens</button>
+  <section id="photos" aria-label="Vos photos"></section>
+  <p id="expiry"></p>
+  <footer>Un souvenir de l’anniversaire d’Estelle.<br>Ce lien donne accès à vos photos : partagez-le avec les personnes de votre choix.</footer>
+</main>
+<script type="module" src="gallery.js"></script>
+</body>
+</html>

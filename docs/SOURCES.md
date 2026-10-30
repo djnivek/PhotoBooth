@@ -27,3 +27,13 @@ La compatibilité documentaire ne remplace pas l’essai sur la borne.
 Les estimations de charge, les tailles par séance, le format de grille, la rétention et
 le choix d’architecture sont des propositions de conception ; ils ne sont pas des promesses
 ou mesures des fournisseurs.
+
+## Compléments de la livraison anniversaire
+
+- [Avalonia, plateformes supportées](https://docs.avaloniaui.net/docs/overview/supported-platforms) : Windows 10 22H2 Tier 2 ; exécution locale toujours à vérifier.
+- [OpenAI outil image](https://developers.openai.com/api/docs/guides/tools-image-generation) et [Responses background](https://developers.openai.com/api/docs/guides/background) : requête asynchrone avec édition xhigh et polling.
+- [DeviceCapabilities](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-devicecapabilitiesw), [DocumentProperties](https://learn.microsoft.com/en-us/windows/win32/printdocs/documentproperties), [StartDoc](https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-startdocw) : papier du pilote et soumission GDI, pas preuve de feuille imprimée.
+- [GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site) : forfait requis pour un dépôt privé ; refus effectif HTTP422 sur ce dépôt le 30 octobre.
+- [Éligibilité Canon](https://developercommunity.usa.canon.com/s/article/Who-is-eligible-to-download-development-tools-files-from-this-website) : un développeur en France doit passer par le portail Europe, pas contourner l’éligibilité d’une autre région.
+- [Canon B2B SDK](https://industrial.imaging.canon.de/integration/sdk/) : programme gratuit, activation pouvant prendre quelques jours ; récupération non garantie avant l’anniversaire.
+- [Stockage Supabase](https://supabase.com/docs/guides/storage/pricing) : 1 Go Free, 100 Go Pro ; ne pas confondre avec le disque Postgres.

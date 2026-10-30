@@ -1,81 +1,58 @@
-# Reprise sur le PC Windows
+# Reprise sur Windows
 
-## Première session
+## PC sans caméra ni imprimante — ce soir
 
-1. Cloner `https://github.com/djnivek/PhotoBooth` dans un dossier de travail local.
-2. Lire le README, le cahier des charges et les décisions D01/D02 avant de choisir le runtime.
-3. Lancer le diagnostic en PowerShell depuis la racine :
+Le paquet attendu est Windows x64 autonome. Extraire **tout** le ZIP dans un dossier local avant
+`EstellArt.exe` ; ne pas lancer depuis la vue ZIP du navigateur. Pas de SDK .NET requis.
+La version exacte et le lien du paquet seront inscrits ici par le lot de packaging.
 
-```powershell
-./scripts/windows-preflight.ps1
-```
+1. Lancer en répétition (défaut). Tester 1/4 poses, Au naturel/Surprise IA simulée, placement,
+   décompte 5 secondes, effet de capture, aperçu. Aucun appareil ni Internet requis pour ce parcours.
+2. Réglages → choisir des photos locales autorisées ; elles sont lues dans l’ordre et répétées
+   si le jeu contient moins de photos que la séance. Ce n’est pas une capture Canon.
+3. Tester l’impression : export `print-preview.jpg`, aucun envoi à une imprimante. Comparer à
+   l’aperçu et au JPEG de planche ; quatre photos distinctes et correctement orientées.
+4. Définir un code de sortie 6–12 chiffres, activer le plein écran ; mauvais/bon code, F11,
+   Échap et fermeture. Les raccourcis système restent possibles.
+5. Ajouter la clé OpenAI dans Supabase, puis le code borne distinct dans les Réglages de l’app.
+   Activer la connexion vérifie seulement l’authentification ; cela ne génère aucune image.
+6. Faire volontairement un premier essai Surprise : **cet essai sera facturé**. Vérifier attente,
+   identité des personnes, résultat et téléchargement ZIP depuis le téléphone. Puis tester quatre.
+   Les originaux sont dans `originaux/` et la planche dans `planche-4x6.jpg`.
+7. Vérifier le stockage Supabase et l’usage OpenAI avant de répéter à grande échelle.
 
-Le script affiche version Windows, architecture, mémoire, imprimantes et processus connus.
-Il n’installe rien, ne ferme aucun logiciel, ne change aucun pilote, ne touche pas au registre
-et ne modifie pas la politique d’exécution. Si Windows refuse le script, examiner la politique
-avec le propriétaire ; ne pas la désactiver globalement.
+Le mode Original conserve impression/aperçu même sans réseau ; un partage interrompu peut être
+réessayé tant que la séance reste à l’écran. Une erreur IA permet de choisir explicitement
+« Garder les originaux ». Ne pas créer une nouvelle séance pour relancer une génération incertaine.
 
-4. Relever les réglages actuellement fonctionnels dans DSLR Booth et la DS620 ; sauvegarder
-   la configuration avant tout changement. Ne pas désinstaller l’application actuelle.
-5. Déterminer la version runtime utilisable et son statut de support sur ce Windows.
-   Le SDK .NET 10 du Mac n’est ni un installateur Windows ni une preuve de compatibilité.
-6. Installer uniquement les dépendances nécessaires depuis Canon/DNP/Microsoft.
+## Photomaton — demain
 
-## Canon EOS 4000D
+Matériel demandé : Windows 10 Pro 22H2, EOS4000D USB, DNP DS620, papier PR4×6.
+Relever l’architecture x64, version DSLR Booth, firmware, ports, écran et éclairage.
+Le script `scripts/windows-preflight.ps1` effectue des lectures ; il ne remplace pas un essai.
 
-- USB de données fiable, alimentation continue, emplacement caméra fixe, objectif identifié.
-- Demander la fermeture de DSLR Booth/EOS Utility avant le test si l’opérateur les utilise.
-- EDSDK sous licence, architecture des DLL égale à celle du processus ; noter version et firmware.
-- Tester connexion, informations boîtier, JPEG live view et prise pleine résolution séparément.
-- Vérifier la visée à l’écran, le miroir, le cadrage, le délai et le retour après déclenchement.
-- Vérifier la combinaison live view, autofocus et flash réellement utilisée. Attendre la recharge.
-- Tester vingt prises consécutives, une série de quatre, mise en veille, câble débranché/rebranché,
-  erreur `busy`, stockage local saturé. La disparition de la visée pendant l’obturateur ne doit
-  pas provoquer une deuxième prise.
+Canon : EDSDK officiel non disponible au moment du lot API. Les DLL/pilotes ne sont pas inclus.
+La configuration existante de DSLR Booth doit rester intacte. Fermer DSLR Booth/EOS Utility
+avant de connecter un autre logiciel. Tester placement réel, décompte, visée interrompue au
+shutter, transfert JPEG, retour visée, puis quatre prises, reconnexion et perte USB.
+Vérifier mode JPEG haute qualité, alimentation continue, veille, flash et mise au point.
 
-## DNP DS620, 4×6
+DNP : installer le pilote officiel si absent, sélectionner la **bonne file DS620**, 4×6,
+une copie, pas de double bande 2×6. Activer l’envoi réel dans Réglages seulement sur ce PC.
+Imprimer une mire puis la planche quatre poses : une feuille, quatre images dans l’ordre,
+aucune rotation inattendue, marges visibles, couleurs et visages lisibles. Examiner le papier.
 
-- Installer le pilote officiel correspondant au Windows exact et relever sa version.
-- Identifier le nom Windows de la DS620 ; ne pas utiliser une autre imprimante par défaut.
-- Lire les formats/zone imprimable exposés par le pilote, désactiver la coupe 2×6.
-- Imprimer une mire de cadrage et la planche 2×2 sur une seule feuille ; mesurer les bords.
-- Comparer une photo pleine page et les quatre poses, couleurs, sens, marge et absence de coupe des visages.
-- Tester imprimante hors ligne, ruban/papier absent, double appui sur Imprimer, fermeture
-  après soumission et reprise de Windows. Aucun doublon automatique après état incertain.
-- Vérifier visuellement le papier : un job spooler terminé ne suffit pas.
+Tester double appui, imprimante hors ligne et annulation Windows. « Envoyé » avec un numéro de
+travail signifie accepté par le spooler, pas imprimé. Si `print.json` indique `needs_operator`,
+vérifier la file avant toute reprise manuelle ; ne pas supprimer le journal pour forcer un renvoi.
 
-## Supabase et OpenAI
+## Validation finale
 
-Projet dédié : `frkckrvsdsiwivdfyjau`, Paris `eu-west-3`. Ne pas utiliser MatchingScore.
-Voir `INFRASTRUCTURE.md` pour l’état réel et le connecteur à reconnecter si nécessaire.
-Ne transférer aucun mot de passe via Git ; les secrets devront être provisionnés séparément.
+1. Original1, Original4 : vraies captures et feuille facultative.
+2. IA1, IA4 : style stable, quatre poses distinctes, originaux + résultats téléchargés.
+3. Quitter sans imprimer : aucune feuille envoyée.
+4. Plein écran/code, perte réseau, redémarrage, espace libre et consommables.
+5. Quelques séances consécutives avec le flash réel ; noter l’échauffement et la latence observée.
 
-1. Configurer les identités de borne, désactiver l’auto-inscription non nécessaire, puis tester
-   qu’une autre borne/un visiteur ne peut lire ni écrire les séances.
-2. Déployer les tables/policies/fonctions métier depuis des migrations revues, contrôler RLS.
-3. Configurer les secrets côté serveur, un plafond de test et des photos autorisées.
-4. Tester une édition puis quatre, panne partielle, modération, quota, timeout incertain,
-   reprise sans relancer les résultats déjà sauvegardés.
-5. Déployer la page mobile, scanner le QR via 4G/5G, télécharger toutes les photos et la planche.
-6. Vérifier expiration/révocation, absence de listing public et purge Storage via son API,
-   puis suppression des métadonnées correspondantes.
-
-## Recette finale ordonnée
-
-1. **Original 1** : visée → 5…1 → vraie capture → aperçu → une impression facultative.
-2. **Original 4** : quatre décomptes, quatre poses distinctes, une planche, quatre téléchargements.
-3. **IA 1** : un style surprise, résultat reconnaissable, impression et QR cohérents.
-4. **IA 4** : même style, quatre résultats distincts dans le bon ordre, aucun mélange silencieux.
-5. **Sans impression** : le visiteur télécharge et termine ; aucune feuille ne sort.
-6. **Borne** : plein écran, code faux/valide, délai après erreurs, inactivité admin, reboot ;
-   tester Échap/F11/Alt+F4/Alt+Tab/touche Windows/Ctrl+Alt+Suppr/gestes tactiles/écran secondaire.
-   Noter les sorties système restantes avec Windows Pro.
-7. **Pannes** : caméra, imprimante, réseau, disque, backend, crédits, crash à chaque étape.
-8. **Endurance** : objectif initial 100 séances/plusieurs heures, mémoire stable, aucun fichier
-   d’une autre séance, aucun double tirage ; suivre coût, latence et consommables.
-9. **Installation** : machine de référence, démarrage après reboot, migration des réglages,
-   désinstallation sans effacer implicitement les photos du propriétaire.
-
-Conserver les résultats et versions dans `docs/VALIDATION.md`, avec captures/logs sans
-images privées ni jetons. Ne marquer « installé » qu’après installation réelle ; ne marquer
-« impression vérifiée » qu’après examen du tirage papier.
+Ne déclarer le photomaton prêt qu’après ces essais. Les tests Mac/CI ne simulent pas un papier,
+un capteur, un pilote ou un port USB réel. Garder DSLR Booth opérationnel pendant la recette.

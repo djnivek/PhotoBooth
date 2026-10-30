@@ -1,0 +1,28 @@
+name: Publish gallery
+on:
+  # Enable only after choosing compatible hosting. Current private-repo plan
+  # rejects Pages with HTTP 422; the app uses its working signed ZIP link.
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: gallery-pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - run: node --test tests/gallery.test.cjs
+      - uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: web/gallery
+      - name: Publish static gallery only
+        id: deployment
+        uses: actions/deploy-pages@v5.0.1

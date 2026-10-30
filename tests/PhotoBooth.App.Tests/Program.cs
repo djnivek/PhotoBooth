@@ -26,16 +26,25 @@ Capture("result.png"); Click("PrintPreview");
 Until(() => Directory.GetFiles(root, "print-preview.jpg", SearchOption.AllDirectories).Length == 1, 3000);
 var file = Directory.GetFiles(root, "print-preview.jpg", SearchOption.AllDirectories).Single();
 if (new FileInfo(file).Length < 10000) throw new Exception("Print preview is empty.");
+window.Width=1024;window.Height=768;Pump(80);Capture("result-1024x768.png");
+window.Width=1280;window.Height=800;Pump(80);
 Click("Settings"); Until(() => window.OwnedWindows.Count > 0, 2000);
 var settings = window.OwnedWindows.Single(); Pump(50);
 using (var settingsFrame = settings.CaptureRenderedFrame()!) settingsFrame.Save(Path.Combine(screenshots, "settings.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
-settings.GetVisualDescendants().OfType<TextBox>().Single(t => t.PasswordChar == '●').Text = "381629";
+((ScrollViewer)settings.Content!).Offset=new Vector(0,10000);Pump(80);
+using (var settingsFrame = settings.CaptureRenderedFrame()!) settingsFrame.Save(Path.Combine(screenshots, "settings-bottom.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+settings.GetVisualDescendants().OfType<TextBox>().Single(t => t.Name == "ExitPin").Text = "381629";
 settings.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "Activer le plein écran"))
     .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 Until(() => window.WindowState == WindowState.FullScreen, 2000);
 window.Close(); Until(() => window.OwnedWindows.Count > 0, 2000);
 var unlock = window.OwnedWindows.Single(); Pump(50);
 using (var unlockFrame = unlock.CaptureRenderedFrame()!) unlockFrame.Save(Path.Combine(screenshots, "unlock.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+unlock.GetVisualDescendants().OfType<TextBox>().Single(t => t.PasswordChar == '●').Text = "000000";
+unlock.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "Déverrouiller"))
+    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+Until(()=>unlock.GetVisualDescendants().OfType<TextBlock>().Any(t=>t.Text?.StartsWith("Code incorrect")==true),2000);
+using (var unlockFrame = unlock.CaptureRenderedFrame()!) unlockFrame.Save(Path.Combine(screenshots, "unlock-error.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
 unlock.GetVisualDescendants().OfType<TextBox>().Single(t => t.PasswordChar == '●').Text = "381629";
 unlock.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "Déverrouiller"))
     .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

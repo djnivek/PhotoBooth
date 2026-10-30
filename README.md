@@ -1,76 +1,64 @@
 # Estell’Art · PhotoBooth
 
-Application personnelle pour l’anniversaire d’Estelle. Le mode répétition est exécutable sur Mac et Windows ; les validations matérielles restent distinctes.
+Photomaton personnel pour l’anniversaire d’Estelle, le 31 octobre 2026. Dépôt privé.
+
+**Application codée et testable en répétition.** 1 ou 4 poses, visée, décompte animé de 5 secondes,
+original ou style IA surprise, aperçu, une planche 4×6, impression facultative et QR de téléchargement.
+Le matériel cible est un Canon EOS 4000D et une DNP DS620 sous Windows 10 Pro 22H2 x64.
+
+## Commencer
+
+- [Handoff actif](docs/HANDOFF.md) : état exact, reprise sur PC et éléments manquants.
+- [Progression et PR](docs/PROGRESS.md) : lots fusionnés et portes restantes.
+- [Recette Windows](docs/REPRISE_WINDOWS.md) : répétition ce soir, matériel demain.
+- [Validation](docs/VALIDATION.md) : preuves, commandes, limites.
+
+Par défaut, tout est simulé : aucune caméra, aucune impression et aucun appel payant.
+Dans Réglages, on peut sélectionner des photos locales pour répéter le vrai parcours.
+Le bouton de test d’impression exporte le JPEG exact qui serait envoyé à l’imprimante.
 
 ```sh
 dotnet run --project src/PhotoBooth.App
 ```
 
+Sources : C# / .NET 10 / Avalonia 12.1.4, SkiaSharp, adaptateurs Windows Canon/GDI, API Supabase.
+Le paquet Windows autonome est le prochain lot ; aucune installation .NET ne sera nécessaire.
+La compilation et les tests sur Windows Server 2022 ne remplacent pas le lancement sur Windows 10.
 
-> **Périmètre actualisé : anniversaire d’Estelle demain.** Voir [la progression](docs/PROGRESS.md)
-> et [le handoff actif](docs/HANDOFF.md). Le chiffrage initial décrit une version durable ;
-> la livraison en cours vise une borne personnelle avec simulation complète puis validation matérielle.
+## En ligne
 
-Photomaton Windows pour **Canon EOS 4000D**, **DNP DS620** et papier **4 × 6 pouces**.
-Une ou quatre photos, originales ou transformées par IA dans un style surprise,
-une seule planche imprimable et un QR code pour télécharger les photos.
+La clé `OPENAI_API_KEY` appartient aux secrets du projet Supabase, jamais à l’application.
+La borne utilise un code distinct, protégé avec DPAPI sur Windows. OpenAI est appelé par le serveur
+en arrière-plan, avec `gpt-image-2.5-sunburst`, qualité `xhigh`, une édition par pose et deux en parallèle.
+L’original est envoyé une fois et fourni au modèle par une URL signée temporaire.
+Le ZIP contient les résultats, la planche et les originaux des séances IA.
 
-## État au 30 octobre 2026
+Le partage réel de quatre images synthétiques a été vérifié sur Supabase, sans génération.
+La galerie web est préparée mais GitHub Pages a refusé ce dépôt privé avec le forfait actuel :
+le QR ouvre donc directement le ZIP signé. Aucun abonnement supplémentaire n’a été activé.
 
-Préparation technique, pas encore une application utilisable en événement.
+**Encore nécessaires :** clé OpenAI et essai manuel payant, accès au SDK Canon officiel,
+exécution Windows 10 et vraies liaisons caméra/imprimante. Le plein écran demande un code pour
+quitter l’application ; il ne neutralise pas les commandes système Windows.
 
-- Besoin, architecture, coût, risques matériels et recette Windows documentés.
-- Moteur de séance C# exécutable sur Mac : visée demandée pendant le positionnement
-  et le décompte, 1/4 prises, modes original/IA, ordre des résultats et impression explicite.
-- Gabarit logique 4 × 6, garde contre les doubles impressions, vérification de code
-  administrateur avec ralentissement des essais. Ces règles ne constituent pas encore
-  une interface Windows, un pilote ou un verrouillage du système.
-- Simulateur en ligne de commande et tests sans appareil, sans photo réelle et sans appel facturé.
-- Organisation et projet Supabase dédiés créés ; voir [l’état d’infrastructure](docs/INFRASTRUCTURE.md).
-- Aucun SDK Canon, secret, original de visiteur ou pilote redistribué.
-
-**Commencer par le [cahier des charges](docs/CAHIER_DES_CHARGES.md).**
-
-| Document | Utilité |
-| --- | --- |
-| [Architecture et décisions](docs/ARCHITECTURE.md) | Windows natif, Canon, impression, backend et arbitrages |
-| [Plan de réalisation et charge](docs/PLAN_REALISATION.md) | Lots, complexité, prérequis et décisions différées |
-| [Reprise sur Windows](docs/REPRISE_WINDOWS.md) | Installation, diagnostic matériel, recette terrain |
-| [API](docs/API.md) et [OpenAPI](contracts/openapi.json) | Contrat cible, authentification et états |
-| [Coûts](docs/COUTS.md) | Free Supabase, consommation image et capacité événementielle |
-| [Validation](docs/VALIDATION.md) | Ce qui a effectivement été vérifié et ce qui reste ouvert |
-| [Sources officielles](docs/SOURCES.md) | Documentation consultée, datée et limites de preuve |
-
-## Lancer la préparation
-
-Installer un SDK **.NET 10 stable** sur la machine de développement.
-Le cœur portable ne dépend d'aucun package NuGet tiers.
+## Vérifier et comprendre
 
 ```sh
-dotnet run --project tests/PhotoBooth.Core.Tests
-dotnet run --project src/PhotoBooth.Simulator -- 4 original
-dotnet run --project src/PhotoBooth.Simulator -- 4 surprise
+sh scripts/verify.sh        # Mac/Linux : .NET 10, Deno 2, Node 22+
+# Windows : ./scripts/verify.ps1
 ```
 
-Les deux premiers arguments acceptent `1|4` et `original|surprise`.
-Le simulateur utilise un temps virtuel et produit un gabarit SVG ainsi qu'un manifeste
-dans `artifacts/simulation/<session>/`. Il ne prend aucune photo, ne génère aucune image
-IA, ne publie aucun lien et n’imprime rien. Les références photo dans son manifeste sont fictives.
+Les tests C# sont des exécutables d’assertions, pas `dotnet test`. Les tests réseau remplacent
+HTTP par des réponses fictives ; aucune clé n’est requise et aucune génération n’est facturée.
 
-La commande de tests est un exécutable d’assertions autonome, **pas `dotnet test`**.
-Les contrats matériels sont dans `src/PhotoBooth.Core/HardwareContracts.cs`.
+| Document | Contenu |
+| --- | --- |
+| [Cahier des charges](docs/CAHIER_DES_CHARGES.md) | Parcours demandé |
+| [Architecture](docs/ARCHITECTURE.md) | Décisions effectivement implémentées |
+| [API](docs/API.md) / [OpenAPI](contracts/openapi.json) | Routes réelles et authentification |
+| [Infrastructure](docs/INFRASTRUCTURE.md) | Déploiement et secrets |
+| [Coûts](docs/COUTS.md) | Stockage, crédits et limites |
+| [Sources](docs/SOURCES.md) | Documentation officielle consultée |
+| [Design](DESIGN.md) | Direction Impeccable et composants natifs |
 
-Pour la vérification complète du socle, installer également Deno 2 stable et lancer
-`sh scripts/verify.sh` sur Mac/Linux ou `./scripts/verify.ps1` sur Windows.
-Le contrôle HTTP déployé et la validation formelle OpenAPI sont décrits dans le reçu de validation.
-
-## Cible Windows
-
-Cible matérielle demandée : **Windows 10 Pro 22H2**, architecture du PC à relever.
-Cible applicative proposée : **C# / WPF**, avec un cœur indépendant de Windows.
-La version du runtime du futur hôte Windows reste conditionnée au premier essai matériel :
-la matrice actuelle .NET 10 ne liste plus Windows 10 Pro 22H2. Une compilation Mac ne prouve
-donc ni sa compatibilité sur ce PC ni un support officiel. Voir les décisions [D01/D02](docs/ARCHITECTURE.md).
-
-Le nom retenu est **PhotoBooth**, aligné sur le dossier d’origine ; « PhotoVoth » dans
-le premier message est interprété comme une transcription vocale.
+Les photos, secrets, SDK propriétaires, pilotes et produits de build sont exclus de Git.

@@ -1,51 +1,50 @@
-# Infrastructure — reçu de préparation
+# Infrastructure — état au 30 octobre 2026
 
-Création le 30 octobre 2026, dans le périmètre autorisé par Kevin.
-
-| Ressource | État observé |
+| Ressource | État constaté |
 | --- | --- |
-| GitHub | [djnivek/PhotoBooth](https://github.com/djnivek/PhotoBooth), dépôt privé |
-| Organisation Supabase | [PhotoBooth](https://supabase.com/dashboard/org/scludlpexfemjustncsc), `scludlpexfemjustncsc` |
-| Projet | [PhotoBooth](https://supabase.com/dashboard/project/frkckrvsdsiwivdfyjau), `frkckrvsdsiwivdfyjau` |
-| Région | `eu-west-3`, Paris |
-| Création | Instance `nano` demandée, statut `ACTIVE_HEALTHY` relu via CLI |
-| Offre | Organisation nouvelle créée sans souscription payante ; détail de facturation non accessible via le MCP actuel |
-| OpenAI | Aucun secret installé ni appel image effectué ; `xhigh` autorisé par Kevin |
-| Base métier, buckets photos, file de travaux | Pas encore créés ; contrat préparé |
-| Galerie et QR publics | Pas encore déployés |
+| GitHub | [djnivek/PhotoBooth](https://github.com/djnivek/PhotoBooth), privé |
+| Organisation Supabase | [PhotoBooth](https://supabase.com/dashboard/org/scludlpexfemjustncsc) |
+| Projet | [PhotoBooth](https://supabase.com/dashboard/project/frkckrvsdsiwivdfyjau), Paris eu-west-3, Nano |
+| Offre | Création sans souscription payante ; affichage Free à confirmer dans le dashboard, aucun upgrade effectué |
+| Postgres | Deux migrations appliquées ; sessions/jobs/assets/budget, RLS activée, accès anon/authenticated refusé |
+| Storage | Bucket booth-private privé, uploads et téléchargements signés vérifiés |
+| Edge Function | photobooth-api déployée, API métier active et authentifiée |
+| OpenAI | Aucun appel payé ; clé absente à la dernière vérification à 17:03 UTC |
+| Galerie web | Code prêt ; création Pages refusée HTTP422 : forfait incompatible avec dépôt privé |
+| QR | ZIP signé fonctionnel, pas dépendant de la galerie web |
 
-Le connecteur Supabase de cette session est limité aux organisations déjà autorisées :
-les lectures de coût/organisation et la création de projet sur la nouvelle organisation
-retournent « You do not have permission to perform this action ». Le CLI déjà authentifié
-a permis de créer l’organisation et son projet Nano. L’accès navigateur est désactivé dans
-les réglages Work. Ces limitations d’accès ne sont pas des erreurs de l’application.
+Le CLI Supabase fonctionne sur cette organisation ; le MCP de cette session est limité aux
+anciennes organisations. L’automatisation navigateur est désactivée dans Work. Aucun autre
+projet Supabase n’a été modifié.
 
-Pour la suite, utiliser le CLI autorisé sur ce projet ou reconnecter le plugin en incluant
-PhotoBooth. Vérifier l’affichage Free/Nano dans le tableau de bord avant activation de
-consommation. Aucun forfait Pro ni service payant supplémentaire n’a été souscrit.
+## Secrets
 
-Le mot de passe initial de base a été généré aléatoirement et conservé uniquement dans
-`.local/supabase-db-password`, fichier mode 0600, exclu de Git. Il n’est pas dans les logs,
-le code ou le dépôt distant. Le transférer par un canal de secrets si une connexion SQL
-directe devient nécessaire sur Windows ; ne pas copier `.local` dans le dépôt.
+Ajouter la clé dans [Edge Functions → Secrets](https://supabase.com/dashboard/project/frkckrvsdsiwivdfyjau/functions/secrets),
+nom exact `OPENAI_API_KEY`. Ne pas mettre la clé dans Git, le chat, l’EXE ou les journaux.
 
-## API de préparation
+Secrets déjà configurés : `BOOTH_ACCESS_KEY_HASH`, `OPENAI_IMAGE_MODEL`, `OPENAI_RESPONSE_MODEL`,
+`GALLERY_ORIGIN`. Le code borne aléatoire et un fichier de provisionnement sont dans `.local/`
+sur le Mac, mode0600, ignorés par Git. Les transférer séparément et seulement à l’opérateur.
+Le mot de passe DB initial est également local ; il n’est pas requis pour utiliser l’application.
 
-Seul `GET /health` doit être disponible publiquement sur `photobooth-api`. Il expose
-uniquement version et indicateurs de préparation ; aucune photo, aucune génération,
-aucune donnée utilisateur. Le déploiement et son contrôle HTTP sont consignés dans `VALIDATION.md`.
+`CloudSmoke` envoie uniquement des mires synthétiques en mode Original. Son reçu versionné
+est dans [evidence](evidence/2026-10-30-cloud-smoke.json). Il a téléchargé le vrai ZIP,
+comparé les octets des quatre images et de la planche puis rejoué le partage sans conflit.
+Le compteur SQL était exactement 0 génération. Ne pas lancer de génération dans CI.
 
-URL : `https://frkckrvsdsiwivdfyjau.supabase.co/functions/v1/photobooth-api/health`
+## Déployer depuis les sources
 
-L’absence de contrôle JWT est limitée à cette surface sans données. Avant d’implémenter
-une route métier, ajouter authentification de borne, autorisation, quotas et tests ;
-ne pas transformer ce point public en proxy OpenAI anonyme.
+```sh
+supabase link --project-ref frkckrvsdsiwivdfyjau
+supabase db push --linked --dry-run
+supabase db push --linked
+supabase functions deploy photobooth-api --project-ref frkckrvsdsiwivdfyjau --use-api --no-verify-jwt
+```
 
-## Autorisations déjà reçues
+Le bearer est validé dans la fonction ; ne jamais enlever ce contrôle. Le service role ne sort
+pas du serveur. Après chaque migration, relire les policies et le caractère privé du bucket.
+La migration de conservation des originaux suit la migration initiale : ne pas modifier une
+migration déjà appliquée, ni effacer les objets de test par SQL direct sur storage.objects.
 
-- Dépôt privé PhotoBooth, documentation et préparation technique.
-- Nouvelle organisation Supabase dédiée, démarrage gratuit.
-- Mode IA **Extra High (`xhigh`)**, consommation OpenAI autorisée pour le projet.
-- Kevin estime environ 50 USD pour 600 tirages et pense disposer d’environ 200 USD de crédits.
-  Montants déclaratifs, pas un solde ni un devis vérifié. Un tirage peut représenter une ou
-  quatre éditions ; cette préparation ne consomme pas les crédits.
+Pour la galerie, seul `web/gallery/` pourra être publié. Le workflow manuel reste inactif
+tant qu’un hébergement compatible n’est pas choisi ; ne pas rendre tout le dépôt public.
