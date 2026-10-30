@@ -1,0 +1,49 @@
+ESTELL'ART - ANNIVERSAIRE D'ESTELLE
+
+1. Extraire tout le ZIP dans un dossier, puis lancer EstellArt.exe.
+   Ne pas lancer l'application depuis l'aperçu du ZIP.
+   Application Windows x64 autonome : pas d'installation .NET nécessaire.
+
+2. PREMIER ESSAI SANS MATERIEL
+   Tout est simulé par défaut : caméra, effet IA et impression.
+   Choisir une ou quatre poses, puis Démarrer et On est prêts !
+   Réglages permet de choisir vos propres photos locales.
+   Tester l'impression enregistre un fichier, sans envoyer de papier.
+
+3. OPENAI ET TELECHARGEMENT
+   L'opérateur ajoute OPENAI_API_KEY dans les Secrets du projet Supabase PhotoBooth.
+   Cette clé ne doit jamais être mise dans cette application.
+   Dans Réglages, saisir le code de connexion distinct de la borne, puis activer la connexion.
+   Le contrôle de connexion est gratuit ; une séance Surprise en ligne est facturée par OpenAI.
+   Au naturel ne fait aucun appel OpenAI. Le QR télécharge un ZIP valable 7 jours.
+   Il contient les photos et la planche ; en mode IA, les originaux sont dans originaux/.
+
+4. CANON / DNP SUR LE PHOTOMATON
+   Fermer DSLR Booth et EOS Utility, sans les désinstaller.
+   Allumer et brancher le Canon, réglé en JPEG. Activer Canon USB dans Réglages.
+   Laisser la connexion avancée SDK décochée : le pilote Windows existant est utilisé.
+   Ne pas remplacer le pilote USB. Le Canon EOS4000D doit encore être testé physiquement.
+   Choisir la vraie file DNP DS620, papier 4x6, puis activer l'impression réelle.
+   Une mire et une planche de quatre photos doivent être vérifiées sur le papier avant la fête.
+   Un numéro de travail signifie envoyé au spooler, pas papier déjà sorti.
+
+5. PLEIN ECRAN
+   Choisir dans Réglages un code de 6 à 12 chiffres puis Activer le plein écran.
+   Réglages, F11, Echap ou fermeture demandent le code pour sortir.
+   Les commandes système Windows restent accessibles : limiter l'accès au clavier.
+
+DONNEES ET REPRISE
+   Photos et réglages : %LOCALAPPDATA%\EstellArt
+   Les photos ne sont pas effacées automatiquement. Les originaux sont des JPEG
+   non retouchés normalisés à 2560 pixels, pas des RAW capteur.
+   Si le démarrage échoue : lire startup-error.txt dans ce dossier.
+   Si une impression est incertaine : vérifier la file Windows avant de réessayer.
+   Une erreur IA propose de garder les originaux ; ne pas recréer une séance
+   pour relancer une génération sans vérifier celle déjà demandée.
+
+   Cet exécutable personnel n'est pas signé par un certificat commercial.
+   Windows peut afficher un avertissement de provenance. Vérifier le SHA-256
+   contre le fichier fourni et télécharger uniquement depuis le dépôt privé PhotoBooth.
+
+   Ce paquet est une répétition vérifiée sur Windows Server2022. Le Windows10 Pro22H2
+   cible, le Canon, la DNP et le premier appel OpenAI restent les essais terrain.

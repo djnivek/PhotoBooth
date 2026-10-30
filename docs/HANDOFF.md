@@ -13,7 +13,7 @@ Mise à jour : 30 octobre 2026. Anniversaire demain. Lire [PROGRESS](PROGRESS.md
 - Plein écran/code testé dans le rendu natif headless ; commandes système Windows non bloquées.
 - GitHub Pages refusé pour ce dépôt privé : QR vers ZIP, galerie web préparée mais non hébergée.
 - Canon sans SDK propriétaire intégré via FC.SDK3.2.1021/WPD, 25 tests de séquence fictive passés.
-- Paquet Windows : prochain lot, pas encore livré.
+- Paquet Windows0.2.0 : script et auto-tests codés ; passage CI de l’EXE extrait requis avant publication.
 
 ## Secrets et machines
 
@@ -87,3 +87,16 @@ Après une soumission incertaine, regarder le spooler : pas de renvoi automatiqu
 PRs autorisées à être ouvertes puis mergées après validation. Commits/PR en anglais, sans co-auteur
 assistant. Garder les preuves UI dans Git, les fichiers privés et builds hors Git. Revenir sur main
 à jour et propre après chaque livraison. Aucun test automatisé ne doit devenir payant.
+
+## Packaging reproductible
+
+Sur Windows avec PowerShell7 et SDK.NET10 : `./scripts/package-windows.ps1 -Version 0.2.0`.
+Produit attendu : `artifacts/package/EstellArt-0.2.0-win-x64.zip` et SHA-256, autonome.
+Le script publie en single-file avec extraction des bibliothèques natives, compresse, réextrait
+le ZIP, lance cet EXE en `--self-test` puis `--smoke-ui`. Les reçus et une capture de la fenêtre
+native vont dans `artifacts/package/diagnostics/`. Aucun secret, appel réseau ou périphérique.
+Le CI conserve le paquet et ces preuves ; ne publier la release qu’après leur réussite.
+
+Les fichiers de démarrage sont dans `docs/DEMARRAGE_WINDOWS.txt` (copié LISEZ-MOI.txt au paquet).
+Le paquet est personnel et non signé ; la provenance et le SHA doivent correspondre à GitHub.
+Le prochain handoff doit ajouter le lien réel de release, le hash du ZIP et le run Windows.

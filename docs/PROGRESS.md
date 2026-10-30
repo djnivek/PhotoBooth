@@ -14,8 +14,8 @@ commerciale, la flotte de bornes et la maintenance longue durée ne sont pas le 
 | [PR 3](https://github.com/djnivek/PhotoBooth/pull/3) — interface et simulation | Fusionnée | Parcours tactile animé, mode simulé sans appel payant, aperçu imprimable |
 | [PR 4](https://github.com/djnivek/PhotoBooth/pull/4) — adaptateurs Windows | Fusionnée ; CI Windows réussie, matériel non testé | Canon EDSDK, GDI DNP, journal anti-doublon |
 | [PR 5](https://github.com/djnivek/PhotoBooth/pull/5) — API et partage | Fusionnée ; backend déployé, tests Mac et CI Windows passés | Originaux + résultats privés, OpenAI asynchrone, QR ZIP |
-| PR 6 — Canon sans SDK | Codé, 25 tests de séquence fictive passés ; matériel non testé | WPD/PTP avec pilote Windows existant |
-| PR 7 — paquet Windows | À faire | EXE autonome, téléchargement et handoff |
+| [PR 6](https://github.com/djnivek/PhotoBooth/pull/6) — Canon sans SDK | Fusionnée, tests Mac et CI Windows passés ; matériel non testé | WPD/PTP avec pilote Windows existant |
+| PR 7 — paquet Windows | Codé ; auto-test Mac passé, vérification EXE Windows en cours | EXE autonome, téléchargement et handoff |
 
 Chaque livraison passe par une PR, les vérifications applicables, puis un merge.
 Le tableau doit évoluer avec les numéros et liens réels, sans appeler « fait » un simple contrat.
