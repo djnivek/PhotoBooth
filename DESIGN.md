@@ -205,6 +205,8 @@ Algorithmic calibration images come from `FixtureCamera.CreateFixture`: colored 
 
 ### Inputs / Fields
 
+Canon setup uses native checkboxes: “Utiliser le Canon USB (Windows)” and “Connexion avancée : SDK Canon officiel installé”. The default route uses the existing Windows driver; the visible helper says “Par défaut, connexion par le pilote Windows existant, sans SDK à installer. Compatibilité à vérifier sur le boîtier.” The advanced checkbox selects the installed official SDK route. This documents the settings and their explicit compatibility limit, not successful camera operation.
+
 Code fields are native TextBoxes with a minimum height of 50 and body-size text. Permanent labels identify “Code de connexion de la borne · pas la clé OpenAI” and “Code de sortie du plein écran · 6 à 12 chiffres”; the unlock dialog uses “Code de sortie”. Redundant placeholders have been removed. All three fields mask their content; only exit PIN fields have the 12-character cap. Surface, border, selection, pointer, and focus rendering remain dark Fluent defaults. The visible unlock error reads “Code incorrect ou verrouillage de 30 secondes.” and uses ordinary text, with both dialog actions remaining available.
 
 ### Navigation
@@ -221,7 +223,7 @@ The framing image stays visible during positioning and countdown. Entering Captu
 
 ### Session and recovery states
 
-Positioning exposes “On est prêts !”; countdown and capture replace that action with progress and the badge. Processing changes the instruction to preparation copy. Ready displays the saved composed sheet, with wording based on actual print/cloud settings and effective photo mode. Cancelled returns to home once capture work has stopped. Failed preserves saved photos and, when all original captures exist after a Surprise failure, offers “Garder les originaux”. A generic action error uses an owned dialog.
+Positioning exposes “On est prêts !”, initially disabled until the first live-view frame has been displayed. The existing disabled opacity applies while waiting. Countdown and capture replace that action with progress and the badge. Processing changes the instruction to preparation copy. Ready displays the saved composed sheet, with wording based on actual print/cloud settings and effective photo mode. Cancelled returns to home once capture work has stopped. Failed preserves saved photos and, when all original captures exist after a Surprise failure, offers “Garder les originaux”. A generic action error uses an owned dialog.
 
 “Tester l’impression” writes a print-preview file and reports that no sheet was sent. With physical printing enabled, the action becomes “Imprimer” and reports the submitted spool job; that status is not proof of a physical print. The footer independently identifies camera, printing, and cloud modes.
 

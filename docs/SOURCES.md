@@ -37,3 +37,5 @@ ou mesures des fournisseurs.
 - [Éligibilité Canon](https://developercommunity.usa.canon.com/s/article/Who-is-eligible-to-download-development-tools-files-from-this-website) : un développeur en France doit passer par le portail Europe, pas contourner l’éligibilité d’une autre région.
 - [Canon B2B SDK](https://industrial.imaging.canon.de/integration/sdk/) : programme gratuit, activation pouvant prendre quelques jours ; récupération non garantie avant l’anniversaire.
 - [Stockage Supabase](https://supabase.com/docs/guides/storage/pricing) : 1 Go Free, 100 Go Pro ; ne pas confondre avec le disque Postgres.
+
+- [FC.SDK3.2.1021](https://github.com/SharpAstro/FC.SDK/tree/0800943d2d4aaaa8ffc5da11b5ce57bfed9614a7) : source correspondant au package NuGet, MIT, transports WPD sans changement de pilote ; preuves déclarées 6D/450D, **pas 4000D**. Adaptateur personnel testé contre un faux transport seulement.

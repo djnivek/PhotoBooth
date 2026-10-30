@@ -4,7 +4,7 @@ public sealed record LiveViewFrame(ReadOnlyMemory<byte> Jpeg, DateTimeOffset Cap
 public sealed record CameraStatus(bool Connected, string Model, bool CanLiveView, bool CanCapture);
 
 /// <summary>
-/// Windows EDSDK adapter to implement with the licensed SDK. Serialize all SDK calls.
+/// Windows camera boundary (WPD/PTP or licensed EDSDK). Serialize camera operations.
 /// Live view frames are ephemeral; CaptureAsync returns only after the full-resolution
 /// JPEG has been atomically saved locally. A live-view frame is never a final photo.
 /// </summary>

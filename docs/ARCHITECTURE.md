@@ -35,21 +35,31 @@ cinq erreurs puis 30 secondes d’attente. Hash, sel et verrouillage sont persis
 Les réglages sont accessibles seulement après déverrouillage. Le mode n’empêche pas les
 raccourcis système Windows : prévoir un compte standard et limiter l’accès au clavier.
 
-## D03 — Canon
+## D03 — Canon sans SDK propriétaire par défaut
 
-`CanonCamera` sérialise EDSDK sur un thread STA et pompe ses événements. La visée JPEG
-fonctionne pendant le placement/décompte puis s’arrête avant la commande de capture.
-Le callback transfère le vrai JPEG complet, puis la visée reprend entre les poses.
-Le délai de capture est de 35 secondes, sans deuxième déclenchement automatique.
+`CanonWpdCamera` utilise FC.SDK3.2.1021, bibliothèque C# sous licence MIT qui implémente le
+protocole Canon PTP via le pilote WPD/MTP de Windows. Aucun remplacement de pilote, DLL Canon
+ou extraction de DSLR Booth. Le transport Windows essaie ioctl puis COM suivant sa sonde.
+La version est figée et la licence conservée dans `licenses/FC.SDK-MIT.txt`.
 
-Les DLL EDSDK x64 et leurs dépendances sont absentes : Kevin n’a pas de SDK officiel.
-L’accès Canon nécessite un compte développeur et doit être obtenu légalement. Les structures
-interop doivent être comparées aux en-têtes de la version reçue avant l’essai matériel.
-La compatibilité documentaire EOS 4000D n’est pas une preuve d’exécution de cet adaptateur.
-Ne pas extraire ou redistribuer les DLL de DSLR Booth. Son API v8 permet de lancer une séance
-et ses webhooks signalent les fichiers, mais la documentation ne fournit pas de flux live view
-pour remplacer directement notre adaptateur. L’import de photos locales est disponible ;
-un pont automatique DSLR Booth reste différé jusqu’à connaissance de sa version/API.
+La bibliothèque annonce des essais réels EOS6D et EOS450D, **pas EOS4000D**. La famille PTP
+commune permet de préparer cette voie, pas de garantir sa compatibilité. Aucun Canon disponible
+ici. Les 25 tests de notre adaptateur injectent un transport fictif : arrêt de visée avant
+capture, quatre transferts complets, JPEG après événement RAW, timeout et absence de redéclenchement.
+Le bouton de départ du décompte attend une première image de visée dans l’interface.
+
+Le cycle ouvre la séance, active la pompe d’événements, choisit le transfert vers le PC,
+affiche les JPEG de visée puis les arrête avant un unique déclenchement. Le JPEG complet est
+normalisé et sauvé atomiquement avant accusé de transfert. Après 35 secondes sans JPEG,
+erreur explicite, sans deuxième déclenchement. Régler JPEG haute qualité et vérifier la mise
+au point : ne pas supposer que la commande de déclenchement fait correctement l’autofocus.
+
+L’adaptateur officiel `CanonCamera`/EDSDK reste disponible en option avancée. Il exige les
+DLL x64 licenciées dans `canon/`, la vérification des structures avec ses en-têtes et les
+runtimes associés. Kevin ne dispose pas de ce SDK ; l’option WPD évite d’en dépendre pour
+la première tentative. Ne pas copier les DLL de DSLR Booth, ni changer ses pilotes.
+Son APIv8 et ses webhooks restent une alternative d’intégration à étudier si WPD échoue ;
+le retour live view n’est pas documenté comme flux réutilisable. Import local déjà disponible.
 
 ## D04 — Photos et impression
 
@@ -109,7 +119,7 @@ l’événement, via l’API Storage avant suppression des métadonnées. Vérif
 
 | Décision | Déclencheur |
 | --- | --- |
-| Version EDSDK / ABI et éventuel pont DSLR Booth | Accès au SDK ou au PC avec version DSLR Booth connue |
+| WPD sur EOS4000D ; EDSDK/ABI ou pont DSLR Booth si nécessaire | Essai USB sur le boîtier demain ; version DSLR Booth si WPD ne suffit pas |
 | Compatibilité Windows 10 exacte | Premier lancement du paquet sur le PC ce soir |
 | Couleurs, marges, format DNP | Première mire papier demain |
 | Modèle, temps d’attente et budget réels | Premier appel OpenAI manuel autorisé ce soir |

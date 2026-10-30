@@ -10,12 +10,14 @@ aucune feuille DNP, aucun lancement sur le Windows10 cible, aucune édition Open
 | Imaging | 89 assertions : huit EXIF réels, pixels, ordre, montage, DPI, fichiers et SHA |
 | Runtime | 29 assertions : cycle complet, persistance, annulation et erreurs |
 | Préparation Windows | 18 assertions : BGRA, axes DPI distincts, zone imprimable, journal avant effet externe |
+| Canon WPD | 25 assertions avec transport fictif : séquence visée/capture, quatre vrais fichiers, RAW+JPEG, timeout, aucun redéclenchement |
 | Client cloud | 34 assertions : quatre éditions ordonnées, originaux envoyés une fois, ZIP 5/9 fichiers, reprise sans facturation supplémentaire, fallback explicite, credentials |
 | UI native rendue headless | Accueil1280/1024, visée fictive, décompte, capture, résultat, export impression, réglages, code erroné puis valide et fermeture protégée |
 | API Deno | 9 tests, typecheck et lint : auth, idempotence, réservation, erreurs ambiguës, originaux requis, hash et expiration |
 | Galerie préparée | 5 tests DOM sans navigateur : 1/4 liens, archive, jeton hors URL de requête, expiration, rejet d’URL étrangère |
 | OpenAPI3.0.3 | Validation formelle réussie avec openapi-spec-validator0.7.2 |
 | CI Windows initiale | [Run41088358348](https://github.com/djnivek/PhotoBooth/actions/runs/41088358348) réussi : PR4, WindowsServer2022, tests natifs headless et simulation |
+| CI Windows cloud | [Run41096255110](https://github.com/djnivek/PhotoBooth/actions/runs/41096255110) réussi sur le commit de PR5 : client, DPAPI, UI et API simulées |
 | Supabase réel | ZIP 5 fichiers puis ZIP 9 fichiers (4 originaux + 4 effets locaux + planche), octets vérifiés, publication rejouée, 0 génération |
 | Isolation distante | Quatre tables RLS activées, aucun SELECT anon/authenticated ; bucket privé ; budget started=0 relu |
 | Galerie hébergée | Non : API Pages retourne422, forfait incompatible avec dépôt privé ; QR ZIP disponible |

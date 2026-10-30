@@ -6,6 +6,7 @@ namespace PhotoBooth.Runtime;
 public sealed record BoothSettings
 {
     public bool CanonCamera { get; init; }
+    public bool CanonUseOfficialSdk { get; init; }
     public bool PhysicalPrinting { get; init; }
     public string PrinterName { get; init; } = "";
     public bool CloudEnabled { get; init; }

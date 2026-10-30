@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-30T17:08:25.589954Z",
+  "generatedAt": "2026-10-30T17:21:10.433331Z",
   "title": "Design System: Estell’Art",
   "extensions": {
     "colorMeta": {
@@ -215,7 +215,7 @@
       "name": "Primary action",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Documentation rendering of the application overrides; native Avalonia Fluent pressed and platform behavior remain authoritative.",
+      "description": "Documentation rendering of the application overrides; native Avalonia Fluent pressed and platform behavior remain authoritative. In capture positioning, On est prêts ! starts disabled with the existing opacity and becomes available after the first live-view frame is displayed.",
       "html": "<button class=\"ds-primary\">Démarrer</button>",
       "css": ".ds-primary{padding:12px 22px;border-radius:12px;border:0;font-family:\"Segoe UI\",Arial,sans-serif;text-align:center;cursor:pointer;background:#F5E764;color:#241931;font-size:25px;min-height:70px;font-weight:600}.ds-primary:hover:enabled{background:#FFF39B;color:#241931}.ds-primary:focus-visible{border:3px solid #F5E764;outline:0}.ds-primary:disabled{opacity:0.45;cursor:default}"
     },
@@ -266,6 +266,13 @@
       "description": "Persistent label and masked field from the scrolling native settings dialog (690 × 680). No placeholder or PIN-length cap. This specimen documents the local control, not a validated connected cloud journey.",
       "html": "<label class=\"ds-cloud-group\"><span class=\"ds-cloud-label\">Code de connexion de la borne · pas la clé OpenAI</span><input class=\"ds-cloud-code\" type=\"password\" aria-label=\"Code de connexion de la borne · pas la clé OpenAI\"></label>",
       "css": ".ds-cloud-group{display:flex;flex-direction:column;gap:18px;font-family:\"Segoe UI\",Arial,sans-serif}.ds-cloud-label{font-size:20px;font-weight:600}.ds-cloud-code{font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;min-height:50px;color-scheme:dark}.ds-cloud-code:focus-visible{outline:revert}"
+    },
+    {
+      "name": "Canon connection settings",
+      "kind": "custom",
+      "description": "Native settings checkboxes select Canon USB and the optional installed official SDK route. The default Windows-driver route requires no SDK installation; compatibility remains to be checked on the actual camera. Browser checkbox chrome in this specimen is illustrative.",
+      "html": "<div class=\"ds-canon-settings\"><label class=\"ds-canon-option\"><input type=\"checkbox\">Utiliser le Canon USB (Windows)</label><label class=\"ds-canon-option\"><input type=\"checkbox\">Connexion avancée : SDK Canon officiel installé</label><p class=\"ds-canon-help\">Par défaut, connexion par le pilote Windows existant, sans SDK à installer. Compatibilité à vérifier sur le boîtier.</p></div>",
+      "css": ".ds-canon-settings{display:flex;flex-direction:column;gap:18px;font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;color:#F3EAF4;color-scheme:dark}.ds-canon-option{display:flex;align-items:center}.ds-canon-help{font-size:15px;margin:0}.ds-canon-option input:focus-visible{outline:revert}"
     }
   ],
   "narrative": {

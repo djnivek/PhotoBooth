@@ -1,3 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup><ProjectReference Include="../PhotoBooth.Imaging/PhotoBooth.Imaging.csproj" /></ItemGroup>
+  <ItemGroup><PackageReference Include="FC.SDK" Version="3.2.1021" /></ItemGroup>
 </Project>
