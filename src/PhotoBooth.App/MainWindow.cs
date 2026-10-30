@@ -19,7 +19,8 @@ namespace PhotoBooth.App;
 public sealed class MainWindow : Window
 {
     private static readonly IBrush Ink = Brush.Parse("#241931"), Muted = Brush.Parse("#C7B6CD"), Lemon = Brush.Parse("#F5E764");
-    private readonly ContentControl body = new();
+    private readonly ContentControl body = new()
+    { Name = "SessionBody", HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch };
     private readonly TextBlock footer = Text("Répétition · aucune caméra, aucune impression, aucun appel IA", 15);
     private readonly TextBlock status = Text("", 22);
     private readonly SessionStore store;
@@ -56,6 +57,11 @@ public sealed class MainWindow : Window
         this.rehearsalDelay = rehearsalDelay;
         Title = "Estell’Art — l’anniversaire d’Estelle";
         Width = 1280; Height = 800; MinWidth = 960; MinHeight = 700;
+        if (Screens.Primary is { } display)
+        {
+            Width = Math.Max(MinWidth, Math.Min(Width, display.WorkingArea.Width / display.Scaling - 32));
+            Height = Math.Max(MinHeight, Math.Min(Height, display.WorkingArea.Height / display.Scaling - 48));
+        }
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         var root = Environment.GetEnvironmentVariable("PHOTOBOOTH_DATA_DIR") ??
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "EstellArt");
@@ -73,14 +79,23 @@ public sealed class MainWindow : Window
         }
         controller = CreateController();
         UpdateFooter();
-        var header = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(0, 0, 0, 24) };
+        var header = new Grid { Name = "Header", ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(0, 0, 0, 24) };
         header.Children.Add(Text("Estell’Art.", 32, FontWeight.Bold));
         var admin = Button("Réglages", ShowSettingsAsync); admin.Name = "Settings";
         Grid.SetColumn(admin, 1); header.Children.Add(admin);
-        var layout = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto"), Margin = new Thickness(36, 24) };
+        var layout = new Grid { Name = "AppLayout", RowDefinitions = new RowDefinitions("Auto,*,Auto"), Margin = new Thickness(36, 24) };
         layout.Children.Add(header); Grid.SetRow(body, 1); layout.Children.Add(body);
         footer.Foreground = Muted; footer.TextWrapping = TextWrapping.Wrap; footer.Margin = new Thickness(0, 20, 0, 0);
         Grid.SetRow(footer, 2); layout.Children.Add(footer); Content = layout;
+        // Windows can clamp the requested startup size after the first layout pass.
+        // Keep the grid's measured minimum tied to the actual viewport, including later resizes.
+        void ConstrainLayout()
+        {
+            layout.MaxWidth = Math.Max(0, ClientSize.Width - layout.Margin.Left - layout.Margin.Right);
+            layout.MaxHeight = Math.Max(0, ClientSize.Height - layout.Margin.Top - layout.Margin.Bottom);
+        }
+        Opened += (_, _) => ConstrainLayout();
+        Resized += (_, _) => ConstrainLayout();
         pulse.Tick += (_, _) =>
         {
             if (countdown is null) return;
@@ -124,7 +139,7 @@ public sealed class MainWindow : Window
     {
         sharingCancellation?.Cancel(); sharingCancellation?.Dispose(); sharingCancellation = null;
         screen = "home"; liveImage = null; countdown = null; pulse.Stop();
-        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("6*,5*") };
+        var grid = new Grid { Name = "HomeLayout", ColumnDefinitions = new ColumnDefinitions("6*,5*") };
         var choices = new StackPanel { Spacing = 19, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 38, 0) };
         choices.Children.Add(Text("Des souvenirs\nplein la fête.", 57, FontWeight.SemiBold));
         var subtitle = Text("L’anniversaire d’Estelle, avec votre plus beau sourire.", 22); subtitle.Foreground = Muted;
@@ -148,7 +163,7 @@ public sealed class MainWindow : Window
         choices.Children.Add(start); grid.Children.Add(choices);
         var preview = new StackPanel { Spacing = 18, VerticalAlignment = VerticalAlignment.Center };
         var image = new Image { Source = Bitmap(PhotoProcessor.Compose(Enumerable.Range(0, photoCount).Select(FixtureCamera.CreateFixture).ToArray())), Stretch = Stretch.Uniform, MaxHeight = 380 };
-        preview.Children.Add(new Border { Background = Brushes.White, Padding = new Thickness(12), Child = image, CornerRadius = new CornerRadius(4) });
+        preview.Children.Add(new Border { Name = "HomeSheet", Background = Brushes.White, Padding = new Thickness(12), Child = image, CornerRadius = new CornerRadius(4) });
         preview.Children.Add(Text("Une feuille. Tous les sourires.", 27, FontWeight.SemiBold));
         var note = Text("1 ou 4 poses · à télécharger ou à imprimer", 18); note.Foreground = Muted; preview.Children.Add(note);
         Grid.SetColumn(preview, 1); grid.Children.Add(preview); body.Content = grid;
