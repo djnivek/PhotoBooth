@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "artifact": "EstellArt-0.2.0-win-x64.zip",
+  "sha256": "cdd86b7c3f429fc4b329a512d3c1ffae2ffffa88e887420ead33a92653db7d57",
+  "bytes": 71147879,
+  "source_commit": "c4ba8336b222237a6730fc87cd3c34a0b8273235",
+  "windows_self_test": true,
+  "native_window_opened": true,
+  "hardware_validated": false,
+  "openai_called": false
+}

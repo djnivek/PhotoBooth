@@ -2,12 +2,14 @@
 
 Photomaton personnel pour l’anniversaire d’Estelle, le 31 octobre 2026. Dépôt privé.
 
-**Application codée et testable en répétition.** 1 ou 4 poses, visée, décompte animé de 5 secondes,
+**Version Windows 0.2.0 disponible pour la répétition.** 1 ou 4 poses, visée, décompte animé de 5 secondes,
 original ou style IA surprise, aperçu, une planche 4×6, impression facultative et QR de téléchargement.
 Le matériel cible est un Canon EOS 4000D et une DNP DS620 sous Windows 10 Pro 22H2 x64.
 
 ## Commencer
 
+- [Télécharger Estell’Art pour Windows](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0) : extraire le ZIP puis lancer `EstellArt.exe` ; dépôt privé, connexion GitHub requise.
+- [Captures de l’interface](https://github.com/djnivek/PhotoBooth/pull/7) et [preuves Windows](docs/evidence/windows-0.2.0/README.md).
 - [Handoff actif](docs/HANDOFF.md) : état exact, reprise sur PC et éléments manquants.
 - [Progression et PR](docs/PROGRESS.md) : lots fusionnés et portes restantes.
 - [Recette Windows](docs/REPRISE_WINDOWS.md) : répétition ce soir, matériel demain.
@@ -22,8 +24,9 @@ dotnet run --project src/PhotoBooth.App
 ```
 
 Sources : C# / .NET 10 / Avalonia 12.1.4, SkiaSharp, adaptateurs Windows Canon WPD/EDSDK et GDI, API Supabase.
-Le paquet Windows autonome est le prochain lot ; aucune installation .NET ne sera nécessaire.
-La compilation et les tests sur Windows Server 2022 ne remplacent pas le lancement sur Windows 10.
+Le paquet Windows est autonome : aucune installation .NET nécessaire. Le ZIP extrait a été exécuté
+sur Windows Server 2022, avec quatre parcours simulés et une vraie fenêtre vérifiée à deux tailles.
+Ces essais ne remplacent pas le lancement sur Windows 10 ni les périphériques du photomaton.
 
 ## En ligne
 
