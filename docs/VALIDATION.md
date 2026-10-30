@@ -11,7 +11,7 @@ aucune feuille DNP, aucun lancement sur le Windows 10 cible, aucune édition Ope
 | Runtime | 29 assertions : cycle complet, persistance, annulation et erreurs |
 | Préparation Windows | 18 assertions : BGRA, axes DPI distincts, zone imprimable, journal avant effet externe |
 | Canon WPD | 25 assertions avec transport fictif : séquence visée/capture, quatre vrais fichiers, RAW+JPEG, timeout, aucun redéclenchement |
-| Client cloud | 34 assertions : quatre éditions ordonnées, originaux envoyés une fois, ZIP 5/9 fichiers, reprise sans facturation supplémentaire, fallback explicite, credentials |
+| Client cloud | 37 assertions : quatre éditions ordonnées, originaux envoyés une fois, ZIP 5/9 fichiers, reprise sans facturation supplémentaire, fallback explicite, credentials et 32 séances HTTP fictives concurrentes |
 | UI native rendue headless | Accueil1280/1024, visée fictive, décompte, capture, résultat, export impression, réglages, code erroné puis valide et fermeture protégée |
 | API Deno | 9 tests, typecheck et lint : auth, idempotence, réservation, erreurs ambiguës, originaux requis, hash et expiration |
 | Galerie préparée | 5 tests DOM sans navigateur : 1/4 liens, archive, jeton hors URL de requête, expiration, rejet d’URL étrangère |
@@ -69,3 +69,12 @@ activer un appareil ni une API. Version et OS sont consignés dans `self-test.js
 enregistre ses pixels et ferme automatiquement. Ce mode ne prouve que le démarrage natif
 et son rendu d’accueil ; la recette métier complète est celle des tests headless séparés.
 La CI doit exercer ces deux modes **après extraction du ZIP** avant toute release.
+
+## Fiabilité du simulateur HTTP
+
+Le [premier contrôle de PR8](https://github.com/djnivek/PhotoBooth/actions/runs/41106370111)
+a révélé une course dans le faux serveur des tests : son `HashSet` de travaux et ses compteurs
+étaient modifiés par les deux éditions concurrentes sans synchronisation. Un POST fictif accepté
+pouvait ainsi rester vu comme `queued`. Les accès partagés du simulateur sont désormais verrouillés,
+et un scénario de 32 séances concurrentes vérifie résultats et comptage exacts.
+Ce correctif porte uniquement sur le simulateur de tests ; aucun code du paquet0.2.0 n’a changé.
