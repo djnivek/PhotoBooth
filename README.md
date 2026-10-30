@@ -1,15 +1,15 @@
-# Estell’Art · PhotoBooth
+# Colors Party by Estelle · PhotoBooth
 
 Photomaton personnel pour l’anniversaire d’Estelle, le 31 octobre 2026. Dépôt privé.
 
-**Paquet Windows disponible.** 1 ou 4 poses, visée, décompte animé de 5 secondes,
-original ou Surprise, aperçu, une planche 4×6, impression facultative et QR de téléchargement.
+**Paquet Windows disponible.** 1 ou 4 poses, visée, décompte animé de 3 secondes,
+Au naturel ou Métamorphose, aperçu, une planche 4×6, impression facultative et QR de téléchargement.
 Le matériel cible est un Canon EOS 4000D et une DNP DS620 sous Windows 10 Pro 22H2 x64.
 
 ## Commencer
 
-- [Télécharger Estell’Art pour Windows](https://github.com/djnivek/PhotoBooth/releases) : extraire le ZIP puis lancer `EstellArt.exe` ; dépôt privé, connexion GitHub requise.
-- [Captures de l’interface](https://github.com/djnivek/PhotoBooth/pull/11) et [preuves Windows](docs/evidence/windows-0.2.1/README.md).
+- [Télécharger Colors Party by Estelle pour Windows](https://github.com/djnivek/PhotoBooth/releases) : extraire le ZIP puis lancer `ColorsParty.exe` ; dépôt privé, connexion GitHub requise.
+- [Captures de l’interface](docs/evidence/colors-party/README.md) et [preuves Windows](docs/evidence/windows-0.2.1/README.md).
 - [Handoff actif](docs/HANDOFF.md) : état exact, reprise sur PC et éléments manquants.
 - [Progression et PR](docs/PROGRESS.md) : lots fusionnés et portes restantes.
 - [Recette Windows](docs/REPRISE_WINDOWS.md) : répétition ce soir, matériel demain.
@@ -18,7 +18,8 @@ Le matériel cible est un Canon EOS 4000D et une DNP DS620 sous Windows 10 Pro 2
 Par défaut, tout est simulé : aucune caméra, aucune impression et aucun appel payant.
 Dans Réglages, on peut sélectionner des photos locales pour répéter le vrai parcours.
 Le bouton « Imprimer » exporte ce même JPEG tant que l’envoi à l’imprimante est désactivé.
-L’interface utilise « Surprise » et n’affiche pas de mention de simulation.
+Métamorphose propose six univers illustrés et La Surprise du Chef. Les réglages actualisent le catalogue depuis le serveur sans reconstruire l’application.
+Voir [la gestion des univers](docs/UNIVERS.md).
 
 ```sh
 dotnet run --project src/PhotoBooth.App
@@ -43,11 +44,11 @@ le QR ouvre donc directement le ZIP signé. Aucun abonnement supplémentaire n�
 
 **Encore nécessaires :** clé OpenAI et essai manuel payant, exécution Windows 10 et vraies
 liaisons caméra/imprimante. La connexion Canon utilise le pilote Windows existant sans SDK
-propriétaire par défaut ; sa compatibilité EOS4000D doit être vérifiée sur l’appareil. Le plein écran demande un code pour
-quitter l’application ; il ne neutralise pas les commandes système Windows.
+propriétaire par défaut ; sa compatibilité EOS4000D doit être vérifiée sur l’appareil. Le plein écran utilise un code facultatif de quatre caractères et un maintien de trois secondes dans le coin inférieur gauche pour les réglages. Il ne neutralise pas les commandes système Windows.
 
-La [revue finale](docs/reviews/2026-10-30-final-review.md) conserve l’avis ciblé de Claude Opus 5.5,
-les quatre corrections et les tests de régression. Le stockage reste au forfait actuel jusqu’aux essais réussis.
+Le pilote WPD ne confirme pas encore l’autofocus du 4000D : le premier essai nécessite une mise au point manuelle vérifiée dans les réglages ou la voie du SDK officiel.
+
+La [critique des styles](docs/reviews/colors-party/claude-styles.md) conserve l’avis de Claude Opus 5.5 Max et les décisions retenues. Les [revues précédentes](docs/reviews/2026-10-30-final-review.md) restent disponibles. Le stockage reste au forfait actuel jusqu’aux essais réussis.
 
 ## Vérifier et comprendre
 

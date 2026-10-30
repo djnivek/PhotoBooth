@@ -6,14 +6,14 @@ aucune feuille DNP, aucun lancement sur le Windows 10 cible, aucune édition Ope
 | Vérification | Résultat |
 | --- | --- |
 | Solution Release .NET10 | 0 avertissement, 0 erreur sur Mac arm64 |
-| Métier | 23 assertions : quatre parcours, séquences, résultats, PIN, impression explicite |
+| Métier | 26 assertions : quatre parcours, séquences, résultats, PIN, impression explicite |
 | Imaging | 89 assertions : huit EXIF réels, pixels, ordre, montage, DPI, fichiers et SHA |
-| Runtime | 43 assertions : cycle complet, persistance, annulation, connexion USB tardive sans chevauchement ni fermeture prématurée, erreur COM après annulation |
+| Runtime | 50 assertions : cycle complet, persistance, annulation, connexion USB tardive sans chevauchement ni fermeture prématurée, erreur COM après annulation |
 | Préparation Windows | 26 assertions : BGRA, axes DPI distincts, zone imprimable, journal avant effet externe et suivi d’impression après changement de séance |
-| Canon WPD | 25 assertions avec transport fictif : séquence visée/capture, quatre vrais fichiers, RAW+JPEG, timeout, aucun redéclenchement |
-| Client cloud | 39 assertions : quatre éditions ordonnées, originaux envoyés une fois, ZIP 5/9 fichiers, reprise sans facturation supplémentaire, fallback explicitement imprimable, credentials et 32 séances HTTP fictives concurrentes |
+| Canon WPD | 28 assertions avec transport fictif : séquence visée/capture, quatre vrais fichiers, RAW+JPEG, timeout, aucun redéclenchement |
+| Client cloud | 46 assertions : quatre éditions ordonnées, originaux envoyés une fois, ZIP 5/9 fichiers, reprise sans facturation supplémentaire, fallback explicitement imprimable, credentials et 32 séances HTTP fictives concurrentes |
 | UI native rendue headless | Accueil1280/1024/960, deux séances complètes successives, annulation de connexion lente et erreur COM tardive, export impression, fermeture et accès aux fichiers protégés par code erroné/annulé/valide |
-| API Deno | 9 tests, typecheck et lint : auth, idempotence, réservation, erreurs ambiguës, originaux requis, hash et expiration |
+| API Deno | 11 tests, typecheck et lint : auth, idempotence, réservation, erreurs ambiguës, originaux requis, hash et expiration |
 | Galerie préparée | 5 tests DOM sans navigateur : 1/4 liens, archive, jeton hors URL de requête, expiration, rejet d’URL étrangère |
 | OpenAPI3.0.3 | Validation formelle réussie avec openapi-spec-validator0.7.2 |
 | CI Windows initiale | [Run41088358348](https://github.com/djnivek/PhotoBooth/actions/runs/41088358348) réussi : PR4, Windows Server 2022, tests natifs headless et simulation |
@@ -26,6 +26,14 @@ aucune feuille DNP, aucun lancement sur le Windows 10 cible, aucune édition Ope
 | Supabase réel | ZIP 5 fichiers puis ZIP 9 fichiers (4 originaux + 4 effets locaux + planche), octets vérifiés, publication rejouée, 0 génération |
 | Isolation distante | Quatre tables RLS activées, aucun SELECT anon/authenticated ; bucket privé ; budget started=0 relu |
 | Galerie hébergée | Non : API Pages retourne422, forfait incompatible avec dépôt privé ; QR ZIP disponible |
+
+## Colors Party 0.3.0
+
+Validation Release complète sur Mac terminée le 30 octobre : 0 avertissement, 0 erreur, contrôles du tableau actualisés ci-dessus. Le test UI exécute la boucle de dispatcher, donc les vrais timers, avec souris et pointeur tactile headless. Il couvre maintien court, sortie du coin, trois secondes, code erroné/correct/absent, plein écran gardant les réglages, retour des univers sans appel supplémentaire, ajout/retrait, panne réseau, réponse initiale différée et repli de contraste d’une couleur serveur volontairement illisible. Le test cloud inclut la taille maximale et l’annulation pendant le corps HTTP.
+
+Les images de géométrie sont des fixtures. Les tests ne génèrent aucune image distante et ne prouvent ni une identité conservée par OpenAI, ni l’autofocus du 4000D, ni une feuille imprimée. Les 28 contrôles Canon couvrent la séquence et le refus d’un déclenchement sans préparation réussie, via transport injecté.
+
+Mémoire et animation bornées par construction : wordmark décodé à 800px, sept emblèmes à 288px une seule fois par fenêtre ; pas de canvas plein écran ou de particules. Un frame vidéo en attente de rendu, traitement des grandes images hors thread UI, timer de déplacement à 12,5Hz, cycle 2,5s, arrêt hors traitement. Ce sont des limites de conception, pas un benchmark de l’ancien i7.
 
 Les rendus headless Avalonia/Skia sont versionnés dans `.impeccable/review/`.
 Les captures du véritable exécutable Windows sont dans [windows-0.2.1](evidence/windows-0.2.1/README.md) :
@@ -62,7 +70,7 @@ forfait non relu via MCP restreint. Aucun upgrade ni appel OpenAI pendant les v�
 
 ## Auto-test du paquet
 
-`EstellArt.exe --self-test <dossier>` exerce les quatre combinaisons avec des dépendances
+`ColorsParty.exe --self-test <dossier>` exerce les quatre combinaisons avec des dépendances
 fictives imposées : capture, montage, raster GDI, journal d’impression, ZIP avec originaux,
 QR, PIN et stockage des credentials. Il ignore les réglages utilisateur pour ne jamais
 activer un appareil ni une API. Version et OS sont consignés dans `self-test.json`.

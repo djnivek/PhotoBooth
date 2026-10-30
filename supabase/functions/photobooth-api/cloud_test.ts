@@ -347,3 +347,35 @@ Deno.test("missing original blocks a paid generation; surprise sharing requires 
     ),
   );
 });
+
+Deno.test("public catalog is immediate, safe metadata without prompts or provider calls", async () => {
+  const fake = new FakeServices();
+  const api = new CloudApi(config, fake.send);
+  const response = await api.handle(request("/styles", "GET", undefined, false));
+  assert(response.status === 200);
+  const data = await response.json();
+  assert(data.styles.length === 6 && data.version);
+  assert(!JSON.stringify(data).includes('"prompt"'));
+  assert(data.styles.every((s: { label: string; description: string; phrases: string[] }) =>
+    !/[\u2013\u2014-]/.test([s.label, s.description, ...s.phrases].join(" "))));
+  assert(fake.providerCreates === 0 && fake.sessions.length === 0);
+});
+Deno.test("explicit universe and prompt freeze across updates; rejected changes do not generate", async () => {
+  const fake = new FakeServices(); const api = new CloudApi(config, fake.send);
+  const selected = { id, photo_count: 4, mode: "surprise", style: "halloween" };
+  const first = await api.handle(request("/sessions", "POST", selected));
+  assert(first.status === 201 && (await first.json()).style === "halloween");
+  assert(String(fake.sessions[0].style_prompt).includes("citrouille"));
+  fake.sessions[0].style_prompt = "Frozen test scene";
+  const resumed = await api.handle(request("/sessions", "POST", selected));
+  assert(resumed.status === 201); await resumed.body?.cancel();
+  assert(fake.sessions[0].style_prompt === "Frozen test scene");
+  const changed = await api.handle(request("/sessions", "POST", { ...selected, style: "space" }));
+  assert(changed.status === 409); await changed.body?.cancel();
+  const unknown = await api.handle(request("/sessions", "POST", { ...selected, id: crypto.randomUUID(), style: "unknown_style" }));
+  assert(unknown.status === 400); await unknown.body?.cancel();
+  assert(fake.providerCreates === 0);
+  const payload = imageRequest(config, "https://test/image.jpg", "removed_theme", "Frozen test scene");
+  const prompt = payload.input[0].content[0].text!;
+  assert(prompt.includes("Frozen test scene") && prompt.includes("corpulence") && prompt.includes("aides à la mobilité"));
+});

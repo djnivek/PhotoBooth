@@ -1,4 +1,5 @@
 import { Buffer } from "node:buffer";
+import catalog from "./styles.json" with { type: "json" };
 
 export type Config = {
   url: string;
@@ -15,6 +16,8 @@ export type SessionRow = {
   photo_count: number;
   mode: string;
   style: string;
+  requested_style?: string;
+  style_prompt?: string;
   share_hash: string | null;
   published_at: string | null;
   expires_at: string;
@@ -45,20 +48,28 @@ export class ApiError extends Error {
     super(code);
   }
 }
-export const styles = {
-  cinema:
-    "Un portrait de cinéma d’aventure élégant, décor de première de film, lumière dorée douce.",
-  space:
-    "Une fête rétrofuturiste dans une station spatiale, couleurs joyeuses et tenues conservées.",
-  garden:
-    "Un jardin enchanté de fête, fleurs lumineuses, ambiance de conte photographique.",
-  painting:
-    "Un portrait peint à la gouache expressive, aplats colorés, visages fidèles et reconnaissables.",
-  disco:
-    "Une fête disco des années 70, reflets de boule à facettes, ambiance chaleureuse.",
+// Legacy definitions preserve already created sessions across a catalog update.
+const legacyStyles: Record<string, string> = {
+  cinema: "Un portrait de cinéma d’aventure élégant dans un décor de première de film.",
+  garden: "Un jardin enchanté de fête avec fleurs lumineuses et ambiance de conte photographique.",
+  painting: "Un décor de gouache expressive entourant des personnes aux visages photographiques fidèles.",
 };
-export function imageRequest(config: Config, imageUrl: string, style: string) {
-  if (!(style in styles)) throw new ApiError(400, "invalid_style");
+export const styles: Record<string, string> = {
+  ...legacyStyles, ...Object.fromEntries(catalog.styles.map(s => [s.id, s.prompt])),
+};
+export const identityPrompt = "La photo jointe est l’unique référence des personnes. " +
+  "Conserve strictement le même nombre de personnes et leur identité : mêmes visages, traits, âge apparent, carnation, cheveux, expression, pose et emplacement relatif. " +
+  "Conserve exactement leur corpulence, silhouette et proportions anatomiques, ainsi que leurs aides à la mobilité. " +
+  "Ne rajeunis, n’amincis, n’embellis, ne caricature et ne remplace aucun visage. N’ajoute ni personne ni membre. " +
+  "Les vêtements, accessoires qui ne masquent pas les visages et le décor peuvent changer. " +
+  "Le thème ne doit jamais modifier l’anatomie, la peau ou les visages. Si une consigne de thème entre en conflit, la fidélité à la référence prévaut. " +
+  "Garde dans le cadre toutes les parties du corps visibles dans la photo source et les mêmes distances relatives entre les personnes. " +
+  "Rendu photographique, familial et bienveillant. Ne sexualise personne. Une seule image paysage, sans texte, logo, collage ni planche.";
+export function publicCatalog() {
+  return { version: catalog.version, styles: catalog.styles.map(({ prompt: _prompt, ...style }) => style) };
+}
+export function imageRequest(config: Config, imageUrl: string, style: string, savedPrompt?: string) {
+  if (!savedPrompt && !(style in styles)) throw new ApiError(400, "invalid_style");
   return {
     model: config.responseModel,
     background: true,
@@ -71,10 +82,8 @@ export function imageRequest(config: Config, imageUrl: string, style: string) {
       content: [
         {
           type: "input_text",
-          text: "Transforme cette seule photo pour un anniversaire familial. " +
-            styles[style as keyof typeof styles] +
-            " Conserve exactement le nombre de personnes, leur identité, âge apparent, visage et pose. " +
-            "Garde toutes les personnes entièrement dans le cadre, sans en ajouter. Ne sexualise personne. Pas de texte, logo, collage ni planche. Une seule image paysage.",
+          text: "Transforme cette seule photo pour un anniversaire familial. " + identityPrompt +
+            " Univers choisi : " + (savedPrompt ?? styles[style]),
         },
         {
           type: "input_image",
@@ -275,7 +284,7 @@ export class CloudApi {
         }
         return reply({
           service: "photobooth",
-          api_version: "0.2.0",
+          api_version: "0.3.0",
           stage: "rehearsal",
           production_ready: false,
           session_api_enabled: !!this.config.accessKeyHash,
@@ -283,6 +292,7 @@ export class CloudApi {
             !!this.config.accessKeyHash,
         });
       }
+      if (path === "/styles" && request.method === "GET") return reply(publicCatalog());
       if (path === "/downloads/resolve" && request.method === "POST") {
         const { token } = await jsonBody(request);
         if (typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token)) {
@@ -328,19 +338,27 @@ export class CloudApi {
           ![1, 4].includes(input.photo_count) ||
           !["original", "surprise"].includes(String(input.mode))
         ) throw new ApiError(400, "invalid_session");
-        const styleKeys = Object.keys(styles);
-        const random = crypto.getRandomValues(new Uint32Array(1))[0];
+        const requestedStyle = input.style ?? "chef";
+        if (typeof requestedStyle !== "string") throw new ApiError(400, "invalid_style");
+        // An existing session always retains its original choice and prompt, even after removal.
+        const existing = await this.rest<SessionRow[]>(`booth_sessions?id=eq.${input.id}&owner_hash=eq.${owner}&select=*`);
+        const chosen = requestedStyle === "chef"
+          ? catalog.styles[crypto.getRandomValues(new Uint32Array(1))[0] % catalog.styles.length]
+          : catalog.styles.find(s => s.id === requestedStyle);
+        if (!existing.length && input.mode === "surprise" && !chosen) throw new ApiError(400, "invalid_style");
         await this.rest("booth_sessions", "POST", {
           id: input.id,
           owner_hash: owner,
           photo_count: input.photo_count,
           mode: input.mode,
-          style: styleKeys[random % styleKeys.length],
+          style: input.mode === "original" ? "original" : chosen?.id ?? existing[0]?.style,
+          requested_style: requestedStyle,
+          style_prompt: input.mode === "original" ? null : chosen?.prompt ?? existing[0]?.style_prompt,
         }, "resolution=ignore-duplicates,return=representation");
         const session = await this.session(input.id, owner);
         if (
           session.photo_count !== input.photo_count ||
-          session.mode !== input.mode
+          session.mode !== input.mode || (session.requested_style ?? "chef") !== requestedStyle
         ) throw new ApiError(409, "session_conflict");
         return reply({
           id: session.id,
@@ -394,7 +412,7 @@ export class CloudApi {
                   "X-Client-Request-Id": `${id}-${index}`,
                 },
                 body: JSON.stringify(
-                  imageRequest(this.config, imageUrl, session.style),
+                  imageRequest(this.config, imageUrl, session.style, session.style_prompt),
                 ),
                 signal: AbortSignal.timeout(45000),
               },

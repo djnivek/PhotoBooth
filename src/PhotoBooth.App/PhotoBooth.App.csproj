@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <AssemblyName>EstellArt</AssemblyName>
-    <Version>0.2.2</Version>
+    <AssemblyName>ColorsParty</AssemblyName>
+    <Version>0.3.0</Version>
     <RootNamespace>PhotoBooth.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>

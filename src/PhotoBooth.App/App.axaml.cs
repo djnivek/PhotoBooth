@@ -17,7 +17,7 @@ public sealed partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow();
+            desktop.MainWindow = new MainWindow(refreshCatalogOnOpen: Program.SmokeOutput is null);
             if(Program.SmokeOutput is { } directory)
                 desktop.MainWindow.Opened+=(_,_)=>DispatcherTimer.RunOnce(async ()=>
                 {

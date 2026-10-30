@@ -16,9 +16,9 @@ using QRCoder;
 
 namespace PhotoBooth.App;
 
-public sealed class MainWindow : Window
+public sealed partial class MainWindow : Window
 {
-    private static readonly IBrush Ink = Brush.Parse("#241931"), Muted = Brush.Parse("#C7B6CD"), Lemon = Brush.Parse("#F5E764");
+    private static readonly IBrush Ink = Brush.Parse("#512831"), Muted = Brush.Parse("#705952"), Lemon = Brush.Parse("#EFD789");
     private readonly ContentControl body = new()
     { Name = "SessionBody", HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch };
     private TextBlock status = Text("", 22);
@@ -34,8 +34,10 @@ public sealed class MainWindow : Window
     private Border? countdownBadge;
     private Border? flashVeil;
     private readonly DispatcherTimer flashTimer = new() { Interval = TimeSpan.FromMilliseconds(170) };
-    private bool showingCapture;
+    private int displayedCaptures;
     private bool liveViewReady;
+    private byte[]? pendingFrame;
+    private int frameQueued;
     private TextBlock? pose;
     private Button? capture;
     private Bitmap? currentBitmap;
@@ -53,14 +55,17 @@ public sealed class MainWindow : Window
     private readonly Func<TimeSpan, CancellationToken, Task>? rehearsalDelay;
     private readonly Action<string> openFolder;
     private readonly Func<SessionStore, IPhotoCamera>? cameraFactoryOverride;
+    private readonly Func<IPhotoTransform>? transformFactoryOverride;
 
     public MainWindow(Func<TimeSpan, CancellationToken, Task>? rehearsalDelay = null, Action<string>? openFolder = null,
-        Func<SessionStore, IPhotoCamera>? cameraFactory = null)
+        Func<SessionStore, IPhotoCamera>? cameraFactory = null,
+        Func<CancellationToken, Task<StyleCatalog>>? catalogLoader = null, bool refreshCatalogOnOpen = true, Func<IPhotoTransform>? transformFactory = null)
     {
         this.rehearsalDelay = rehearsalDelay;
         this.openFolder = openFolder ?? OpenFolder;
-        cameraFactoryOverride = cameraFactory;
-        Title = "Estell’Art — l’anniversaire d’Estelle";
+        cameraFactoryOverride = cameraFactory; transformFactoryOverride = transformFactory;
+        this.catalogLoader = catalogLoader ?? (token => StyleCatalogClient.FetchAsync(boothSettings.ApiBaseUrl, token));
+        Title = "Colors Party by Estelle";
         Width = 1280; Height = 800; MinWidth = 960; MinHeight = 700;
         if (Screens.Primary is { } display)
         {
@@ -85,12 +90,13 @@ public sealed class MainWindow : Window
         }
         controller = CreateController();
         var header = new Grid { Name = "Header", ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(0, 0, 0, 24) };
-        header.Children.Add(Text("Estell’Art.", 32, FontWeight.Bold));
-        var admin = Button("Réglages", ShowSettingsAsync); admin.Name = "Settings";
+        header.Children.Add(Text("Colors Party by Estelle", 26, FontWeight.SemiBold));
+        adminButton = Button("Réglages", ShowSettingsAsync); var admin = adminButton; admin.Name = "Settings";
         Grid.SetColumn(admin, 1); header.Children.Add(admin);
         var layout = new Grid { Name = "AppLayout", RowDefinitions = new RowDefinitions("Auto,*"), Margin = new Thickness(36, 24) };
         layout.Children.Add(header); Grid.SetRow(body, 1); layout.Children.Add(body);
-        Content = layout;
+        var host = new Grid(); host.Children.Add(layout);
+        InstallAdminCorner(host); Content = host;
         // Windows can clamp the requested startup size after the first layout pass.
         // Keep the grid's measured minimum tied to the actual viewport, including later resizes.
         void ConstrainLayout()
@@ -102,13 +108,14 @@ public sealed class MainWindow : Window
             {
                 compactHome = compact;
                 if (screen == "home") RenderHome();
+                else if (screen == "styles") RenderStyles();
             }
         }
-        Opened += (_, _) => ConstrainLayout();
+        Opened += (_, _) => { ConstrainLayout(); if (refreshCatalogOnOpen) _ = RefreshCatalogAsync(); };
         Resized += (_, _) => ConstrainLayout();
         pulse.Tick += (_, _) =>
         {
-            if (countdown is null) return;
+            if (countdown is null || boothSettings.ReducedMotion) { pulse.Stop(); return; }
             var age = (DateTimeOffset.UtcNow - pulseStarted).TotalMilliseconds;
             var scale = 1 + .12 * Math.Exp(-age / 110);
             countdown.RenderTransform = new ScaleTransform(scale, scale);
@@ -117,13 +124,13 @@ public sealed class MainWindow : Window
         flashTimer.Tick += (_, _) => { if (flashVeil is not null) flashVeil.Opacity = 0; flashTimer.Stop(); };
         Closing += (_, e) =>
         {
-            if (kioskLocked) { e.Cancel = true; _ = ShowUnlockAsync(); }
+            if (kioskLocked) { e.Cancel = true; _ = RequestOperatorAsync(true); }
         };
-        Closed += async (_, _) => { pulse.Stop(); flashTimer.Stop(); sharingCancellation?.Cancel(); await controller.DisposeAsync(); currentBitmap?.Dispose(); };
+        Closed += async (_, _) => { pulse.Stop(); flashTimer.Stop(); StopProcessing(); cornerTimer.Stop(); lifetime.Cancel(); sharingCancellation?.Cancel(); await controller.DisposeAsync(); currentBitmap?.Dispose(); resultBitmap?.Dispose(); foreach (var bitmap in artwork.Values) bitmap.Dispose(); lifetime.Dispose(); };
         KeyDown += (_, e) =>
         {
             if (e.Key == Key.F11 || (e.Key == Key.Escape && kioskLocked))
-            { e.Handled = true; _ = ShowUnlockAsync(); }
+            { e.Handled = true; _ = RequestOperatorAsync(true); }
         };
         RenderHome();
     }
@@ -132,61 +139,36 @@ public sealed class MainWindow : Window
     {
         cloud = boothSettings.CloudEnabled ? new BoothCloudClient(boothSettings.ApiBaseUrl, cloudKey, store, boothSettings.GalleryBaseUrl) : null;
         var result = new BoothController(store, () => cameraFactoryOverride is not null ? cameraFactoryOverride(store) : boothSettings.CanonCamera ?
-            (boothSettings.CanonUseOfficialSdk ? new CanonCamera(store) : new CanonWpdCamera(store)) : new FixtureCamera(store, fixtureFiles),
-            (IPhotoTransform?)cloud ?? new RehearsalTransform(), rehearsalDelay);
+            (boothSettings.CanonUseOfficialSdk ? new CanonCamera(store, boothSettings.CanonManualFocusConfirmed) : new CanonWpdCamera(store, manualFocusConfirmed: boothSettings.CanonManualFocusConfirmed)) : new FixtureCamera(store, fixtureFiles),
+            transformFactoryOverride?.Invoke() ?? (IPhotoTransform?)cloud ?? new RehearsalTransform(), rehearsalDelay);
         result.Changed += () => Dispatcher.UIThread.Post(UpdateSession);
-        result.Frame += bytes => Dispatcher.UIThread.Post(() =>
+        result.Frame += bytes =>
         {
-            if (screen != "capture" || liveImage is null || controller.Session?.WantsLiveView != true) return;
-            ReplaceImage(liveImage, bytes);
-            liveViewReady=true;
-            if(capture is not null&&controller.Session?.Stage==SessionStage.Positioning&&!controller.IsBusy)capture.IsEnabled=true;
-        });
+            Interlocked.Exchange(ref pendingFrame, bytes);
+            if (Interlocked.Exchange(ref frameQueued, 1) != 0) return;
+            Dispatcher.UIThread.Post(() =>
+            {
+                try
+                {
+                    var latest = Interlocked.Exchange(ref pendingFrame, null);
+                    if (latest is null || controller != result || screen != "capture" || liveImage is null || controller.Session?.WantsLiveView != true) return;
+                    ReplaceImage(liveImage, latest); liveViewReady = true;
+                    if (capture is not null && controller.Session?.Stage == SessionStage.Positioning && !controller.IsBusy) capture.IsEnabled = true;
+                }
+                finally { Interlocked.Exchange(ref frameQueued, 0); }
+            });
+        };
         return result;
-    }
-
-    private void RenderHome()
-    {
-        sharingCancellation?.Cancel(); sharingCancellation?.Dispose(); sharingCancellation = null;
-        screen = "home"; liveImage = null; countdown = null; pulse.Stop();
-        var grid = new Grid { Name = "HomeLayout", ColumnDefinitions = new ColumnDefinitions("6*,5*") };
-        var choices = new StackPanel { Spacing = compactHome ? 12 : 19, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 38, 0) };
-        choices.Children.Add(Text("Des souvenirs\nplein la fête.", compactHome ? 49 : 57, FontWeight.SemiBold));
-        var subtitle = Text("L’anniversaire d’Estelle, avec votre plus beau sourire.", compactHome ? 20 : 22); subtitle.Foreground = Muted;
-        choices.Children.Add(subtitle);
-        choices.Children.Add(Text("Combien de poses ?", 20, FontWeight.SemiBold));
-        choices.Children.Add(ChoiceRow(("Une photo", photoCount == 1, () => { photoCount = 1; RenderHome(); }),
-            ("Quatre photos", photoCount == 4, () => { photoCount = 4; RenderHome(); })));
-        choices.Children.Add(Text("À votre façon", 20, FontWeight.SemiBold));
-        choices.Children.Add(ChoiceRow(("Au naturel", mode == PhotoMode.Original, () => { mode = PhotoMode.Original; RenderHome(); }),
-            ("Surprise", mode == PhotoMode.Surprise, () => { mode = PhotoMode.Surprise; RenderHome(); })));
-        var detail = Text(mode == PhotoMode.Original ? "Vos photos, telles quelles." : "Un style tiré au sort pour toute votre série.", 17);
-        detail.Foreground = Muted; choices.Children.Add(detail);
-        var start = Button("Démarrer", async () =>
-        {
-            startBusy(true);
-            await controller.BeginAsync(new SessionOptions(photoCount, mode));
-            startBusy(false);
-        }, primary: true);
-        void startBusy(bool busy) { foreach (var child in choices.Children.OfType<Button>()) child.IsEnabled = !busy; }
-        start.Name = "StartSession"; start.HorizontalAlignment = HorizontalAlignment.Stretch;
-        choices.Children.Add(start); grid.Children.Add(choices);
-        var preview = new StackPanel { Spacing = 18, VerticalAlignment = VerticalAlignment.Center };
-        var image = new Image { Source = Bitmap(PhotoProcessor.Compose(Enumerable.Range(0, photoCount).Select(FixtureCamera.CreateFixture).ToArray())), Stretch = Stretch.Uniform, MaxHeight = 380 };
-        preview.Children.Add(new Border { Name = "HomeSheet", Background = Brushes.White, Padding = new Thickness(12), Child = image, CornerRadius = new CornerRadius(4) });
-        preview.Children.Add(Text("Une feuille. Tous les sourires.", 27, FontWeight.SemiBold));
-        var note = Text("1 ou 4 poses · à télécharger ou à imprimer", 18); note.Foreground = Muted; preview.Children.Add(note);
-        Grid.SetColumn(preview, 1); grid.Children.Add(preview); body.Content = grid;
     }
 
     private void RenderCapture()
     {
-        screen = "capture";
-        liveViewReady=false;
+        StopProcessing(); screen = "capture";
+        liveViewReady=false; displayedCaptures = 0;
         // Detached screens still own their controls; a new session needs a new status view.
         status = Text("", 22);
         var layout = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
-        pose = Text("Placez-vous dans le cadre.", 30, FontWeight.SemiBold); layout.Children.Add(pose);
+        pose = Text("Prenez place dans le cadre.", 30, FontWeight.SemiBold); layout.Children.Add(pose);
         var stage = new Grid { Background = Brush.Parse("#150F1C"), Margin = new Thickness(0, 20) };
         liveImage = new Image { Stretch = Stretch.Uniform };
         stage.Children.Add(liveImage);
@@ -222,34 +204,36 @@ public sealed class MainWindow : Window
             return;
         }
         if (session.Stage == SessionStage.Failed) { RenderError(controller.Message); return; }
+        if (session.Stage == SessionStage.Processing) { if (screen != "processing") RenderProcessing(); processingProgress!.Text = controller.Message; return; }
         if (screen != "capture") RenderCapture();
         status.Text = controller.Message;
-        var isCapture = session.Stage == SessionStage.Capturing;
-        if (isCapture && !showingCapture && flashVeil is not null)
-        { flashVeil.Opacity = .22; flashTimer.Start(); }
-        showingCapture = isCapture;
+        var received = session.Captures.Count > displayedCaptures;
+        displayedCaptures = session.Captures.Count;
+        if (received && !boothSettings.ReducedMotion && flashVeil is not null)
+        { flashVeil.Opacity = .18; flashTimer.Start(); }
         if (pose is not null) pose.Text = session.Stage == SessionStage.Processing ? "On prépare vos souvenirs…" :
             $"Pose {Math.Min(session.Captures.Count + 1, session.Options.PhotoCount)} sur {session.Options.PhotoCount}";
         if (capture is not null) { capture.IsVisible = session.Stage == SessionStage.Positioning && !controller.IsBusy; capture.IsEnabled=liveViewReady; }
         if (countdown is not null)
         {
-            var next = session.Stage == SessionStage.Countdown ? session.SecondsRemaining.ToString() : session.Stage == SessionStage.Capturing ? "Clic !" : "";
+            var next = session.Stage == SessionStage.Countdown ? session.SecondsRemaining.ToString() : session.Stage == SessionStage.Capturing ? "Gardez la pose" : "";
             if (countdownBadge is not null) countdownBadge.IsVisible = next.Length > 0;
-            if (next != countdown.Text) { countdown.Text = next; pulseStarted = DateTimeOffset.UtcNow; pulse.Start(); }
+            if (next != countdown.Text) { countdown.Text = next; countdown.FontSize = session.Stage == SessionStage.Countdown ? 152 : 40; pulseStarted = DateTimeOffset.UtcNow; if (!boothSettings.ReducedMotion) pulse.Start(); }
         }
     }
 
     private void RenderResult()
     {
-        screen = "result"; pulse.Stop();
+        StopProcessing(); screen = "result"; pulse.Stop();
         var layout = new Grid { ColumnDefinitions = new ColumnDefinitions("7*,4*") };
         var left = new StackPanel { Spacing = 22, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 30, 0) };
         left.Children.Add(Text("Ça, c’est un souvenir.", 38, FontWeight.SemiBold));
-        var image = new Image { Source = new Bitmap(store.Resolve(controller.Sheet!.Key)), Stretch = Stretch.Uniform, MaxHeight = 430 };
+        resultBitmap?.Dispose(); resultBitmap = new Bitmap(store.Resolve(controller.Sheet!.Key));
+        var image = new Image { Source = resultBitmap, Stretch = Stretch.Uniform, MaxHeight = 430 };
         left.Children.Add(image); layout.Children.Add(left);
         var actions = new StackPanel { Spacing = 20, VerticalAlignment = VerticalAlignment.Center };
         actions.Children.Add(Text(controller.Session!.EffectiveMode == PhotoMode.Surprise ?
-            "Votre surprise est prête." : "Tout simplement vous.", 30, FontWeight.SemiBold));
+            "Votre métamorphose est prête." : "Tout simplement vous.", 30, FontWeight.SemiBold));
         var note = Text(controller.Session.UsedOriginalFallback ? "Vous avez choisi de garder les photos originales." :
             "Votre planche est enregistrée sur cet ordinateur.", 19);
         note.Foreground = Muted; actions.Children.Add(note);
@@ -271,7 +255,7 @@ public sealed class MainWindow : Window
         var folder = Path.GetDirectoryName(store.Resolve(controller.Sheet.Key))!;
         var files = Button("Voir les fichiers", async () =>
         {
-            if (kioskLocked) await ShowUnlockAsync();
+            if (kioskLocked) await RequestOperatorAsync(true);
             if (!kioskLocked) openFolder(folder);
         });
         files.Name = "OpenFiles"; actions.Children.Add(files);
@@ -288,7 +272,7 @@ public sealed class MainWindow : Window
 
     private void RenderError(string message)
     {
-        screen = "error";
+        StopProcessing(); screen = "error";
         var panel = new StackPanel { Spacing = 24, MaxWidth = 720, VerticalAlignment = VerticalAlignment.Center,
             Children = { Text("Une petite pause.", 48, FontWeight.SemiBold), Text(message, 23),
                 Text("Les photos déjà enregistrées restent sur cet ordinateur.", 19),
@@ -301,11 +285,11 @@ public sealed class MainWindow : Window
 
     private async Task ShowSettingsAsync()
     {
-        if (kioskLocked) { await ShowUnlockAsync(); return; }
+        if (kioskLocked && !operatorAccess) { await RequestOperatorAsync(false); return; }
         if (controller.IsBusy) return;
         var settings = Dialog("Réglages de la borne", 690, 680);
-        var pin = new TextBox { PasswordChar = '●', MaxLength = 12 };
-        var info = Text(boothSettings.CloudEnabled ? "Connexion en ligne active. Le mode Surprise lance des appels OpenAI payants." :
+        var pin = new TextBox { PasswordChar = '●', MaxLength = 4 };
+        var info = Text(boothSettings.CloudEnabled ? "Connexion en ligne active. Le mode Métamorphose lance des appels OpenAI payants." :
             "Connexion en ligne désactivée. Aucun appel OpenAI ne sera facturé.", 19);
         var content = new StackPanel { Spacing = 18, Margin = new Thickness(30) };
         content.Children.Add(Text("Prêts pour la fête ?", 34, FontWeight.SemiBold));
@@ -317,6 +301,9 @@ public sealed class MainWindow : Window
             PlaceholderText = "Choisir la DNP DS620", HorizontalAlignment = HorizontalAlignment.Stretch };
         content.Children.Add(canon); content.Children.Add(canonSdk);
         content.Children.Add(Text("Par défaut, connexion par le pilote Windows existant, sans SDK à installer. Compatibilité à vérifier sur le boîtier.",15));
+        var manualFocus = new CheckBox { Content = "Mise au point manuelle vérifiée sur le Canon", IsChecked = boothSettings.CanonManualFocusConfirmed };
+        content.Children.Add(manualFocus);
+        content.Children.Add(Text("À activer uniquement après avoir réglé l’objectif sur MF et vérifié la netteté à la distance de pose.", 15));
         content.Children.Add(printing); content.Children.Add(printers);
         content.Children.Add(Button("Enregistrer le matériel", async () =>
         {
@@ -325,7 +312,7 @@ public sealed class MainWindow : Window
             var name = printers.SelectedItem as string ?? "";
             if (printing.IsChecked == true && name.Length == 0) throw new InvalidOperationException("Choisissez l’imprimante avant d’activer l’envoi.");
             sharingCancellation?.Cancel(); await controller.DisposeAsync();
-            boothSettings = boothSettings with { CanonCamera = canon.IsChecked == true, CanonUseOfficialSdk = canonSdk.IsChecked == true, PhysicalPrinting = printing.IsChecked == true, PrinterName = name };
+            boothSettings = boothSettings with { CanonCamera = canon.IsChecked == true, CanonUseOfficialSdk = canonSdk.IsChecked == true, CanonManualFocusConfirmed = manualFocus.IsChecked == true, PhysicalPrinting = printing.IsChecked == true, PrinterName = name };
             await boothSettings.SaveAsync(boothSettingsPath); controller = CreateController(); RenderHome();
             info.Text = "Réglages enregistrés. Lancez une séance pour vérifier la connexion.";
         }));
@@ -354,54 +341,51 @@ public sealed class MainWindow : Window
             sharingCancellation?.Cancel(); await controller.DisposeAsync();
             boothSettings=boothSettings with {CloudEnabled=true}; await boothSettings.SaveAsync(boothSettingsPath);
             controller=CreateController(); RenderHome(); connection.Text="";
-            info.Text=imageReady ? "Connexion vérifiée. Une séance Surprise utilisera OpenAI en qualité xhigh et sera facturée." :
-                "Partage connecté. Ajoutez la clé OpenAI dans Supabase avant d’utiliser Surprise.";
+            info.Text=imageReady ? "Connexion vérifiée. Une séance Métamorphose utilisera OpenAI en qualité xhigh et sera facturée." :
+                "Partage connecté. Ajoutez la clé OpenAI dans Supabase avant d’utiliser Métamorphose.";
         }));
         content.Children.Add(Button("Désactiver la connexion en ligne",async()=>
         {
             sharingCancellation?.Cancel(); await controller.DisposeAsync(); boothSettings=boothSettings with {CloudEnabled=false};
             await boothSettings.SaveAsync(boothSettingsPath);controller=CreateController();RenderHome();info.Text="Connexion en ligne désactivée. Aucun appel OpenAI payant.";
         }));
-        content.Children.Add(Text("Le mode en ligne envoie les photos vers Supabase, et vers OpenAI uniquement en mode Surprise. Les liens expirent après 7 jours.",15));
+        content.Children.Add(Text("Le mode en ligne envoie les photos vers Supabase, et vers OpenAI uniquement en mode Métamorphose. Les liens expirent après 7 jours.",15));
+        var catalogInfo = Text(catalogStatus, 17); content.Children.Add(catalogInfo);
+        var refresh = Button("Actualiser les univers", () => RefreshCatalogAsync(catalogInfo)); refresh.Name = "RefreshStyles"; content.Children.Add(refresh);
+        var reduce = new CheckBox { Content = "Réduire les animations", IsChecked = boothSettings.ReducedMotion };
+        reduce.IsCheckedChanged += async (_, _) => { boothSettings = boothSettings with { ReducedMotion = reduce.IsChecked == true }; await boothSettings.SaveAsync(boothSettingsPath); };
+        content.Children.Add(reduce);
+        var protect = new CheckBox { Name = "ProtectSettings", Content = "Protéger les réglages avec un code", IsChecked = exitGate is not null };
+        content.Children.Add(protect);
         pin.Name = "ExitPin";
-        content.Children.Add(Text("Code de sortie du plein écran · 6 à 12 chiffres",20,FontWeight.SemiBold));
-        content.Children.Add(pin);
-        content.Children.Add(Button("Activer le plein écran", async () =>
+        content.Children.Add(Text("Code des réglages · quatre caractères", 20, FontWeight.SemiBold)); content.Children.Add(pin);
+        content.Children.Add(Text("Laissez le champ vide pour garder le code existant.", 15));
+        async Task SaveProtection()
         {
-            if (!string.IsNullOrEmpty(pin.Text)) exitGate = KioskExitGate.Create(pin.Text);
-            if (exitGate is null) { info.Text = "Choisissez d’abord un code de 6 à 12 chiffres."; return; }
-            await SaveKioskAsync(); kioskLocked = true; WindowState = WindowState.FullScreen; settings.Close();
-        }, true));
-        content.Children.Add(Text("Le code protège les commandes de l’application. Les commandes système Windows restent accessibles.", 15));
+            if (protect.IsChecked == true)
+            {
+                if (!string.IsNullOrEmpty(pin.Text)) exitGate = KioskExitGate.Create(pin.Text);
+                if (exitGate is null) throw new InvalidOperationException("Choisissez un code de quatre caractères.");
+                await SaveKioskAsync();
+            }
+            else { exitGate = null; if (File.Exists(settingsPath)) File.Delete(settingsPath); }
+            pin.Text = "";
+        }
+        var saveCode = Button("Enregistrer le code", async () => { await SaveProtection(); info.Text = exitGate is null ? "Les réglages sont accessibles sans code." : "Le code est enregistré."; });
+        saveCode.Name = "SaveOperatorCode"; content.Children.Add(saveCode);
+        var fullscreen = Button("Activer le plein écran", async () =>
+        {
+            await SaveProtection(); kioskLocked = true; WindowState = WindowState.FullScreen;
+            if (adminButton is not null) adminButton.IsVisible = false;
+            info.Text = "Plein écran activé. Fermez les réglages pour reprendre la fête.";
+        }, true); fullscreen.Name = "EnterFullscreen"; content.Children.Add(fullscreen);
+        var leave = Button("Quitter le plein écran", () => { LeaveFullscreen(); return Task.CompletedTask; });
+        leave.Name = "LeaveFullscreen"; content.Children.Add(leave);
+        content.Children.Add(Text("Pour retrouver les réglages, gardez le doigt trois secondes dans le coin inférieur gauche.", 16));
         content.Children.Add(Button("Fermer les réglages", () => { settings.Close(); return Task.CompletedTask; }));
         settings.Content = new ScrollViewer { Content = content }; await settings.ShowDialog(this);
     }
 
-    private bool unlockOpen;
-    private async Task ShowUnlockAsync()
-    {
-        if (!kioskLocked || exitGate is null || unlockOpen) return;
-        unlockOpen = true;
-        try
-        {
-            var dialog = Dialog("Code de sortie", 480, 430);
-            var pin = new TextBox { PasswordChar = '●', MaxLength = 12 };
-            var error = Text("", 17);
-            dialog.Content = new StackPanel { Spacing = 20, Margin = new Thickness(30), Children =
-            {
-                Text("Retour aux réglages", 28, FontWeight.SemiBold), Text("Code de sortie",18,FontWeight.SemiBold), pin, error,
-                Button("Déverrouiller", async () =>
-                {
-                    var authorized = exitGate.TryAuthorizeExit(pin.Text ?? ""); await SaveKioskAsync();
-                    if (!authorized) { pin.Text = ""; error.Text = "Code incorrect ou verrouillage de 30 secondes."; return; }
-                    kioskLocked = false; WindowState = WindowState.Normal; dialog.Close();
-                }, true),
-                Button("Retour à la fête", () => { dialog.Close(); return Task.CompletedTask; })
-            } };
-            await dialog.ShowDialog(this);
-        }
-        finally { unlockOpen = false; }
-    }
     private Task SaveKioskAsync() => SessionStore.WriteAtomicAsync(settingsPath, JsonSerializer.SerializeToUtf8Bytes(exitGate!.Export()));
 
     private bool sharing;
@@ -443,7 +427,7 @@ public sealed class MainWindow : Window
 
     private static TextBlock Text(string content, double size, FontWeight? weight = null) => new()
     { Text = content, FontSize = size, FontWeight = weight ?? FontWeight.Normal, TextWrapping = TextWrapping.Wrap,
-        FontFamily = size >= 28 ? new FontFamily("avares://EstellArt/Assets/BricolageGrotesque.ttf#Bricolage Grotesque") : new FontFamily("Segoe UI, Arial") };
+        FontFamily = size >= 28 ? new FontFamily("avares://ColorsParty/Assets/BricolageGrotesque.ttf#Bricolage Grotesque") : new FontFamily("Segoe UI, Arial") };
     private static Button Button(string text, Func<Task> action, bool primary = false)
     {
         var button = new Button { Content = text };

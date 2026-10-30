@@ -19,11 +19,12 @@ public sealed class CanonCamera : IPhotoCamera
     private uint previousOutput;
     private TaskCompletionSource<byte[]>? pendingCapture;
     private bool disposed;
+    private readonly bool manualFocusConfirmed;
 
-    public CanonCamera(SessionStore store)
+    public CanonCamera(SessionStore store, bool manualFocusConfirmed = false)
     {
         if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Le Canon nécessite Windows et son SDK.");
-        this.store = store; objectHandler = OnObject;
+        this.store = store; this.manualFocusConfirmed = manualFocusConfirmed; objectHandler = OnObject;
         thread = new Thread(Run) { IsBackground = true, Name = "Canon EDSDK STA" };
         thread.SetApartmentState(ApartmentState.STA); thread.Start();
     }
@@ -72,6 +73,18 @@ public sealed class CanonCamera : IPhotoCamera
             if (!disposed) await Invoke(() => { if (live) { SetProperty(0x500, previousOutput); live = false; } return true; }, CancellationToken.None);
         }
     }
+
+    public Task PrepareCaptureAsync(CancellationToken token) => Invoke(() =>
+    {
+        if (!sessionOpen || !live) throw new InvalidOperationException("Le Canon doit fournir la visée avant la photo.");
+        Check(Native.EdsGetPropertyData(camera, 0x404, 0, 4, out var afMode), "Vérifier la mise au point");
+        if (afMode == 3 && !manualFocusConfirmed)
+            throw new IOException("L’objectif est sur MF. Vérifiez sa netteté et confirmez la mise au point manuelle dans les réglages.");
+        if (manualFocusConfirmed && afMode != 3)
+            throw new IOException("Le mode manuel a été confirmé dans les réglages, mais l’objectif n’est pas sur MF.");
+        // EDSDK TakePicture performs its own AF and reports AF failure. Do not use NonAF shutter commands.
+        return true;
+    }, token);
 
     public async Task<CapturedPhoto> CaptureAsync(Guid sessionId, int shotIndex, CancellationToken token)
     {

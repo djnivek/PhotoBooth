@@ -4,26 +4,29 @@
 
 Télécharger [le dernier paquet Estell’Art Windows x64](https://github.com/djnivek/PhotoBooth/releases)
 avec un compte ayant accès au dépôt privé. Extraire **tout** le ZIP dans un dossier local avant
-`EstellArt.exe` ; ne pas lancer depuis la vue ZIP du navigateur. Pas de SDK .NET requis.
+`ColorsParty.exe` ; ne pas lancer depuis la vue ZIP du navigateur. Pas de SDK .NET requis.
 Le ZIP est accompagné de son SHA-256. Il a été extrait et exécuté sur Windows Server 2022 ;
 [preuves et captures](evidence/windows-0.2.1/README.md). Le lancement sur le Windows 10 cible reste à vérifier.
 
-1. Lancer en répétition (défaut). Tester 1/4 poses, Au naturel/Surprise, placement,
-   décompte 5 secondes, effet de capture, aperçu. Aucun appareil ni Internet requis pour ce parcours.
+1. Lancer en répétition (défaut). Tester 1/4 poses, Au naturel/Métamorphose, placement,
+   décompte 3 secondes, effet de capture, aperçu. Aucun appareil ni Internet requis pour ce parcours.
 2. Réglages → choisir des photos locales autorisées ; elles sont lues dans l’ordre et répétées
    si le jeu contient moins de photos que la séance. Ce n’est pas une capture Canon.
 3. Appuyer sur « Imprimer » avec l’envoi à l’imprimante désactivé : export `print-preview.jpg`, aucun envoi à une imprimante. Comparer à
    l’aperçu et au JPEG de planche ; quatre photos distinctes et correctement orientées.
-4. Définir un code de sortie 6–12 chiffres, activer le plein écran ; mauvais/bon code, F11,
+4. Définir un code facultatif de quatre caractères, activer le plein écran puis fermer les réglages.
+   Maintenir trois secondes en bas à gauche : mauvais/bon code, accès direct si aucun code. Tester F11,
    Échap et fermeture. Les raccourcis système restent possibles.
    « Voir les fichiers » demande aussi ce code. Après un code correct, la borne reste déverrouillée :
    retourner dans Réglages → Activer le plein écran avant de la rendre aux invités.
 5. Ajouter la clé OpenAI dans Supabase, puis le code borne distinct dans les Réglages de l’app.
    Activer la connexion vérifie seulement l’authentification ; cela ne génère aucune image.
-6. Faire volontairement un premier essai Surprise : **cet essai sera facturé**. Vérifier attente,
+6. Faire volontairement un premier essai Métamorphose : **cet essai sera facturé**. Vérifier attente,
    identité des personnes, résultat et téléchargement ZIP depuis le téléphone. Puis tester quatre.
    Les originaux sont dans `originaux/` et la planche dans `planche-4x6.jpg`.
-7. Vérifier le stockage Supabase et l’usage OpenAI avant de répéter à grande échelle.
+7. Réglages → Actualiser les univers : vérifier un ajout ou retrait backend. Ouvrir le sélecteur
+   plusieurs fois ne doit afficher aucun chargement. Tester aussi sans réseau.
+8. Vérifier le stockage Supabase et l’usage OpenAI avant de répéter à grande échelle.
 
 Le mode Original conserve impression/aperçu même sans réseau ; un partage interrompu peut être
 réessayé tant que la séance reste à l’écran. Une erreur IA permet de choisir explicitement
@@ -40,8 +43,11 @@ Cette voie utilise le pilote Windows existant via WPD/PTP ; pas de téléchargem
 Fermer DSLR Booth/EOS Utility avant la connexion ; ne pas changer le pilote USB avec Zadig.
 La compatibilité EOS4000D n’est pas encore prouvée : tester placement réel, visée, décompte,
 transfert JPEG, retour visée et quatre poses. Le bouton attend une première image de visée.
-Vérifier JPEG haute qualité, alimentation, veille, flash et mise au point (mise au point
-manuelle à distance fixe préférable pour cette première recette, à vérifier sur les sujets).
+Le résultat d’autofocus WPD n’est pas interprété comme une confirmation tant que le 4000D
+n’a pas été validé. Régler l’objectif sur MF, vérifier la netteté à distance réelle, cocher
+« Mise au point manuelle vérifiée sur le Canon » et enregistrer le matériel. Le logiciel
+contrôle que le boîtier annonce MF ; sans cette confirmation il bloque la capture.
+Vérifier aussi JPEG haute qualité, alimentation, veille et flash.
 Tester aussi Annuler pendant la connexion, une fois appareil éteint/débranché. Une connexion
 native qui ne rend jamais la main peut laisser « Annulation en cours… » affiché : vérifier la
 sortie par code puis le redémarrage. Ne pas relancer des connexions en parallèle ni continuer la

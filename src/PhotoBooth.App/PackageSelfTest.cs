@@ -37,7 +37,7 @@ internal static class PackageSelfTest
         using(var generator=new QRCodeGenerator())using(var data=generator.CreateQrCode("https://example.invalid/rehearsal",QRCodeGenerator.ECCLevel.M))
         using(var png=new PngByteQRCode(data))
         {using var bitmap=PhotoProcessor.DecodeUpright(png.GetGraphic(3));if(bitmap.Width<50)throw new InvalidDataException("Packaged QR rendering failed.");}
-        var pin=KioskExitGate.Create("928517");if(!pin.TryAuthorizeExit("928517"))throw new InvalidOperationException("PIN check failed.");
+        var pin=KioskExitGate.Create("C817");if(!pin.TryAuthorizeExit("C817"))throw new InvalidOperationException("PIN check failed.");
         var credential=Path.Combine(output,"test-credential");await CredentialStore.SaveAsync(credential,"synthetic-credential");
         if(CredentialStore.Load(credential)!="synthetic-credential")throw new InvalidOperationException("Packaged credential protection failed.");File.Delete(credential);
         await File.WriteAllTextAsync(Path.Combine(output,"self-test.json"),JsonSerializer.Serialize(new
