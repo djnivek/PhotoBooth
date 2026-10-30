@@ -27,8 +27,10 @@ Les PR 3/5/6/7/8/9 contiennent désormais des screenshots ; poursuivre cette pra
 
 ## Portes de validation
 
-En préparation : version0.2.2, textes invités simplifiés (« Surprise », aucun bandeau de
-simulation), captures mises à jour. Aucun changement du traitement photo ou de l’impression.
+[PR11](https://github.com/djnivek/PhotoBooth/pull/11) : textes invités simplifiés pour la version0.2.2
+(« Surprise », aucun bandeau de simulation), captures mises à jour. Le paquet et ses reçus sont
+disponibles sur la [page Releases](https://github.com/djnivek/PhotoBooth/releases) après validation Windows.
+Aucun changement du traitement photo ou de l’impression.
 
 - **Mac maintenant** : UI native, séquences, images synthétiques/locales, orientation réelle,
   montage, fichiers finaux, sécurité des reprises, requêtes API simulées, packaging croisé.

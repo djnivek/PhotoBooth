@@ -6,7 +6,7 @@ Mise à jour : 30 octobre 2026. Anniversaire demain. Lire [PROGRESS](PROGRESS.md
 ## État concret
 
 - Ajustement demandé après la revue : afficher « Surprise » et retirer les mentions de simulation
-  de l’interface. Version0.2.2 en préparation ; le comportement des appareils, de l’API et de
+  de l’interface. Modification livrée dans la PR11 pour la version0.2.2 ; le comportement des appareils, de l’API et de
   l’export d’impression reste inchangé. Les captures incluent désormais le parcours Surprise.
 - Application native Avalonia, quatre parcours 1/4 × original/IA, répétition sans matériel.
 - JPEG final réel 1800×1200 à 300 dpi, huit orientations EXIF, contrôle SHA, grille sans recadrage.
@@ -16,7 +16,7 @@ Mise à jour : 30 octobre 2026. Anniversaire demain. Lire [PROGRESS](PROGRESS.md
 - Plein écran/code testé dans le rendu natif headless ; commandes système Windows non bloquées.
 - GitHub Pages refusé pour ce dépôt privé : QR vers ZIP, galerie web préparée mais non hébergée.
 - Canon sans SDK propriétaire intégré via FC.SDK3.2.1021/WPD, 25 tests de séquence fictive passés.
-- [Paquet Windows 0.2.1 publié](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.1) : ZIP extrait et EXE réellement exécuté sur Windows Server 2022, quatre parcours simulés réussis.
+- [Paquets Windows](https://github.com/djnivek/PhotoBooth/releases) : chaque version publiée fournit son ZIP, son SHA et ses reçus d’exécution. Télécharger la version la plus récente.
 - Accueil Windows vérifié à 992×700 puis 960×700 après redimensionnement ; débordements corrigés. Captures versionnées et ajoutées aux PR 3/5/6/7/8/9.
 - Correctifs 0.2.1 fusionnés dans la PR9 : accès aux fichiers protégé par le code, journal d’impression
   lié à la bonne séance, connexion annulée sans chevauchement et crash de la deuxième séance corrigé.
@@ -56,7 +56,7 @@ Le script shell accepte `PHOTOBOOTH_DOTNET`. Deno 2.9.2, Node 22. Tests HTTP ent
 
 ## Essai ce soir
 
-1. Télécharger/extracter [le paquet 0.2.1](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.1) et lancer `EstellArt.exe`.
+1. Télécharger/extracter [le dernier paquet Windows](https://github.com/djnivek/PhotoBooth/releases) et lancer `EstellArt.exe`.
 2. Garder caméra/impression simulées. Tester 1 puis 4, original puis effet local, compte à rebours,
    aperçu et fichier d’impression. Vérifier les photos locales sélectionnées et le code plein écran.
 3. Provisionner la connexion borne. Contrôle de connexion sans frais. Clé OpenAI uniquement sur Supabase.
@@ -99,8 +99,8 @@ assistant. Garder les preuves UI dans Git, les fichiers privés et builds hors G
 
 ## Packaging reproductible
 
-Sur Windows avec PowerShell7 et SDK.NET10 : `./scripts/package-windows.ps1 -Version 0.2.1`.
-Produit attendu : `artifacts/package/EstellArt-0.2.1-win-x64.zip` et SHA-256, autonome.
+Sur Windows avec PowerShell7 et SDK.NET10 : `./scripts/package-windows.ps1`.
+Produit attendu : `artifacts/package/EstellArt-<version>-win-x64.zip` et SHA-256, autonome.
 Le script publie en single-file avec extraction des bibliothèques natives, compresse, réextrait
 le ZIP, lance cet EXE en `--self-test` puis `--smoke-ui`. Les reçus et une capture de la fenêtre
 native vont dans `artifacts/package/diagnostics/`. Aucun secret, appel réseau ou périphérique.
@@ -108,12 +108,15 @@ Le CI conserve le paquet et ces preuves ; ne publier la release qu’après leur
 
 Les fichiers de démarrage sont dans `docs/DEMARRAGE_WINDOWS.txt` (copié LISEZ-MOI.txt au paquet).
 Le paquet est personnel et non signé ; la provenance et le SHA doivent correspondre à GitHub.
-Release : [v0.2.1](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.1), commit
+Reçu historique versionné : [v0.2.1](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.1), commit
 `2e026337ab8341bc37608d55dcc3ea67be0db314`, [run41116597603](https://github.com/djnivek/PhotoBooth/actions/runs/41116597603).
 ZIP : 71,148,214 octets ; SHA-256 `e51329e3b769600bb6ae222021968048bbdff85e278520d5a8bcbf74df5f9120`.
 Reçus et captures : [evidence/windows-0.2.1](evidence/windows-0.2.1/README.md).
 Archive retéléchargée depuis la release et SHA vérifié. Au dernier contrôle de l’API avant cette
 revue, la génération restait désactivée faute de clé OpenAI ; relire après son ajout par Kevin.
+
+Pour les versions suivantes, la page Releases contient `package.json`, `self-test.json` et le SHA
+correspondant à l’archive exacte. La PR de la modification conserve les captures de l’interface.
 
 Kevin demande des screenshots dans les PR pour commenter le design. Joindre des images versionnées
 et des liens de commit immuables à chaque changement d’interface ; distinguer simulation, fenêtre

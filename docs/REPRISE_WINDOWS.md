@@ -2,17 +2,17 @@
 
 ## PC sans caméra ni imprimante — ce soir
 
-Télécharger [Estell’Art 0.2.1 Windows x64](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.1)
+Télécharger [le dernier paquet Estell’Art Windows x64](https://github.com/djnivek/PhotoBooth/releases)
 avec un compte ayant accès au dépôt privé. Extraire **tout** le ZIP dans un dossier local avant
 `EstellArt.exe` ; ne pas lancer depuis la vue ZIP du navigateur. Pas de SDK .NET requis.
 Le ZIP est accompagné de son SHA-256. Il a été extrait et exécuté sur Windows Server 2022 ;
 [preuves et captures](evidence/windows-0.2.1/README.md). Le lancement sur le Windows 10 cible reste à vérifier.
 
-1. Lancer en répétition (défaut). Tester 1/4 poses, Au naturel/Surprise IA simulée, placement,
+1. Lancer en répétition (défaut). Tester 1/4 poses, Au naturel/Surprise, placement,
    décompte 5 secondes, effet de capture, aperçu. Aucun appareil ni Internet requis pour ce parcours.
 2. Réglages → choisir des photos locales autorisées ; elles sont lues dans l’ordre et répétées
    si le jeu contient moins de photos que la séance. Ce n’est pas une capture Canon.
-3. Tester l’impression : export `print-preview.jpg`, aucun envoi à une imprimante. Comparer à
+3. Appuyer sur « Imprimer » avec l’envoi à l’imprimante désactivé : export `print-preview.jpg`, aucun envoi à une imprimante. Comparer à
    l’aperçu et au JPEG de planche ; quatre photos distinctes et correctement orientées.
 4. Définir un code de sortie 6–12 chiffres, activer le plein écran ; mauvais/bon code, F11,
    Échap et fermeture. Les raccourcis système restent possibles.
