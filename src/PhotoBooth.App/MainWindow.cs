@@ -34,6 +34,7 @@ public sealed class MainWindow : Window
     private Border? flashVeil;
     private readonly DispatcherTimer flashTimer = new() { Interval = TimeSpan.FromMilliseconds(170) };
     private bool showingCapture;
+    private bool liveViewReady;
     private TextBlock? pose;
     private Button? capture;
     private Bitmap? currentBitmap;
@@ -105,13 +106,16 @@ public sealed class MainWindow : Window
     private BoothController CreateController()
     {
         cloud = boothSettings.CloudEnabled ? new BoothCloudClient(boothSettings.ApiBaseUrl, cloudKey, store, boothSettings.GalleryBaseUrl) : null;
-        var result = new BoothController(store, () => boothSettings.CanonCamera ? new CanonCamera(store) : new FixtureCamera(store, fixtureFiles),
+        var result = new BoothController(store, () => boothSettings.CanonCamera ?
+            (boothSettings.CanonUseOfficialSdk ? new CanonCamera(store) : new CanonWpdCamera(store)) : new FixtureCamera(store, fixtureFiles),
             (IPhotoTransform?)cloud ?? new RehearsalTransform(), rehearsalDelay);
         result.Changed += () => Dispatcher.UIThread.Post(UpdateSession);
         result.Frame += bytes => Dispatcher.UIThread.Post(() =>
         {
             if (screen != "capture" || liveImage is null || controller.Session?.WantsLiveView != true) return;
             ReplaceImage(liveImage, bytes);
+            liveViewReady=true;
+            if(capture is not null&&controller.Session?.Stage==SessionStage.Positioning&&!controller.IsTaking)capture.IsEnabled=true;
         });
         return result;
     }
@@ -153,6 +157,7 @@ public sealed class MainWindow : Window
     private void RenderCapture()
     {
         screen = "capture";
+        liveViewReady=false;
         var layout = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
         pose = Text("Placez-vous dans le cadre.", 30, FontWeight.SemiBold); layout.Children.Add(pose);
         var stage = new Grid { Background = Brush.Parse("#150F1C"), Margin = new Thickness(0, 20) };
@@ -173,6 +178,7 @@ public sealed class MainWindow : Window
         status.HorizontalAlignment = HorizontalAlignment.Center; status.VerticalAlignment = VerticalAlignment.Center;
         status.Margin = new Thickness(18, 0); Grid.SetColumn(status, 1); actions.Children.Add(status);
         capture = Button("On est prêts !", () => controller.TakeAsync(), primary: true); capture.Name = "TakePhotos";
+        capture.IsEnabled=false;
         Grid.SetColumn(capture, 2); actions.Children.Add(capture);
         Grid.SetRow(actions, 2); layout.Children.Add(actions); body.Content = layout;
     }
@@ -191,7 +197,7 @@ public sealed class MainWindow : Window
         showingCapture = isCapture;
         if (pose is not null) pose.Text = session.Stage == SessionStage.Processing ? "On prépare vos souvenirs…" :
             $"Pose {Math.Min(session.Captures.Count + 1, session.Options.PhotoCount)} sur {session.Options.PhotoCount}";
-        if (capture is not null) { capture.IsVisible = session.Stage == SessionStage.Positioning && !controller.IsTaking; }
+        if (capture is not null) { capture.IsVisible = session.Stage == SessionStage.Positioning && !controller.IsTaking; capture.IsEnabled=liveViewReady; }
         if (countdown is not null)
         {
             var next = session.Stage == SessionStage.Countdown ? session.SecondsRemaining.ToString() : session.Stage == SessionStage.Capturing ? "Clic !" : "";
@@ -264,11 +270,14 @@ public sealed class MainWindow : Window
         var content = new StackPanel { Spacing = 18, Margin = new Thickness(30) };
         content.Children.Add(Text("Prêts pour la fête ?", 34, FontWeight.SemiBold));
         content.Children.Add(info);
-        var canon = new CheckBox { Content = "Utiliser le Canon USB (Windows + SDK requis)", IsChecked = boothSettings.CanonCamera };
+        var canon = new CheckBox { Content = "Utiliser le Canon USB (Windows)", IsChecked = boothSettings.CanonCamera };
+        var canonSdk = new CheckBox { Content = "Connexion avancée : SDK Canon officiel installé", IsChecked = boothSettings.CanonUseOfficialSdk };
         var printing = new CheckBox { Content = "Envoyer réellement à l’imprimante", IsChecked = boothSettings.PhysicalPrinting };
         var printers = new ComboBox { ItemsSource = WindowsPhotoPrinter.ListPrinters(), SelectedItem = boothSettings.PrinterName,
             PlaceholderText = "Choisir la DNP DS620", HorizontalAlignment = HorizontalAlignment.Stretch };
-        content.Children.Add(canon); content.Children.Add(printing); content.Children.Add(printers);
+        content.Children.Add(canon); content.Children.Add(canonSdk);
+        content.Children.Add(Text("Par défaut, connexion par le pilote Windows existant, sans SDK à installer. Compatibilité à vérifier sur le boîtier.",15));
+        content.Children.Add(printing); content.Children.Add(printers);
         content.Children.Add(Button("Enregistrer le matériel", async () =>
         {
             if ((canon.IsChecked == true || printing.IsChecked == true) && !OperatingSystem.IsWindows())
@@ -276,7 +285,7 @@ public sealed class MainWindow : Window
             var name = printers.SelectedItem as string ?? "";
             if (printing.IsChecked == true && name.Length == 0) throw new InvalidOperationException("Choisissez l’imprimante avant d’activer l’envoi réel.");
             sharingCancellation?.Cancel(); await controller.DisposeAsync();
-            boothSettings = boothSettings with { CanonCamera = canon.IsChecked == true, PhysicalPrinting = printing.IsChecked == true, PrinterName = name };
+            boothSettings = boothSettings with { CanonCamera = canon.IsChecked == true, CanonUseOfficialSdk = canonSdk.IsChecked == true, PhysicalPrinting = printing.IsChecked == true, PrinterName = name };
             await boothSettings.SaveAsync(boothSettingsPath); controller = CreateController(); UpdateFooter(); RenderHome();
             info.Text = "Réglages enregistrés. Lancez une séance pour vérifier la connexion.";
         }));

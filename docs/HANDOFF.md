@@ -7,12 +7,13 @@ Mise à jour : 30 octobre 2026. Anniversaire demain. Lire [PROGRESS](PROGRESS.md
 
 - Application native Avalonia, quatre parcours 1/4 × original/IA, répétition sans matériel.
 - JPEG final réel 1800×1200 à 300 dpi, huit orientations EXIF, contrôle SHA, grille sans recadrage.
-- Adaptateurs Windows EDSDK/GDI codés ; ni Canon ni vraie DS620 testés.
+- Adaptateurs Windows WPD/EDSDK/GDI codés ; ni Canon ni vraie DS620 testés.
 - API Supabase métier déployée : réservations de génération, originaux privés, ZIP et QR.
 - Vérification cloud réelle avec mires seulement, zéro génération. Clé OpenAI à ajouter côté serveur.
 - Plein écran/code testé dans le rendu natif headless ; commandes système Windows non bloquées.
 - GitHub Pages refusé pour ce dépôt privé : QR vers ZIP, galerie web préparée mais non hébergée.
-- Paquet Windows et alternative Canon sans SDK : travaux suivants, pas encore livrés dans ce lot.
+- Canon sans SDK propriétaire intégré via FC.SDK3.2.1021/WPD, 25 tests de séquence fictive passés.
+- Paquet Windows : prochain lot, pas encore livré.
 
 ## Secrets et machines
 
@@ -57,11 +58,15 @@ Le script shell accepte `PHOTOBOOTH_DOTNET`. Deno 2.9.2, Node 22. Tests HTTP ent
 
 ## Matériel demain
 
-EDSDK officiel absent ; Canon réclame l’accès développeur. Ne pas supposer que la présence de
-DSLR Booth fournit une licence de redistribution de ses DLL. Ne pas modifier son installation.
-Une voie WPD/PTP ouverte a été identifiée pour évaluation séparée : ne pas la déclarer compatible
-EOS4000D avant l’essai réel. Si EDSDK retenu, comparer l’ABI aux en-têtes de la version reçue,
-placer les DLL x64 dans `canon/`, fermer les autres logiciels caméra et vérifier les dépendances VC++.
+La connexion Canon par défaut utilise WPD/PTP via FC.SDK3.2.1021 et le pilote Windows déjà
+présent, sans DLL propriétaire ni remplacement de pilote. Cocher « Utiliser le Canon USB »
+et laisser l’option SDK officiel décochée. EOS4000D non testé par nous et non listé dans les
+preuves matérielles du mainteneur : premier essai demain, aucune garantie inventée.
+
+Si WPD échoue, l’adaptateur EDSDK officiel reste disponible, mais le SDK est absent.
+Ne pas modifier DSLR Booth, ses fichiers ou son pilote. Avec un SDK acquis légalement,
+comparer l’ABI à ses en-têtes, placer les DLL x64 dans `canon/` et vérifier les runtimes VC++.
+Version DSLR Booth à relever si l’on doit étudier son API ou importer ses photos.
 
 Installer/sélectionner la DS620 dans Windows, papier 4×6 sans coupe 2×6, une copie. Tester d’abord
 une mire, puis quatre poses distinctes. Vérifier feuille réelle, marges, sens et couleurs.

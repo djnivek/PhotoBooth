@@ -21,7 +21,7 @@ Le bouton de test d’impression exporte le JPEG exact qui serait envoyé à l�
 dotnet run --project src/PhotoBooth.App
 ```
 
-Sources : C# / .NET 10 / Avalonia 12.1.4, SkiaSharp, adaptateurs Windows Canon/GDI, API Supabase.
+Sources : C# / .NET 10 / Avalonia 12.1.4, SkiaSharp, adaptateurs Windows Canon WPD/EDSDK et GDI, API Supabase.
 Le paquet Windows autonome est le prochain lot ; aucune installation .NET ne sera nécessaire.
 La compilation et les tests sur Windows Server 2022 ne remplacent pas le lancement sur Windows 10.
 
@@ -37,8 +37,9 @@ Le partage réel de quatre images synthétiques a été vérifié sur Supabase, 
 La galerie web est préparée mais GitHub Pages a refusé ce dépôt privé avec le forfait actuel :
 le QR ouvre donc directement le ZIP signé. Aucun abonnement supplémentaire n’a été activé.
 
-**Encore nécessaires :** clé OpenAI et essai manuel payant, accès au SDK Canon officiel,
-exécution Windows 10 et vraies liaisons caméra/imprimante. Le plein écran demande un code pour
+**Encore nécessaires :** clé OpenAI et essai manuel payant, exécution Windows 10 et vraies
+liaisons caméra/imprimante. La connexion Canon utilise le pilote Windows existant sans SDK
+propriétaire par défaut ; sa compatibilité EOS4000D doit être vérifiée sur l’appareil. Le plein écran demande un code pour
 quitter l’application ; il ne neutralise pas les commandes système Windows.
 
 ## Vérifier et comprendre

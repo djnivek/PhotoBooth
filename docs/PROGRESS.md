@@ -13,8 +13,9 @@ commerciale, la flotte de bornes et la maintenance longue durée ne sont pas le 
 | [PR 2](https://github.com/djnivek/PhotoBooth/pull/2) — traitement image et fichiers | Fusionnée | Orientation, grille, JPEG final unique, persistance et tests pixels |
 | [PR 3](https://github.com/djnivek/PhotoBooth/pull/3) — interface et simulation | Fusionnée | Parcours tactile animé, mode simulé sans appel payant, aperçu imprimable |
 | [PR 4](https://github.com/djnivek/PhotoBooth/pull/4) — adaptateurs Windows | Fusionnée ; CI Windows réussie, matériel non testé | Canon EDSDK, GDI DNP, journal anti-doublon |
-| [PR 5](https://github.com/djnivek/PhotoBooth/pull/5) — API et partage | Codée, tests locaux passés, backend déployé ; revue/CI en cours | Originaux + résultats privés, OpenAI asynchrone, QR ZIP |
-| PR 6 — paquet Windows | À faire | EXE autonome, téléchargement et handoff |
+| [PR 5](https://github.com/djnivek/PhotoBooth/pull/5) — API et partage | Fusionnée ; backend déployé, tests Mac et CI Windows passés | Originaux + résultats privés, OpenAI asynchrone, QR ZIP |
+| PR 6 — Canon sans SDK | Codé, 25 tests de séquence fictive passés ; matériel non testé | WPD/PTP avec pilote Windows existant |
+| PR 7 — paquet Windows | À faire | EXE autonome, téléchargement et handoff |
 
 Chaque livraison passe par une PR, les vérifications applicables, puis un merge.
 Le tableau doit évoluer avec les numéros et liens réels, sans appeler « fait » un simple contrat.
@@ -46,6 +47,6 @@ autorisation explicite de transmission sans secrets demandée à Kevin. Aucun br
 
 ## Éléments encore nécessaires
 
-SDK Canon licencié (absent du dépôt), clé OpenAI côté serveur, code de sortie choisi par Kevin,
+Essai Canon WPD (SDK officiel optionnel absent), clé OpenAI côté serveur, code de sortie choisi par Kevin,
 sélection de l’imprimante sur le photomaton. Les fichiers de simulation ne doivent jamais être
 confondus avec une vraie capture Canon ou une vraie image générée.

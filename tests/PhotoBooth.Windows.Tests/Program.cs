@@ -43,6 +43,7 @@ try
 }
 finally { Directory.Delete(root, true); }
 Console.WriteLine($"PASS {passed} print preparation checks; native spooler and Canon remain hardware gates.");
+await CanonChecks.RunAsync();
 
 sealed class FakePrinter(SessionStore store, bool fail) : IPhotoPrinter
 {

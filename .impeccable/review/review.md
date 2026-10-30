@@ -56,3 +56,15 @@ disposition: fix
 clear
 
 disposition: ship
+
+# PR6 targeted review — Canon settings
+
+## verdict
+
+The regenerated `settings.png` and `settings-bottom.png` are valid. The USB checkbox, separate advanced official-SDK option and short compatibility explanation are readable without horizontal clipping. The upper capture intentionally ends within the scrollable settings content; the lower capture confirms access to cloud controls, PIN, fullscreen and close actions. No material visual or scrolling issue identified in this targeted change. Source confirms that “On est prêts !” starts disabled and is enabled after a frame is rendered; that runtime transition is not independently demonstrated by these settings captures.
+
+## remaining
+
+clear — this verdict covers only the observed native settings update, not camera compatibility, physical Windows operation or connected QR sharing.
+
+disposition: ship

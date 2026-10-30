@@ -31,11 +31,17 @@ Matériel demandé : Windows 10 Pro 22H2, EOS4000D USB, DNP DS620, papier PR4×6
 Relever l’architecture x64, version DSLR Booth, firmware, ports, écran et éclairage.
 Le script `scripts/windows-preflight.ps1` effectue des lectures ; il ne remplace pas un essai.
 
-Canon : EDSDK officiel non disponible au moment du lot API. Les DLL/pilotes ne sont pas inclus.
-La configuration existante de DSLR Booth doit rester intacte. Fermer DSLR Booth/EOS Utility
-avant de connecter un autre logiciel. Tester placement réel, décompte, visée interrompue au
-shutter, transfert JPEG, retour visée, puis quatre prises, reconnexion et perte USB.
-Vérifier mode JPEG haute qualité, alimentation continue, veille, flash et mise au point.
+Canon : cocher « Utiliser le Canon USB » et laisser la connexion avancée SDK décochée.
+Cette voie utilise le pilote Windows existant via WPD/PTP ; pas de téléchargement Canon requis.
+Fermer DSLR Booth/EOS Utility avant la connexion ; ne pas changer le pilote USB avec Zadig.
+La compatibilité EOS4000D n’est pas encore prouvée : tester placement réel, visée, décompte,
+transfert JPEG, retour visée et quatre poses. Le bouton attend une première image de visée.
+Vérifier JPEG haute qualité, alimentation, veille, flash et mise au point (mise au point
+manuelle à distance fixe préférable pour cette première recette, à vérifier sur les sujets).
+
+Si la liaison WPD ne fonctionne pas, conserver l’erreur et la version DSLR Booth. L’adaptateur
+EDSDK optionnel nécessite le SDK officiel non fourni ; ses DLL ne sont pas extraites de DSLR Booth.
+Ne pas dégrader l’installation existante pour tenter de faire fonctionner la nouvelle.
 
 DNP : installer le pilote officiel si absent, sélectionner la **bonne file DS620**, 4×6,
 une copie, pas de double bande 2×6. Activer l’envoi réel dans Réglages seulement sur ce PC.
