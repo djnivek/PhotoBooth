@@ -46,3 +46,7 @@ Créer, ouvrir et merger les PRs ; préparer l’application et le paquet. Pas d
 OpenAI pendant les tests automatiques. Kevin testera l’appel réel ce soir. Aucun achat ou
 changement payant de Supabase sans chiffrage préalable. Le compte à rebours peut être animé,
 mais les états « capture », « génération » et « impression » doivent refléter les vrais événements.
+
+## Traitement photo disponible
+
+`PhotoBooth.Imaging` produit maintenant le JPEG 1800×1200 à 300 dpi. Les huit orientations EXIF sont appliquées une fois ; les poses restent entières avec des marges si leurs proportions diffèrent. `SessionStore` écrit atomiquement et vérifie le SHA-256 avant impression. Le simulateur caméra accepte un jeu de fichiers locaux. 89 assertions supplémentaires passent sur Mac ; aucun appel payant ni impression physique. Les deux planches de calibration sont régénérées par les tests dans `artifacts/validation/`.

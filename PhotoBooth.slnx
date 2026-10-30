@@ -1,9 +1,11 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/PhotoBooth.Core/PhotoBooth.Core.csproj" />
+    <Project Path="src/PhotoBooth.Imaging/PhotoBooth.Imaging.csproj" />
     <Project Path="src/PhotoBooth.Simulator/PhotoBooth.Simulator.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PhotoBooth.Core.Tests/PhotoBooth.Core.Tests.csproj" />
+    <Project Path="tests/PhotoBooth.Imaging.Tests/PhotoBooth.Imaging.Tests.csproj" />
   </Folder>
 </Solution>
