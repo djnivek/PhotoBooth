@@ -5,6 +5,9 @@ Mise à jour : 30 octobre 2026. Anniversaire demain. Lire [PROGRESS](PROGRESS.md
 
 ## État concret
 
+- Ajustement demandé après la revue : afficher « Surprise » et retirer les mentions de simulation
+  de l’interface. Version0.2.2 en préparation ; le comportement des appareils, de l’API et de
+  l’export d’impression reste inchangé. Les captures incluent désormais le parcours Surprise.
 - Application native Avalonia, quatre parcours 1/4 × original/IA, répétition sans matériel.
 - JPEG final réel 1800×1200 à 300 dpi, huit orientations EXIF, contrôle SHA, grille sans recadrage.
 - Adaptateurs Windows WPD/EDSDK/GDI codés ; ni Canon ni vraie DS620 testés.

@@ -134,7 +134,7 @@ A warm dark stage holds pale text and a single vivid action family. Frontmatter 
 - **Plum Surface** (`plum-surface`): secondary buttons and unselected options.
 - **Lifted Plum** (`plum-hover`): pointer feedback for secondary and selected-option buttons, with white text.
 - **Lavender White** (`lavender-white`): default text and selected-option fill.
-- **Muted Lavender** (`lavender-muted`): supporting explanations and the rehearsal footer.
+- **Muted Lavender** (`lavender-muted`): supporting explanations.
 - **Dark Stage** (`stage-dark`): the capture image’s surrounding area.
 - **Paper White** (`paper-white`): the home photo frame, countdown lettering, and translucent capture veil.
 
@@ -168,7 +168,7 @@ The recorded weights are the `FontWeight` requests in the application. The bundl
 
 All source measurements are Avalonia logical units. The frontmatter uses `px` for portable token notation, not a claim about physical display pixels.
 
-The centered desktop window requests up to 1280 × 800, with a minimum of 960 × 700. When a primary display is available, startup width and height are capped to its working area divided by display scaling, less 32 horizontal and 48 vertical logical units, while retaining that minimum. The application frame has horizontal and vertical margins given by `window-horizontal` and `window-vertical`. A header, flexible main region, and wrapped footer form three rows; header separation is 24 and the footer’s top margin is 20.
+The centered desktop window requests up to 1280 × 800, with a minimum of 960 × 700. When a primary display is available, startup width and height are capped to its working area divided by display scaling, less 32 horizontal and 48 vertical logical units, while retaining that minimum. The application frame has horizontal and vertical margins given by `window-horizontal` and `window-vertical`. A header and flexible main region form two rows; header separation is 24. The diagnostic footer is removed at Kevin’s explicit request.
 
 On opening and resizing, the root layout’s maximum width and height are recomputed from the actual client size minus those margins. Bounds checks require `Settings`, `StartSession`, and `HomeSheet` to remain inside both the client area and their containing `Header` or `SessionBody` panel. A first native capture showed “Démarrer” clipped by its panel even though a window-only check was insufficient. The native smoke resizes from 992 × 700 to 960 × 700 at scale 1. Final review of the actual Windows pixels confirmed “Démarrer”, “Réglages”, and the photo sheet fully visible at both sizes, with parent/client bounds checks passing. This closes the home-layout validation on Windows Server 2022 only; it does not validate hardware, connected QR sharing, or real AI generation.
 
@@ -232,7 +232,7 @@ The framing image stays visible during positioning and countdown. Entering Captu
 
 Positioning exposes “On est prêts !”, initially disabled until the first live-view frame has been displayed. The existing disabled opacity applies while waiting. Countdown and capture replace that action with progress and the badge. Processing changes the instruction to preparation copy. Ready displays the saved composed sheet, with wording based on actual print/cloud settings and effective photo mode. Cancelled returns to home once capture work has stopped. Failed preserves saved photos and, when all original captures exist after a Surprise failure, offers “Garder les originaux”. A generic action error uses an owned dialog.
 
-“Tester l’impression” writes a print-preview file and reports that no sheet was sent. With physical printing enabled, the action becomes “Imprimer” and reports the submitted spool job; that status is not proof of a physical print. The footer independently identifies camera, printing, and cloud modes.
+The guest choice reads “Surprise”. No simulation or rehearsal banner appears in the interface. “Imprimer” is the action label in both configurations: with physical printing disabled it writes the print-preview file and confirms “Votre planche est enregistrée.”; with physical printing enabled it reports the submitted spool job. Neither message claims that paper has physically emerged. Hardware and cloud settings remain operator choices.
 
 Cloud activation and deactivation are explicit operator actions. Activation checks the connection and distinguishes OpenAI readiness from sharing-only readiness. Deactivation reports exactly “Connexion en ligne désactivée. Aucun appel OpenAI payant.”; it does not announce that the camera or physical printer were disabled.
 
@@ -248,7 +248,7 @@ No connected QR is present in the reviewed local captures, so its appearance and
 
 - **Do** preserve native controls, owned dialogs, scrolling, file-picker, and keyboard interaction semantics, with permanent labels for code fields.
 - **Do** use the exact composed image for the result preview and keep photographic content proportionate with uniform scaling.
-- **Do** keep camera, printing, and cloud status explicit and distinguish local calibration images from real guest photography.
+- **Do** keep hardware and cloud configuration explicit in operator settings; keep simulation labels out of the guest interface as requested.
 - **Do** preserve the brief, single capture cue and the readable badge over the framing image.
 - **Do** check actual desktop sizes and containing-panel bounds when changing copy, spacing, or controls, including both sides of the home compact thresholds and 960 × 700.
 

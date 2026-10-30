@@ -8,7 +8,7 @@ ESTELL'ART - ANNIVERSAIRE D'ESTELLE
    Tout est simulé par défaut : caméra, effet IA et impression.
    Choisir une ou quatre poses, puis Démarrer et On est prêts !
    Réglages permet de choisir vos propres photos locales.
-   Tester l'impression enregistre un fichier, sans envoyer de papier.
+   Imprimer enregistre un fichier tant que l'envoi à l'imprimante est désactivé.
 
 3. OPENAI ET TELECHARGEMENT
    L'opérateur ajoute OPENAI_API_KEY dans les Secrets du projet Supabase PhotoBooth.

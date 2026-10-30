@@ -21,7 +21,6 @@ public sealed class MainWindow : Window
     private static readonly IBrush Ink = Brush.Parse("#241931"), Muted = Brush.Parse("#C7B6CD"), Lemon = Brush.Parse("#F5E764");
     private readonly ContentControl body = new()
     { Name = "SessionBody", HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch };
-    private readonly TextBlock footer = Text("Répétition · aucune caméra, aucune impression, aucun appel IA", 15);
     private TextBlock status = Text("", 22);
     private readonly SessionStore store;
     private BoothController controller;
@@ -82,18 +81,16 @@ public sealed class MainWindow : Window
         if (File.Exists(settingsPath))
         {
             try { exitGate = KioskExitGate.Restore(JsonSerializer.Deserialize<KioskExitGate.Credential>(File.ReadAllText(settingsPath))!); }
-            catch (Exception) { footer.Text = "Code de sortie illisible : configurez un nouveau code avant le plein écran."; }
+            catch (Exception) { /* A new PIN is required before entering fullscreen. */ }
         }
         controller = CreateController();
-        UpdateFooter();
         var header = new Grid { Name = "Header", ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(0, 0, 0, 24) };
         header.Children.Add(Text("Estell’Art.", 32, FontWeight.Bold));
         var admin = Button("Réglages", ShowSettingsAsync); admin.Name = "Settings";
         Grid.SetColumn(admin, 1); header.Children.Add(admin);
-        var layout = new Grid { Name = "AppLayout", RowDefinitions = new RowDefinitions("Auto,*,Auto"), Margin = new Thickness(36, 24) };
+        var layout = new Grid { Name = "AppLayout", RowDefinitions = new RowDefinitions("Auto,*"), Margin = new Thickness(36, 24) };
         layout.Children.Add(header); Grid.SetRow(body, 1); layout.Children.Add(body);
-        footer.Foreground = Muted; footer.TextWrapping = TextWrapping.Wrap; footer.Margin = new Thickness(0, 20, 0, 0);
-        Grid.SetRow(footer, 2); layout.Children.Add(footer); Content = layout;
+        Content = layout;
         // Windows can clamp the requested startup size after the first layout pass.
         // Keep the grid's measured minimum tied to the actual viewport, including later resizes.
         void ConstrainLayout()
@@ -162,7 +159,7 @@ public sealed class MainWindow : Window
             ("Quatre photos", photoCount == 4, () => { photoCount = 4; RenderHome(); })));
         choices.Children.Add(Text("À votre façon", 20, FontWeight.SemiBold));
         choices.Children.Add(ChoiceRow(("Au naturel", mode == PhotoMode.Original, () => { mode = PhotoMode.Original; RenderHome(); }),
-            ("Surprise IA", mode == PhotoMode.Surprise, () => { mode = PhotoMode.Surprise; RenderHome(); })));
+            ("Surprise", mode == PhotoMode.Surprise, () => { mode = PhotoMode.Surprise; RenderHome(); })));
         var detail = Text(mode == PhotoMode.Original ? "Vos photos, telles quelles." : "Un style tiré au sort pour toute votre série.", 17);
         detail.Foreground = Muted; choices.Children.Add(detail);
         var start = Button("Démarrer", async () =>
@@ -252,13 +249,12 @@ public sealed class MainWindow : Window
         left.Children.Add(image); layout.Children.Add(left);
         var actions = new StackPanel { Spacing = 20, VerticalAlignment = VerticalAlignment.Center };
         actions.Children.Add(Text(controller.Session!.EffectiveMode == PhotoMode.Surprise ?
-            (cloud is null ? "Essai de transformation" : "Votre surprise est prête.") : "Tout simplement vous.", 30, FontWeight.SemiBold));
+            "Votre surprise est prête." : "Tout simplement vous.", 30, FontWeight.SemiBold));
         var note = Text(controller.Session.UsedOriginalFallback ? "Vous avez choisi de garder les photos originales." :
-            controller.Session.EffectiveMode == PhotoMode.Surprise && cloud is null ?
-            "En répétition, un filtre local simule le traitement. Aucune image n’a été envoyée à l’IA." : "Votre planche est enregistrée sur cet ordinateur.", 19);
+            "Votre planche est enregistrée sur cet ordinateur.", 19);
         note.Foreground = Muted; actions.Children.Add(note);
         var printState = Text("", 18);
-        var print = Button(boothSettings.PhysicalPrinting ? "Imprimer" : "Tester l’impression", async () =>
+        var print = Button("Imprimer", async () =>
         {
             if (boothSettings.PhysicalPrinting)
             {
@@ -270,7 +266,7 @@ public sealed class MainWindow : Window
             var bytes = await controller.GetPrintBytesAsync();
             var target = Path.Combine(store.Root, sessionId.ToString("N"), "print-preview.jpg");
             await SessionStore.WriteAtomicAsync(target, bytes);
-            printState.Text = "Planche vérifiée et enregistrée. Aucune feuille envoyée : mode répétition.";
+            printState.Text = "Votre planche est enregistrée.";
         }, primary: true); print.Name = "PrintPreview"; actions.Children.Add(print); actions.Children.Add(printState);
         var folder = Path.GetDirectoryName(store.Resolve(controller.Sheet.Key))!;
         var files = Button("Voir les fichiers", async () =>
@@ -316,7 +312,7 @@ public sealed class MainWindow : Window
         content.Children.Add(info);
         var canon = new CheckBox { Content = "Utiliser le Canon USB (Windows)", IsChecked = boothSettings.CanonCamera };
         var canonSdk = new CheckBox { Content = "Connexion avancée : SDK Canon officiel installé", IsChecked = boothSettings.CanonUseOfficialSdk };
-        var printing = new CheckBox { Content = "Envoyer réellement à l’imprimante", IsChecked = boothSettings.PhysicalPrinting };
+        var printing = new CheckBox { Content = "Envoyer à l’imprimante", IsChecked = boothSettings.PhysicalPrinting };
         var printers = new ComboBox { ItemsSource = WindowsPhotoPrinter.ListPrinters(), SelectedItem = boothSettings.PrinterName,
             PlaceholderText = "Choisir la DNP DS620", HorizontalAlignment = HorizontalAlignment.Stretch };
         content.Children.Add(canon); content.Children.Add(canonSdk);
@@ -325,18 +321,18 @@ public sealed class MainWindow : Window
         content.Children.Add(Button("Enregistrer le matériel", async () =>
         {
             if ((canon.IsChecked == true || printing.IsChecked == true) && !OperatingSystem.IsWindows())
-                throw new InvalidOperationException("Ces deux connexions demandent le PC Windows. La répétition fonctionne sur ce Mac.");
+                throw new InvalidOperationException("Ces deux connexions nécessitent Windows.");
             var name = printers.SelectedItem as string ?? "";
-            if (printing.IsChecked == true && name.Length == 0) throw new InvalidOperationException("Choisissez l’imprimante avant d’activer l’envoi réel.");
+            if (printing.IsChecked == true && name.Length == 0) throw new InvalidOperationException("Choisissez l’imprimante avant d’activer l’envoi.");
             sharingCancellation?.Cancel(); await controller.DisposeAsync();
             boothSettings = boothSettings with { CanonCamera = canon.IsChecked == true, CanonUseOfficialSdk = canonSdk.IsChecked == true, PhysicalPrinting = printing.IsChecked == true, PrinterName = name };
-            await boothSettings.SaveAsync(boothSettingsPath); controller = CreateController(); UpdateFooter(); RenderHome();
+            await boothSettings.SaveAsync(boothSettingsPath); controller = CreateController(); RenderHome();
             info.Text = "Réglages enregistrés. Lancez une séance pour vérifier la connexion.";
         }));
-        content.Children.Add(Button("Choisir des photos de répétition", async () =>
+        content.Children.Add(Button("Choisir des photos locales", async () =>
         {
             var picked = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-            { Title = "Photos de répétition", AllowMultiple = true, FileTypeFilter = [FilePickerFileTypes.ImageAll] });
+            { Title = "Photos locales", AllowMultiple = true, FileTypeFilter = [FilePickerFileTypes.ImageAll] });
             var paths = picked.Select(p => p.TryGetLocalPath()).Where(p => p is not null).Cast<string>().ToArray();
             if (paths.Length == 0) return;
             foreach (var path in paths)
@@ -357,14 +353,14 @@ public sealed class MainWindow : Window
             await CredentialStore.SaveAsync(credentialPath,candidate); cloudKey=candidate;
             sharingCancellation?.Cancel(); await controller.DisposeAsync();
             boothSettings=boothSettings with {CloudEnabled=true}; await boothSettings.SaveAsync(boothSettingsPath);
-            controller=CreateController(); UpdateFooter(); RenderHome(); connection.Text="";
+            controller=CreateController(); RenderHome(); connection.Text="";
             info.Text=imageReady ? "Connexion vérifiée. Une séance Surprise utilisera OpenAI en qualité xhigh et sera facturée." :
-                "Partage connecté. Ajoutez la clé OpenAI dans Supabase avant d’utiliser Surprise IA.";
+                "Partage connecté. Ajoutez la clé OpenAI dans Supabase avant d’utiliser Surprise.";
         }));
         content.Children.Add(Button("Désactiver la connexion en ligne",async()=>
         {
             sharingCancellation?.Cancel(); await controller.DisposeAsync(); boothSettings=boothSettings with {CloudEnabled=false};
-            await boothSettings.SaveAsync(boothSettingsPath);controller=CreateController();UpdateFooter();RenderHome();info.Text="Connexion en ligne désactivée. Aucun appel OpenAI payant.";
+            await boothSettings.SaveAsync(boothSettingsPath);controller=CreateController();RenderHome();info.Text="Connexion en ligne désactivée. Aucun appel OpenAI payant.";
         }));
         content.Children.Add(Text("Le mode en ligne envoie les photos vers Supabase, et vers OpenAI uniquement en mode Surprise. Les liens expirent après 7 jours.",15));
         pin.Name = "ExitPin";
@@ -407,7 +403,6 @@ public sealed class MainWindow : Window
         finally { unlockOpen = false; }
     }
     private Task SaveKioskAsync() => SessionStore.WriteAtomicAsync(settingsPath, JsonSerializer.SerializeToUtf8Bytes(exitGate!.Export()));
-    private void UpdateFooter() => footer.Text = $"{(boothSettings.CanonCamera ? "Canon USB" : "Caméra simulée")} · {(boothSettings.PhysicalPrinting ? "Impression réelle" : "Impression simulée")} · {(boothSettings.CloudEnabled ? "Partage en ligne · Surprise IA payante" : "IA simulée, aucun appel payant")}";
 
     private bool sharing;
     private async Task ShareAsync(Image qr, TextBlock label)

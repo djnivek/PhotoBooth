@@ -72,8 +72,12 @@ Until(()=>openedFolders.Count==1,2000);
 if(openedFolders[0]!=Path.GetDirectoryName(file))throw new Exception("Unlocked folder does not match the reviewed session.");
 if (File.ReadAllText(Path.Combine(root, "kiosk.json")).Contains("381629")) throw new Exception("Plain PIN stored");
 Click("NewSession");Until(()=>Find("StartSession") is not null,2000);
+window.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,"Surprise"))
+    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+Pump(80);Capture("surprise-choice.png");
 Click("StartSession");Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);
 Click("TakePhotos");Until(()=>Find("PrintPreview") is not null,10000);
+Capture("surprise-result.png");
 Click("Settings"); Until(()=>window.OwnedWindows.Count>0,2000);
 window.OwnedWindows.Single().GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,"Activer le plein écran"))
     .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
@@ -128,6 +132,7 @@ void Until(Func<bool> predicate, int timeout)
 }
 void Capture(string name)
 {
+    window.InvalidateVisual(); Pump(100);
     using var frame = window.CaptureRenderedFrame() ?? throw new Exception("No rendered pixels.");
     frame.Save(Path.Combine(screenshots, name), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
 }

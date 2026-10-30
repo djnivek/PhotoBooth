@@ -24,6 +24,6 @@ STORY: Choisir une ou quatre poses, originales ou surprises ; se placer ; sourir
 
 FIRST VIEWPORT: Marque en haut, titre ample et choix à gauche, planche de répétition à droite. Démarrer est la plus grande action en bas à gauche. La scène de capture remplace le contenu par une grande live view et un chiffre central ; le résultat montre le JPEG réel et les actions à sa droite. Signature : le chiffre pulse une fois par seconde sur l’image visible ; un bref voile doux marque la capture, sans stroboscope. À 1024×768, espacements réduits et texte conservé lisible.
 
-FORM: Piste de fête chromatique, candidate 4, seed 43e635c2. Les états structurent le parcours. Le mode de répétition reste explicitement affiché.
+FORM: Piste de fête chromatique, candidate 4, seed 43e635c2. Les états structurent le parcours. Kevin demande explicitement de retirer les mentions de simulation/répétition de l’interface et d’afficher « Surprise » sans suffixe IA.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
