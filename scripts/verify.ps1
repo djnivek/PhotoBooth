@@ -10,6 +10,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Imaging checks failed' }
     dotnet run --project tests/PhotoBooth.Runtime.Tests --configuration Release --no-build
     if ($LASTEXITCODE -ne 0) { throw 'Runtime checks failed' }
+    dotnet run --project tests/PhotoBooth.Windows.Tests --configuration Release --no-build
+    if ($LASTEXITCODE -ne 0) { throw 'Print preparation checks failed' }
     dotnet run --project tests/PhotoBooth.App.Tests --configuration Release --no-build
     if ($LASTEXITCODE -ne 0) { throw 'UI checks failed' }
     deno check supabase/functions/photobooth-api/index.ts

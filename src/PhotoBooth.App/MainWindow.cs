@@ -11,6 +11,7 @@ using Avalonia.Threading;
 using PhotoBooth.Core;
 using PhotoBooth.Imaging;
 using PhotoBooth.Runtime;
+using PhotoBooth.Windows;
 
 namespace PhotoBooth.App;
 
@@ -38,6 +39,8 @@ public sealed class MainWindow : Window
     private KioskExitGate? exitGate;
     private bool kioskLocked;
     private readonly string settingsPath;
+    private readonly string boothSettingsPath;
+    private BoothSettings boothSettings = new();
     private readonly DispatcherTimer pulse = new() { Interval = TimeSpan.FromMilliseconds(30) };
     private DateTimeOffset pulseStarted;
     private readonly Func<TimeSpan, CancellationToken, Task>? rehearsalDelay;
@@ -52,12 +55,15 @@ public sealed class MainWindow : Window
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "EstellArt");
         store = new SessionStore(Path.Combine(root, "sessions"));
         settingsPath = Path.Combine(root, "kiosk.json");
+        boothSettingsPath = Path.Combine(root, "booth-settings.json");
+        try { boothSettings = BoothSettings.Load(boothSettingsPath); } catch (Exception) { /* Safe local rehearsal defaults. */ }
         if (File.Exists(settingsPath))
         {
             try { exitGate = KioskExitGate.Restore(JsonSerializer.Deserialize<KioskExitGate.Credential>(File.ReadAllText(settingsPath))!); }
             catch (Exception) { footer.Text = "Code de sortie illisible : configurez un nouveau code avant le plein écran."; }
         }
         controller = CreateController();
+        UpdateFooter();
         var header = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(0, 0, 0, 24) };
         header.Children.Add(Text("Estell’Art.", 32, FontWeight.Bold));
         var admin = Button("Réglages", ShowSettingsAsync); admin.Name = "Settings";
@@ -90,7 +96,7 @@ public sealed class MainWindow : Window
 
     private BoothController CreateController()
     {
-        var result = new BoothController(store, () => new FixtureCamera(store, fixtureFiles), new RehearsalTransform(), rehearsalDelay);
+        var result = new BoothController(store, () => boothSettings.CanonCamera ? new CanonCamera(store) : new FixtureCamera(store, fixtureFiles), new RehearsalTransform(), rehearsalDelay);
         result.Changed += () => Dispatcher.UIThread.Post(UpdateSession);
         result.Frame += bytes => Dispatcher.UIThread.Post(() =>
         {
@@ -197,8 +203,14 @@ public sealed class MainWindow : Window
             "En répétition, un filtre local simule le traitement. Aucune image n’a été envoyée à l’IA." : "Votre planche est enregistrée sur cet ordinateur.", 19);
         note.Foreground = Muted; actions.Children.Add(note);
         var printState = Text("", 18);
-        var print = Button("Tester l’impression", async () =>
+        var print = Button(boothSettings.PhysicalPrinting ? "Imprimer" : "Tester l’impression", async () =>
         {
+            if (boothSettings.PhysicalPrinting)
+            {
+                var submission = await controller.PrintAsync(new WindowsPhotoPrinter(store, controller.Sheet!, boothSettings.PrinterName));
+                printState.Text = $"Envoyé à l’imprimante (travail {submission.SpoolJobId}). Récupérez votre feuille après sa sortie.";
+                return;
+            }
             var bytes = await controller.GetPrintBytesAsync();
             var target = Path.Combine(store.Root, controller.Session.Id.ToString("N"), "print-preview.jpg");
             await SessionStore.WriteAtomicAsync(target, bytes);
@@ -223,12 +235,28 @@ public sealed class MainWindow : Window
     {
         if (kioskLocked) { await ShowUnlockAsync(); return; }
         if (controller.IsTaking) return;
-        var settings = Dialog("Réglages de la borne", 660, 610);
+        var settings = Dialog("Réglages de la borne", 690, 680);
         var pin = new TextBox { PlaceholderText = "Nouveau code de sortie (6 à 12 chiffres)", PasswordChar = '●', MaxLength = 12 };
         var info = Text("Mode répétition actif. Les images restent locales et aucune génération n’est facturée.", 19);
         var content = new StackPanel { Spacing = 18, Margin = new Thickness(30) };
         content.Children.Add(Text("Prêts pour la fête ?", 34, FontWeight.SemiBold));
         content.Children.Add(info);
+        var canon = new CheckBox { Content = "Utiliser le Canon USB (Windows + SDK requis)", IsChecked = boothSettings.CanonCamera };
+        var printing = new CheckBox { Content = "Envoyer réellement à l’imprimante", IsChecked = boothSettings.PhysicalPrinting };
+        var printers = new ComboBox { ItemsSource = WindowsPhotoPrinter.ListPrinters(), SelectedItem = boothSettings.PrinterName,
+            PlaceholderText = "Choisir la DNP DS620", HorizontalAlignment = HorizontalAlignment.Stretch };
+        content.Children.Add(canon); content.Children.Add(printing); content.Children.Add(printers);
+        content.Children.Add(Button("Enregistrer le matériel", async () =>
+        {
+            if ((canon.IsChecked == true || printing.IsChecked == true) && !OperatingSystem.IsWindows())
+                throw new InvalidOperationException("Ces deux connexions demandent le PC Windows. La répétition fonctionne sur ce Mac.");
+            var name = printers.SelectedItem as string ?? "";
+            if (printing.IsChecked == true && name.Length == 0) throw new InvalidOperationException("Choisissez l’imprimante avant d’activer l’envoi réel.");
+            await controller.DisposeAsync();
+            boothSettings = boothSettings with { CanonCamera = canon.IsChecked == true, PhysicalPrinting = printing.IsChecked == true, PrinterName = name };
+            await boothSettings.SaveAsync(boothSettingsPath); controller = CreateController(); UpdateFooter(); RenderHome();
+            info.Text = "Réglages enregistrés. Lancez une séance pour vérifier la connexion.";
+        }));
         content.Children.Add(Button("Choisir des photos de répétition", async () =>
         {
             var picked = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
@@ -280,6 +308,7 @@ public sealed class MainWindow : Window
         finally { unlockOpen = false; }
     }
     private Task SaveKioskAsync() => SessionStore.WriteAtomicAsync(settingsPath, JsonSerializer.SerializeToUtf8Bytes(exitGate!.Export()));
+    private void UpdateFooter() => footer.Text = $"{(boothSettings.CanonCamera ? "Canon USB" : "Caméra simulée")} · {(boothSettings.PhysicalPrinting ? "Impression réelle" : "Impression simulée")} · IA simulée, aucun appel payant";
 
     private Window Dialog(string title, double width, double height) => new()
     { Title = title, Width = width, Height = height, CanResize = false, WindowStartupLocation = WindowStartupLocation.CenterOwner };

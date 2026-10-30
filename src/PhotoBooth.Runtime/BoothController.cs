@@ -145,6 +145,29 @@ public sealed class BoothController : IAsyncDisposable
         return bytes;
     }
 
+    public async Task<PrintSubmission> PrintAsync(IPhotoPrinter printer, CancellationToken token = default)
+    {
+        await GetPrintBytesAsync(token);
+        var session = Session!;
+        var journalPath = Path.Combine(store.Root, session.Id.ToString("N"), "print.json");
+        if (File.Exists(journalPath)) throw new InvalidOperationException("Une impression a déjà été demandée. Vérifiez la file Windows avant toute nouvelle tentative.");
+        var request = session.RequestPrint(); // guards concurrent clicks before the first await
+        await store.WritePrintJournalAsync(session.Id, new(request.Id, Sheet!.Key, Sheet.Sha256, "requested", DateTimeOffset.UtcNow), token);
+        try
+        {
+            var submission = await printer.SubmitAsync(request, token);
+            await store.WritePrintJournalAsync(session.Id, new(request.Id, Sheet.Key, Sheet.Sha256, "submitted", DateTimeOffset.UtcNow, submission.SpoolJobId));
+            session.MarkPrintSubmitted(request.Id, submission.SpoolJobId); Notify();
+            return submission;
+        }
+        catch
+        {
+            session.MarkPrintUncertain(request.Id);
+            await store.WritePrintJournalAsync(session.Id, new(request.Id, Sheet.Key, Sheet.Sha256, "needs_operator", DateTimeOffset.UtcNow));
+            Notify(); throw;
+        }
+    }
+
     public async Task CancelAsync()
     {
         sessionCancellation?.Cancel();

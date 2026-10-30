@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/PhotoBooth.Windows/PhotoBooth.Windows.csproj" />
+    <ProjectReference Include="../../src/PhotoBooth.Runtime/PhotoBooth.Runtime.csproj" />
+  </ItemGroup>
+</Project>
