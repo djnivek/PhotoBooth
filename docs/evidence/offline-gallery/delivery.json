@@ -1,0 +1,18 @@
+{
+  "version": "0.3.1",
+  "source_commit": "82766b02b86ba4fcbe903ffea0ceaadfe99fe491",
+  "feature_pr": "https://github.com/djnivek/PhotoBooth/pull/14",
+  "ci": "https://github.com/djnivek/PhotoBooth/actions/runs/41139279362",
+  "release": "https://github.com/djnivek/PhotoBooth/releases/tag/v0.3.1",
+  "archive": "ColorsParty-0.3.1-win-x64.zip",
+  "bytes": 81359112,
+  "sha256": "a7d2f00aafafbe9043c1fa67e0ab8e46a7f8103680aa97c31b87fa4bacd1c72a",
+  "redownload_verified_utc": "2026-10-30T22:44:27.505438+00:00",
+  "tag_matches_source": true,
+  "extracted_windows_execution": true,
+  "booth_secret_absent_from_archive": true,
+  "hardware_validated": false,
+  "openai_test_calls": 0,
+  "gallery_origin": "https://colors-party-estelle.vercel.app",
+  "live_receipt": "live.json"
+}

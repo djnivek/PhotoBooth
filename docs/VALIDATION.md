@@ -11,11 +11,12 @@ aucune feuille DNP, aucun lancement sur le Windows 10 cible, aucune édition Ope
 | Runtime | 50 assertions : cycle complet, persistance, annulation, connexion USB tardive sans chevauchement ni fermeture prématurée, erreur COM après annulation |
 | Préparation Windows | 26 assertions : BGRA, axes DPI distincts, zone imprimable, journal avant effet externe et suivi d’impression après changement de séance |
 | Canon WPD | 28 assertions avec transport fictif : séquence visée/capture, quatre vrais fichiers, RAW+JPEG, timeout, aucun redéclenchement |
-| Client cloud | 46 assertions : quatre éditions ordonnées, originaux envoyés une fois, ZIP 5/9 fichiers, reprise sans facturation supplémentaire, fallback explicitement imprimable, credentials et 32 séances HTTP fictives concurrentes |
+| Client cloud | 47 assertions : quatre éditions ordonnées, originaux envoyés une fois, ZIP 5/9 fichiers, reprise sans facturation supplémentaire, fallback explicitement imprimable, credentials et 32 séances HTTP fictives concurrentes |
 | UI native rendue headless | Accueil1280/1024/960, deux séances complètes successives, annulation de connexion lente et erreur COM tardive, export impression, fermeture et accès aux fichiers protégés par code erroné/annulé/valide |
-| API Deno | 11 tests, typecheck et lint : auth, idempotence, réservation, erreurs ambiguës, originaux requis, hash et expiration |
-| Galerie préparée | 5 tests DOM sans navigateur : 1/4 liens, archive, jeton hors URL de requête, expiration, rejet d’URL étrangère |
+| API Deno | 14 tests, typecheck et lint : auth, idempotence, réservation, erreurs ambiguës, originaux requis, hash et expiration |
+| Galerie | 14 tests DOM ; Chromium ordinateur/mobile, 1/4 originales/modifiées, récupération réseau, expiration, nouveau QR dans le même onglet, captures avant/après |
 | OpenAPI3.0.3 | Validation formelle réussie avec openapi-spec-validator0.7.2 |
+| Colors Party 0.3.1 Windows | [Run41139279362](https://github.com/djnivek/PhotoBooth/actions/runs/41139279362) réussi sur main 82766b0 : suite complète, Chromium ordinateur/mobile, ZIP extrait/exécuté, quatre parcours, fenêtres natives. Release retéléchargée avec SHA identique ; [preuves](evidence/offline-gallery/README.md) |
 | Colors Party0.3.0 Windows | [Run41131796018](https://github.com/djnivek/PhotoBooth/actions/runs/41131796018) réussi sur main d217c00 : suite complète, ZIP extrait, quatre parcours, fenêtre réelle 992×700 puis960×700, zéro appel OpenAI ; [preuves](evidence/colors-party/README.md) |
 | CI Windows initiale | [Run41088358348](https://github.com/djnivek/PhotoBooth/actions/runs/41088358348) réussi : PR4, Windows Server 2022, tests natifs headless et simulation |
 | CI Windows cloud | [Run41096255110](https://github.com/djnivek/PhotoBooth/actions/runs/41096255110) réussi sur le commit de PR5 : client, DPAPI, UI et API simulées |
@@ -26,7 +27,7 @@ aucune feuille DNP, aucun lancement sur le Windows 10 cible, aucune édition Ope
 | Fenêtre Windows réelle | Pixels bureau et rendu natif à 992×700, puis 960×700 après resize : Réglages, Démarrer et planche visibles dans leurs panneaux ; revue Impeccable acceptée à échelle 1 |
 | Supabase réel | ZIP 5 fichiers puis ZIP 9 fichiers (4 originaux + 4 effets locaux + planche), octets vérifiés, publication rejouée, 0 génération |
 | Isolation distante | Quatre tables RLS activées, aucun SELECT anon/authenticated ; bucket privé ; budget started=0 relu |
-| Galerie hébergée | Non : API Pages retourne422, forfait incompatible avec dépôt privé ; QR ZIP disponible |
+| Galerie hébergée | Oui : Vercel, fichiers déployés comparés, dix assets signés vérifiés, download individuel et CORS validés. Voir [les reçus0.3.1](evidence/offline-gallery/README.md) |
 
 ## Colors Party 0.3.0
 
@@ -39,8 +40,11 @@ Mémoire et animation bornées par construction : wordmark décodé à 800px, se
 Les rendus headless Avalonia/Skia sont versionnés dans `.impeccable/review/`.
 Les captures du véritable exécutable Windows sont dans [windows-0.2.1](evidence/windows-0.2.1/README.md) :
 Windows Server 2022 sur runner GitHub, pas le photomaton Windows 10. La revue Impeccable reste limitée
-aux états observés. L’accès navigateur est désactivé dans Work :
-aucune validation visuelle mobile de la galerie n’est revendiquée.
+aux états observés. Le navigateur local reste désactivé dans Work. En0.3.1, Chromium en CI Windows a produit des captures ordinateur/mobile réellement inspectées et une revue indépendante, avec API et images synthétiques. Le QR scanné sur un vrai téléphone reste une recette distincte.
+
+## Hors ligne et protection0.3.1
+
+Cloud activé avec HTTP en échec : une/quatre poses Au naturel, planche locale et octets d’impression identiques. Aucun QR fictif ni appel de génération. SQL transactionnel annulé : plafond, cadence, travaux simultanés, arrêt, droits/RLS et bucket privé vérifiés ; compteur resté à zéro. Les refus d’accès API ont aussi été contrôlés sur le vrai serveur. [Avant/après et limites](evidence/offline-gallery/README.md).
 
 ## Reproduire
 

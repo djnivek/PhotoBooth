@@ -2,11 +2,11 @@
 
 ## PC sans caméra ni imprimante — ce soir
 
-Télécharger [le dernier paquet Estell’Art Windows x64](https://github.com/djnivek/PhotoBooth/releases)
+Télécharger [le dernier paquet Colors Party Windows x64](https://github.com/djnivek/PhotoBooth/releases)
 avec un compte ayant accès au dépôt privé. Extraire **tout** le ZIP dans un dossier local avant
 `ColorsParty.exe` ; ne pas lancer depuis la vue ZIP du navigateur. Pas de SDK .NET requis.
 Le ZIP est accompagné de son SHA-256. Il a été extrait et exécuté sur Windows Server 2022 ;
-[preuves et captures0.3.0](evidence/colors-party/README.md). Le lancement sur le Windows 10 cible reste à vérifier.
+[preuves et captures0.3.1](evidence/offline-gallery/README.md). Le lancement sur le Windows 10 cible reste à vérifier.
 
 1. Lancer en répétition (défaut). Tester 1/4 poses, Au naturel/Métamorphose, placement,
    décompte 3 secondes, effet de capture, aperçu. Aucun appareil ni Internet requis pour ce parcours.
@@ -22,11 +22,12 @@ Le ZIP est accompagné de son SHA-256. Il a été extrait et exécuté sur Windo
 5. Ajouter la clé OpenAI dans Supabase, puis le code borne distinct dans les Réglages de l’app.
    Activer la connexion vérifie seulement l’authentification ; cela ne génère aucune image.
 6. Faire volontairement un premier essai Métamorphose : **cet essai sera facturé**. Vérifier attente,
-   identité des personnes, résultat et téléchargement ZIP depuis le téléphone. Puis tester quatre.
+   identité des personnes, résultat et galerie QR sur le téléphone : original et métamorphose, téléchargement individuel et ZIP. Puis tester quatre.
    Les originaux sont dans `originaux/` et la planche dans `planche-4x6.jpg`.
-7. Réglages → Actualiser les univers : vérifier un ajout ou retrait backend. Ouvrir le sélecteur
+7. Avec le cloud activé, couper Internet et refaire une/quatre photos Au naturel. Vérifier aperçu et Imprimer, puis rétablir le réseau et Réessayer le partage sans quitter le résultat.
+8. Réglages → Actualiser les univers : vérifier un ajout ou retrait backend. Ouvrir le sélecteur
    plusieurs fois ne doit afficher aucun chargement. Tester aussi sans réseau.
-8. Vérifier le stockage Supabase et l’usage OpenAI avant de répéter à grande échelle.
+9. Vérifier le stockage Supabase et l’usage OpenAI avant de répéter à grande échelle.
 
 Le mode Original conserve impression/aperçu même sans réseau ; un partage interrompu peut être
 réessayé tant que la séance reste à l’écran. Une erreur IA permet de choisir explicitement
