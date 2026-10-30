@@ -1,0 +1,12 @@
+{
+  "session_id": "16c03c47-ba41-4620-bfde-f19adfa731f5",
+  "utc": "2026-10-30T22:08:05.273978+00:00",
+  "mode": "synthetic-local-effect-NOT-OPENAI",
+  "generation_calls": 0,
+  "generation_configured": false,
+  "archive_entries": 9,
+  "archive_sha256": "75540943147e868c39060e60288b87b8714c0a268310bca68f140e1b791e12b3",
+  "sheet_sha256": "441478c7a01a4392361b3448b481a59a9402d5738749f087a43d59bc93eba273",
+  "ExpiresAt": "2026-11-06T22:07:54.961517+00:00",
+  "publish_retry_succeeded": true
+}

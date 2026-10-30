@@ -1,0 +1,14 @@
+{
+  "generation_enabled": true,
+  "id": "event",
+  "max_images": 2400,
+  "max_in_flight": 4,
+  "max_per_minute": 8,
+  "started": 0,
+  "transaction_rolled_back": true,
+  "generation_calls": 0,
+  "security_advisors_warnings": 0,
+  "security_advisors_errors": 0,
+  "project": "frkckrvsdsiwivdfyjau",
+  "validated_utc": "2026-10-30T22:03:42.396306+00:00"
+}
