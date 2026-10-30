@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "web/gallery/index.html"
+        ],
+        "createdAt": "2026-10-30T22:52:41.480Z",
+        "reason": "Kevin approved the existing Colors Party artwork and palette and asked to preserve it. DESIGN.md names Cream Paper #FBF5E8 as the approved ground; .impeccable/surfaces/web-gallery.md explicitly carries that identity into this gallery. This exception applies only to this rule on this gallery file."
+      }
+    ]
+  }
+}
