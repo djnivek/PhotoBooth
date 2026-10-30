@@ -8,11 +8,11 @@ aucune feuille DNP, aucun lancement sur le Windows 10 cible, aucune édition Ope
 | Solution Release .NET10 | 0 avertissement, 0 erreur sur Mac arm64 |
 | Métier | 23 assertions : quatre parcours, séquences, résultats, PIN, impression explicite |
 | Imaging | 89 assertions : huit EXIF réels, pixels, ordre, montage, DPI, fichiers et SHA |
-| Runtime | 34 assertions : cycle complet, persistance, annulation et connexion USB tardive sans chevauchement |
+| Runtime | 43 assertions : cycle complet, persistance, annulation, connexion USB tardive sans chevauchement ni fermeture prématurée, erreur COM après annulation |
 | Préparation Windows | 26 assertions : BGRA, axes DPI distincts, zone imprimable, journal avant effet externe et suivi d’impression après changement de séance |
 | Canon WPD | 25 assertions avec transport fictif : séquence visée/capture, quatre vrais fichiers, RAW+JPEG, timeout, aucun redéclenchement |
-| Client cloud | 37 assertions : quatre éditions ordonnées, originaux envoyés une fois, ZIP 5/9 fichiers, reprise sans facturation supplémentaire, fallback explicite, credentials et 32 séances HTTP fictives concurrentes |
-| UI native rendue headless | Accueil1280/1024/960, visée fictive, décompte, capture, résultat, export impression, réglages, fermeture et accès aux fichiers protégés par code erroné/annulé/valide |
+| Client cloud | 39 assertions : quatre éditions ordonnées, originaux envoyés une fois, ZIP 5/9 fichiers, reprise sans facturation supplémentaire, fallback explicitement imprimable, credentials et 32 séances HTTP fictives concurrentes |
+| UI native rendue headless | Accueil1280/1024/960, deux séances complètes successives, annulation de connexion lente et erreur COM tardive, export impression, fermeture et accès aux fichiers protégés par code erroné/annulé/valide |
 | API Deno | 9 tests, typecheck et lint : auth, idempotence, réservation, erreurs ambiguës, originaux requis, hash et expiration |
 | Galerie préparée | 5 tests DOM sans navigateur : 1/4 liens, archive, jeton hors URL de requête, expiration, rejet d’URL étrangère |
 | OpenAPI3.0.3 | Validation formelle réussie avec openapi-spec-validator0.7.2 |
@@ -20,6 +20,7 @@ aucune feuille DNP, aucun lancement sur le Windows 10 cible, aucune édition Ope
 | CI Windows cloud | [Run41096255110](https://github.com/djnivek/PhotoBooth/actions/runs/41096255110) réussi sur le commit de PR5 : client, DPAPI, UI et API simulées |
 | CI Windows Canon | [Run41098262975](https://github.com/djnivek/PhotoBooth/actions/runs/41098262975) réussi sur PR6 : adaptateur fictif et application native |
 | EXE Windows extrait | [Run41105339893](https://github.com/djnivek/PhotoBooth/actions/runs/41105339893) réussi sur main `c4ba833` : paquet autonome extrait, quatre parcours, raster, archives2/3/5/9 fichiers, QR, DPAPI |
+| Correctifs 0.2.1 sur Windows | [Run41112773487](https://github.com/djnivek/PhotoBooth/actions/runs/41112773487) réussi sur PR9 `496fff1` : régressions PIN/impression/connexion USB, quatre parcours de l’EXE extrait et fenêtre native ; ZIP téléchargé et SHA vérifié |
 | Fenêtre Windows réelle | Pixels bureau et rendu natif à 992×700, puis 960×700 après resize : Réglages, Démarrer et planche visibles dans leurs panneaux ; revue Impeccable acceptée à échelle 1 |
 | Supabase réel | ZIP 5 fichiers puis ZIP 9 fichiers (4 originaux + 4 effets locaux + planche), octets vérifiés, publication rejouée, 0 génération |
 | Isolation distante | Quatre tables RLS activées, aucun SELECT anon/authenticated ; bucket privé ; budget started=0 relu |

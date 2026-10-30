@@ -77,6 +77,10 @@ try
         await controller.UseOriginalsAsync();
         Check(controller.Session.Stage==SessionStage.Ready&&controller.Session.UsedOriginalFallback,"Explicit original recovery reaches preview");
         Check(controller.Session.Results.Select(x=>x.AssetKey).SequenceEqual(controller.Session.Captures.Select(x=>x.LocalAssetKey)),"Fallback keeps all original poses in order");
+        var printBytes=await controller.GetPrintBytesAsync();
+        Check(SessionStore.Hash(printBytes)==controller.Sheet!.Sha256,"Original fallback passes the verified print-sheet guard");
+        await controller.PrintAsync(new FallbackPrinter());
+        Check(controller.Session.PrintStage==PrintStage.Submitted,"Original fallback remains explicitly printable after AI failure");
     }
     {
         var secret=Path.Combine(root,"credential");await CredentialStore.SaveAsync(secret,"test-only-credential");
@@ -90,6 +94,10 @@ Console.WriteLine($"PASS {passed} cloud client checks; HTTP fully replaced by a 
 sealed class FailingTransform:IPhotoTransform
 {
     public Task<TransformResult> TransformAsync(Guid id,IReadOnlyList<byte[]> photos,IProgress<string> progress,CancellationToken token)=>throw new IOException("Simulated API failure");
+}
+sealed class FallbackPrinter:IPhotoPrinter
+{
+    public Task<PrintSubmission> SubmitAsync(PrintRequest request,CancellationToken token)=>Task.FromResult(new PrintSubmission("fake-fallback-print"));
 }
 sealed class FakeHttp(byte[] fixture):HttpMessageHandler
 {

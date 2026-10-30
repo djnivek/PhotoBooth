@@ -1,0 +1,40 @@
+{
+  "exit_code": 0,
+  "elapsed_seconds": 507.37,
+  "model_requested": "claude-opus-5-5",
+  "models_observed": [
+    "claude-opus-5-5"
+  ],
+  "effort": "max",
+  "max_output_tokens": 128000,
+  "tools_enabled": false,
+  "input_manifest": {
+    "head": "496fff1c5e930864c39e6e335c2db7e7a1121979",
+    "scope": "final hardening diff and architecture/test evidence brief",
+    "input_sha256": "c2e09f47f6b1be18884bfbc1d164d0146977b1f6d972071cc5b09308342b5160",
+    "bytes": 26636,
+    "credentials_included": false,
+    "photos_included": false,
+    "infrastructure_identifiers_redacted": true
+  },
+  "result_received": true,
+  "is_error": false,
+  "cli_version": "2.1.283",
+  "attempts": [
+    {
+      "scope": "61-file source and evidence packet",
+      "outcome": "stopped after two output-limit continuations without a final report",
+      "elapsed_seconds": 1286.36
+    },
+    {
+      "scope": "18 critical production files",
+      "outcome": "stopped after one output-limit continuation without a final report",
+      "elapsed_seconds": 666.36
+    },
+    {
+      "scope": "final hardening diff and evidence brief",
+      "outcome": "completed successfully",
+      "elapsed_seconds": 507.37
+    }
+  ]
+}

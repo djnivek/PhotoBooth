@@ -16,6 +16,8 @@ Le ZIP est accompagné de son SHA-256. Il a été extrait et exécuté sur Windo
    l’aperçu et au JPEG de planche ; quatre photos distinctes et correctement orientées.
 4. Définir un code de sortie 6–12 chiffres, activer le plein écran ; mauvais/bon code, F11,
    Échap et fermeture. Les raccourcis système restent possibles.
+   « Voir les fichiers » demande aussi ce code. Après un code correct, la borne reste déverrouillée :
+   retourner dans Réglages → Activer le plein écran avant de la rendre aux invités.
 5. Ajouter la clé OpenAI dans Supabase, puis le code borne distinct dans les Réglages de l’app.
    Activer la connexion vérifie seulement l’authentification ; cela ne génère aucune image.
 6. Faire volontairement un premier essai Surprise : **cet essai sera facturé**. Vérifier attente,
@@ -40,6 +42,10 @@ La compatibilité EOS4000D n’est pas encore prouvée : tester placement réel,
 transfert JPEG, retour visée et quatre poses. Le bouton attend une première image de visée.
 Vérifier JPEG haute qualité, alimentation, veille, flash et mise au point (mise au point
 manuelle à distance fixe préférable pour cette première recette, à vérifier sur les sujets).
+Tester aussi Annuler pendant la connexion, une fois appareil éteint/débranché. Une connexion
+native qui ne rend jamais la main peut laisser « Annulation en cours… » affiché : vérifier la
+sortie par code puis le redémarrage. Ne pas relancer des connexions en parallèle ni continuer la
+recette si le pilote reste bloqué ; garder DSLR Booth opérationnel et conserver le diagnostic.
 
 Si la liaison WPD ne fonctionne pas, conserver l’erreur et la version DSLR Booth. L’adaptateur
 EDSDK optionnel nécessite le SDK officiel non fourni ; ses DLL ne sont pas extraites de DSLR Booth.
