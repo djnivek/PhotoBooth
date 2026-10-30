@@ -17,7 +17,7 @@ commerciale, la flotte de bornes et la maintenance longue durée ne sont pas le 
 | [PR 6](https://github.com/djnivek/PhotoBooth/pull/6) — Canon sans SDK | Fusionnée, tests Mac et CI Windows passés ; matériel non testé | WPD/PTP avec pilote Windows existant |
 | [PR 7](https://github.com/djnivek/PhotoBooth/pull/7) — paquet Windows | Fusionnée, `c4ba833` ; [release 0.2.0](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0) publiée | ZIP extrait et exécuté sur Windows, quatre modes simulés, cadrage natif corrigé et revu |
 | [PR 8](https://github.com/djnivek/PhotoBooth/pull/8) — preuves et simulateur HTTP | Fusionnée, `65d40e2` ; CI réussie | Preuves Windows durables et 32 séances fictives concurrentes |
-| Revue finale et correctifs 0.2.1 | En cours | Accès fichiers/PIN, impression interséances et annulation pendant connexion USB : régressions reproduites puis corrigées |
+| [PR 9](https://github.com/djnivek/PhotoBooth/pull/9) — correctifs 0.2.1 | Revue ciblée terminée ; validation finale Windows en cours | Accès fichiers/PIN, impression interséances, annulation USB et deuxième séance : quatre régressions corrigées |
 
 Chaque livraison passe par une PR, les vérifications applicables, puis un merge.
 Le tableau doit évoluer avec les numéros et liens réels, sans appeler « fait » un simple contrat.
@@ -46,12 +46,13 @@ Les PR 3/5/6/7 contiennent désormais des screenshots ; poursuivre cette pratiqu
 
 ## Revue Claude
 
-Kevin a autorisé explicitement la transmission du brief technique le 30 octobre au soir.
-Revue Opus 5.5, effort max, en cours depuis le commit `65d40e2` : code et preuves seulement,
-sans secret ni photo personnelle, identifiants d’infrastructure masqués. Le résultat et le
-traitement des conclusions seront consignés dans le prochain lot. Le premier dossier a atteint
-deux fois la limite de sortie sans rapport ; une seconde revue porte sur les 18 fichiers du
-parcours principal, incluant les trois correctifs déjà testés. Aucun avis n’est encore revendiqué.
+Revue ciblée **terminée** avec Claude CLI Opus 5.5, effort max, sur `65d40e2..496fff1`
+et un brief d’architecture/preuves. Verdict : version de répétition livrable, aucun blocage
+établi dans le diff. Les deux tentatives d’audit plus large n’ont pas produit de rapport ;
+ne pas présenter cette revue comme un audit intégral du dépôt. Aucun secret ni photo personnelle.
+[Rapport, reçu et traitement des remarques](reviews/2026-10-30-final-review.md).
+Les tests complémentaires couvrent le nettoyage USB après annulation, l’erreur pilote tardive,
+le code lors de la fermeture et l’impression après retour explicite aux originaux.
 
 ## Éléments encore nécessaires
 

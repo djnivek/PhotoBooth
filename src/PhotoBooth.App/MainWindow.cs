@@ -22,7 +22,7 @@ public sealed class MainWindow : Window
     private readonly ContentControl body = new()
     { Name = "SessionBody", HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch };
     private readonly TextBlock footer = Text("Répétition · aucune caméra, aucune impression, aucun appel IA", 15);
-    private readonly TextBlock status = Text("", 22);
+    private TextBlock status = Text("", 22);
     private readonly SessionStore store;
     private BoothController controller;
     private int photoCount = 4;
@@ -53,11 +53,14 @@ public sealed class MainWindow : Window
     private DateTimeOffset pulseStarted;
     private readonly Func<TimeSpan, CancellationToken, Task>? rehearsalDelay;
     private readonly Action<string> openFolder;
+    private readonly Func<SessionStore, IPhotoCamera>? cameraFactoryOverride;
 
-    public MainWindow(Func<TimeSpan, CancellationToken, Task>? rehearsalDelay = null, Action<string>? openFolder = null)
+    public MainWindow(Func<TimeSpan, CancellationToken, Task>? rehearsalDelay = null, Action<string>? openFolder = null,
+        Func<SessionStore, IPhotoCamera>? cameraFactory = null)
     {
         this.rehearsalDelay = rehearsalDelay;
         this.openFolder = openFolder ?? OpenFolder;
+        cameraFactoryOverride = cameraFactory;
         Title = "Estell’Art — l’anniversaire d’Estelle";
         Width = 1280; Height = 800; MinWidth = 960; MinHeight = 700;
         if (Screens.Primary is { } display)
@@ -131,7 +134,7 @@ public sealed class MainWindow : Window
     private BoothController CreateController()
     {
         cloud = boothSettings.CloudEnabled ? new BoothCloudClient(boothSettings.ApiBaseUrl, cloudKey, store, boothSettings.GalleryBaseUrl) : null;
-        var result = new BoothController(store, () => boothSettings.CanonCamera ?
+        var result = new BoothController(store, () => cameraFactoryOverride is not null ? cameraFactoryOverride(store) : boothSettings.CanonCamera ?
             (boothSettings.CanonUseOfficialSdk ? new CanonCamera(store) : new CanonWpdCamera(store)) : new FixtureCamera(store, fixtureFiles),
             (IPhotoTransform?)cloud ?? new RehearsalTransform(), rehearsalDelay);
         result.Changed += () => Dispatcher.UIThread.Post(UpdateSession);
@@ -183,6 +186,8 @@ public sealed class MainWindow : Window
     {
         screen = "capture";
         liveViewReady=false;
+        // Detached screens still own their controls; a new session needs a new status view.
+        status = Text("", 22);
         var layout = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
         pose = Text("Placez-vous dans le cadre.", 30, FontWeight.SemiBold); layout.Children.Add(pose);
         var stage = new Grid { Background = Brush.Parse("#150F1C"), Margin = new Thickness(0, 20) };
@@ -199,7 +204,8 @@ public sealed class MainWindow : Window
         stage.Children.Add(countdownBadge);
         Grid.SetRow(stage, 1); layout.Children.Add(stage);
         var actions = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto") };
-        var back = Button("Annuler", async () => { await controller.CancelAsync(); if (!controller.IsBusy) RenderHome(); }); actions.Children.Add(back);
+        var back = Button("Annuler", async () => { await controller.CancelAsync(); if (!controller.IsBusy) RenderHome(); });
+        back.Name = "CancelSession"; actions.Children.Add(back);
         status.HorizontalAlignment = HorizontalAlignment.Center; status.VerticalAlignment = VerticalAlignment.Center;
         status.Margin = new Thickness(18, 0); Grid.SetColumn(status, 1); actions.Children.Add(status);
         capture = Button("On est prêts !", () => controller.TakeAsync(), primary: true); capture.Name = "TakePhotos";
@@ -277,7 +283,8 @@ public sealed class MainWindow : Window
         var qr = new Image { Width = 230, Height = 230, IsVisible = false, HorizontalAlignment = HorizontalAlignment.Left };
         var retry = Button("Réessayer le partage", () => ShareAsync(qr, shareStatus)); retry.IsVisible = cloud is not null;
         actions.Children.Add(qr); actions.Children.Add(shareStatus); actions.Children.Add(retry);
-        actions.Children.Add(Button("Une nouvelle séance", () => { RenderHome(); return Task.CompletedTask; }));
+        var again = Button("Une nouvelle séance", () => { RenderHome(); return Task.CompletedTask; });
+        again.Name = "NewSession"; actions.Children.Add(again);
         var scrollingActions = new ScrollViewer { Content = actions };
         Grid.SetColumn(scrollingActions, 1); layout.Children.Add(scrollingActions); body.Content = layout;
         if (cloud is not null) _ = ShareAsync(qr, shareStatus);

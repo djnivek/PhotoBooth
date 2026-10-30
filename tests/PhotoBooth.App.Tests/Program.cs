@@ -5,6 +5,8 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using PhotoBooth.App;
+using PhotoBooth.Core;
+using PhotoBooth.Imaging;
 
 var root = Path.Combine(Path.GetTempPath(), "estellart-ui-" + Guid.NewGuid().ToString("N"));
 Environment.SetEnvironmentVariable("PHOTOBOOTH_DATA_DIR", root);
@@ -69,8 +71,41 @@ Until(() => window.WindowState == WindowState.Normal, 3000);
 Until(()=>openedFolders.Count==1,2000);
 if(openedFolders[0]!=Path.GetDirectoryName(file))throw new Exception("Unlocked folder does not match the reviewed session.");
 if (File.ReadAllText(Path.Combine(root, "kiosk.json")).Contains("381629")) throw new Exception("Plain PIN stored");
+Click("NewSession");Until(()=>Find("StartSession") is not null,2000);
+Click("StartSession");Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);
+Click("TakePhotos");Until(()=>Find("PrintPreview") is not null,10000);
+Click("Settings"); Until(()=>window.OwnedWindows.Count>0,2000);
+window.OwnedWindows.Single().GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,"Activer le plein écran"))
+    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+Until(()=>window.WindowState==WindowState.FullScreen,2000);
+window.Close();Until(()=>window.OwnedWindows.Count>0,2000);
+unlock=window.OwnedWindows.Single();
+unlock.GetVisualDescendants().OfType<TextBox>().Single(t=>t.PasswordChar=='●').Text="381629";
+unlock.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,"Déverrouiller"))
+    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+Until(()=>window.WindowState==WindowState.Normal,2000);
 window.Close(); Pump(100);
-Console.WriteLine("PASS UI: home at three sizes, capture flow, print export, PIN fullscreen, protected close and file access (wrong/cancelled/correct PIN). No paid API or printer.");
+if(window.IsVisible)throw new Exception("Window did not close after correct PIN.");
+foreach(var driverError in new[]{false,true})
+{
+    var delayed=new DelayedUiCamera(driverError);var cameraOpens=0;
+    window=new MainWindow(cameraFactory:store=>++cameraOpens==1?delayed:new FixtureCamera(store));window.Show();Pump(80);
+    var start=Find("StartSession")!;Click("StartSession");
+    if(start.IsEnabled)throw new Exception("Start accepts another tap while connecting.");
+    Until(()=>delayed.Entered.Task.IsCompleted&&Find("CancelSession") is not null,2000);
+    if(Find("TakePhotos")!.IsVisible)throw new Exception("Shutter is visible during connection.");
+    Click("CancelSession");
+    Until(()=>window.GetVisualDescendants().OfType<TextBlock>().Any(t=>t.Text=="Annulation en cours…"),2000);
+    if(Find("StartSession") is not null||cameraOpens!=1)throw new Exception("Home is available before camera cleanup.");
+    if(!driverError)Capture("cancel-connection.png");
+    delayed.Resume.SetResult();Until(()=>Find("StartSession") is not null,2000);
+    if(window.OwnedWindows.Count!=0)throw new Exception("Cancelled driver error opened a blocking dialog.");
+    Click("StartSession");Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);
+    if(cameraOpens!=2)throw new Exception("Next guest did not get one fresh camera.");
+    Click("CancelSession");Until(()=>Find("StartSession") is not null,2000);
+    window.Close();Pump(80);
+}
+Console.WriteLine("PASS UI: home at three sizes, capture/print flow, protected file access and close, slow connection cancellation and late driver error recovery. No paid API or printer.");
 Directory.Delete(root, true);
 
 Button? Find(string name) => window.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == name);
@@ -109,4 +144,16 @@ void AssertHomeFits()
         if(point.X<origin.X-1||point.Y<origin.Y-1||point.X+control.Bounds.Width>origin.X+viewport.Bounds.Width+1||point.Y+control.Bounds.Height>origin.Y+viewport.Bounds.Height+1)
             throw new Exception($"{name} is clipped by {viewport.Name}: {point}, {control.Bounds.Size}");
     }
+}
+
+sealed class DelayedUiCamera(bool driverError):IPhotoCamera
+{
+    public TaskCompletionSource Entered {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public TaskCompletionSource Resume {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public async Task<CameraStatus> ConnectAsync(CancellationToken token)
+    {Entered.SetResult();await Resume.Task;if(driverError)throw new System.Runtime.InteropServices.COMException("Late driver failure");return new(true,"Delayed fixture",true,true);}
+    public async IAsyncEnumerable<LiveViewFrame> LiveViewAsync([System.Runtime.CompilerServices.EnumeratorCancellation]CancellationToken token)
+    {await Task.Delay(Timeout.Infinite,token);yield break;}
+    public Task<CapturedPhoto> CaptureAsync(Guid session,int shot,CancellationToken token)=>throw new InvalidOperationException("Unexpected capture");
+    public ValueTask DisposeAsync()=>ValueTask.CompletedTask;
 }

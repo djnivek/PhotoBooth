@@ -16,8 +16,9 @@ Mise à jour : 30 octobre 2026. Anniversaire demain. Lire [PROGRESS](PROGRESS.md
 - [Paquet Windows 0.2.0 publié](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0) : ZIP extrait et EXE réellement exécuté sur Windows Server 2022, quatre parcours simulés réussis.
 - Accueil Windows vérifié à 992×700 puis 960×700 après redimensionnement ; débordements corrigés. Captures versionnées et ajoutées aux PR 3/5/6/7.
 - Correctifs 0.2.1 en préparation : accès aux fichiers protégé par le code, journal d’impression
-  lié à la bonne séance et fermeture d’une connexion caméra annulée avant la séance suivante.
-  Trois régressions reproduites puis corrigées ; paquet Windows et revue Claude en cours.
+  lié à la bonne séance, connexion annulée sans chevauchement et crash de la deuxième séance corrigé.
+  Quatre régressions reproduites puis corrigées ; premier paquet Windows de PR9 vérifié.
+  Revue ciblée Claude terminée : aucun blocage dans le diff, compléments de tests intégrés.
 
 ## Secrets et machines
 
@@ -84,8 +85,9 @@ Après une soumission incertaine, regarder le spooler : pas de renvoi automatiqu
 - Expiration 7 jours des liens, pas suppression des objets. Décider du nettoyage après la fête.
 - Pas de réouverture d’ancienne séance par UI, malgré les fichiers/journaux conservés.
 - Windows 10 Pro 22H2 à tester ; succès CI Windows Server 2022 distinct.
-- Revue Claude autorisée explicitement le 30 octobre au soir : Opus 5.5, effort max, code et
-  preuves transmis sans secrets, photos personnelles ni identifiants d’infrastructure. Analyse en cours.
+- Revue ciblée Claude Opus 5.5, effort max, terminée ; [rapport et traitement des remarques](reviews/2026-10-30-final-review.md).
+  Aucun blocage dans le diff. Les deux audits plus larges ont épuisé la sortie sans rapport ;
+  ne pas revendiquer une revue intégrale ni une validation matérielle.
 - Nom de travail Estell’Art, choisi pour avancer ; pas d’approbation de nom inventée.
 
 PRs autorisées à être ouvertes puis mergées après validation. Commits/PR en anglais, sans co-auteur
