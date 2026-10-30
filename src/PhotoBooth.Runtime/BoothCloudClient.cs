@@ -9,7 +9,7 @@ using PhotoBooth.Imaging;
 
 namespace PhotoBooth.Runtime;
 
-public sealed record PublishedSession(string Url, DateTimeOffset ExpiresAt);
+public sealed record PublishedSession(string Url, DateTimeOffset ExpiresAt, string? DownloadUrl = null);
 
 public sealed class BoothCloudClient : IPhotoTransform, IDisposable
 {
@@ -119,8 +119,12 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
         var shareToken = File.Exists(tokenPath) ? (await File.ReadAllTextAsync(tokenPath, token)).Trim() : Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32));
         await SessionStore.WriteAtomicAsync(tokenPath, Encoding.ASCII.GetBytes(shareToken), token);
         using var shared = await SendJsonAsync(HttpMethod.Post, $"sessions/{session.Id}/share", new { token = shareToken, used_original_fallback = session.UsedOriginalFallback }, token);
-        var url = galleryBase.Length > 0 ? galleryBase.TrimEnd('/') + "/#" + shareToken : shared.RootElement.GetProperty("download_url").GetString()!;
-        var result = new PublishedSession(url, shared.RootElement.GetProperty("expires_at").GetDateTimeOffset());
+        var downloadUrl = shared.RootElement.GetProperty("download_url").GetString()!;
+        var url = galleryBase.Length > 0 ? galleryBase.TrimEnd('/') + "/#" + shareToken :
+            shared.RootElement.TryGetProperty("gallery_url", out var gallery) ? gallery.GetString()! : downloadUrl;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var address) || address.Scheme != "https" || address.UserInfo.Length > 0)
+            throw new IOException("Adresse de partage non reconnue.");
+        var result = new PublishedSession(url, shared.RootElement.GetProperty("expires_at").GetDateTimeOffset(), downloadUrl);
         await SessionStore.WriteAtomicAsync(Path.Combine(store.Root, session.Id.ToString("N"), "share.json"), JsonSerializer.SerializeToUtf8Bytes(result), token);
         return result;
     }
@@ -193,6 +197,10 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
         {
             "openai_not_configured"=>"La clé OpenAI doit être configurée dans Supabase avant le premier essai de métamorphose.",
             "unauthorized"=>"Le code de connexion de la borne est incorrect. Vérifiez les réglages.",
+            "generation_disabled"=>"Les métamorphoses sont en pause. Les photos au naturel restent disponibles.",
+            "event_quota_reached"=>"La limite de métamorphoses de la soirée est atteinte. Les photos au naturel restent disponibles.",
+            "generation_rate_limited"=>"Les métamorphoses vont un peu vite. Attendez une minute avant une nouvelle séance. Vos originaux sont conservés.",
+            "generation_busy"=>"Des métamorphoses sont encore en cours. Vos originaux sont conservés. Prévenez la personne qui s’occupe de la borne.",
             "generation_uncertain_no_auto_retry"=>"La génération est incertaine. Aucun nouvel appel payant n’a été relancé automatiquement.",
             _=>$"Service momentanément indisponible ({(int)response.StatusCode}, {code??"réseau"}). Les photos restent enregistrées localement."
         });

@@ -20,6 +20,7 @@ export type SessionRow = {
   style_prompt?: string;
   share_hash: string | null;
   published_at: string | null;
+  used_original_fallback?: boolean;
   expires_at: string;
 };
 type Job = {
@@ -191,7 +192,20 @@ export class CloudApi {
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: AbortSignal.timeout(20000),
     });
-    if (!response.ok) throw new ApiError(503, "database_unavailable");
+    if (!response.ok) {
+      // Only allowlisted claim errors are returned. Never expose SQL or credentials.
+      if (path === "rpc/booth_claim_job") {
+        const error = await response.json().catch(() => ({}));
+        const limits: Record<string, number> = {
+          generation_disabled: 503, event_quota_reached: 429,
+          generation_rate_limited: 429, generation_busy: 429, already_published: 409,
+        };
+        if (error.code === "P0001" && Object.hasOwn(limits, error.message)) {
+          throw new ApiError(limits[error.message], error.message);
+        }
+      }
+      throw new ApiError(503, "database_unavailable");
+    }
     const text = await response.text();
     return (text ? JSON.parse(text) : null) as T;
   }
@@ -284,7 +298,7 @@ export class CloudApi {
         }
         return reply({
           service: "photobooth",
-          api_version: "0.3.0",
+          api_version: "0.3.1",
           stage: "rehearsal",
           production_ready: false,
           session_api_enabled: !!this.config.accessKeyHash,
@@ -310,6 +324,9 @@ export class CloudApi {
         );
         return reply({
           expires_at: row.expires_at,
+          photo_count: row.photo_count,
+          mode: row.mode,
+          used_original_fallback: row.used_original_fallback === true,
           assets: await Promise.all(
             assets.map(async (a) => ({
               name: a.name,
@@ -321,7 +338,7 @@ export class CloudApi {
       const bearer =
         request.headers.get("authorization")?.replace(/^Bearer /, "") ?? "";
       if (
-        !bearer || !equalHash(await hash(bearer), this.config.accessKeyHash)
+        !bearer || bearer.length > 256 || !equalHash(await hash(bearer), this.config.accessKeyHash)
       ) throw new ApiError(401, "unauthorized");
       const owner = this.config.accessKeyHash;
       if (path === "/booth/check" && request.method === "GET") {
@@ -590,6 +607,7 @@ export class CloudApi {
         return reply({
           token,
           expires_at: session.expires_at,
+          gallery_url: this.config.galleryOrigin.replace(/\/$/, "") + "/#" + token,
           download_url: await this.signed(`${id}/archive.zip`, remaining),
         });
       }

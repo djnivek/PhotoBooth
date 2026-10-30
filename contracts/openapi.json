@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "PhotoBooth API",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "Personal booth API. Server-only OpenAI key, background xhigh edits, one durable claim per pose, private storage. No paid automated tests. Printing is local."
   },
   "servers": [
@@ -571,8 +571,19 @@
           "download_url": {
             "type": "string",
             "format": "uri"
+          },
+          "gallery_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Canonical guest gallery with read-only capability in URL fragment. Preferred QR target."
           }
-        }
+        },
+        "required": [
+          "gallery_url",
+          "download_url",
+          "expires_at",
+          "token"
+        ]
       },
       "Assets": {
         "type": "object",
@@ -595,8 +606,32 @@
                 }
               }
             }
+          },
+          "photo_count": {
+            "type": "integer",
+            "enum": [
+              1,
+              4
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "original",
+              "surprise"
+            ]
+          },
+          "used_original_fallback": {
+            "type": "boolean"
           }
-        }
+        },
+        "required": [
+          "expires_at",
+          "assets",
+          "photo_count",
+          "mode",
+          "used_original_fallback"
+        ]
       },
       "Digest": {
         "type": "object",

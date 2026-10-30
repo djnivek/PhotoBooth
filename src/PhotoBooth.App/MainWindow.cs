@@ -56,14 +56,17 @@ public sealed partial class MainWindow : Window
     private readonly Action<string> openFolder;
     private readonly Func<SessionStore, IPhotoCamera>? cameraFactoryOverride;
     private readonly Func<IPhotoTransform>? transformFactoryOverride;
+    private readonly Func<SessionStore, BoothCloudClient>? cloudFactoryOverride;
 
     public MainWindow(Func<TimeSpan, CancellationToken, Task>? rehearsalDelay = null, Action<string>? openFolder = null,
         Func<SessionStore, IPhotoCamera>? cameraFactory = null,
-        Func<CancellationToken, Task<StyleCatalog>>? catalogLoader = null, bool refreshCatalogOnOpen = true, Func<IPhotoTransform>? transformFactory = null)
+        Func<CancellationToken, Task<StyleCatalog>>? catalogLoader = null, bool refreshCatalogOnOpen = true, Func<IPhotoTransform>? transformFactory = null,
+        Func<SessionStore, BoothCloudClient>? cloudFactory = null)
     {
         this.rehearsalDelay = rehearsalDelay;
         this.openFolder = openFolder ?? OpenFolder;
         cameraFactoryOverride = cameraFactory; transformFactoryOverride = transformFactory;
+        cloudFactoryOverride = cloudFactory;
         this.catalogLoader = catalogLoader ?? (token => StyleCatalogClient.FetchAsync(boothSettings.ApiBaseUrl, token));
         Title = "Colors Party by Estelle";
         Width = 1280; Height = 800; MinWidth = 960; MinHeight = 700;
@@ -137,7 +140,7 @@ public sealed partial class MainWindow : Window
 
     private BoothController CreateController()
     {
-        cloud = boothSettings.CloudEnabled ? new BoothCloudClient(boothSettings.ApiBaseUrl, cloudKey, store, boothSettings.GalleryBaseUrl) : null;
+        cloud = boothSettings.CloudEnabled ? cloudFactoryOverride?.Invoke(store) ?? new BoothCloudClient(boothSettings.ApiBaseUrl, cloudKey, store, boothSettings.GalleryBaseUrl) : null;
         var result = new BoothController(store, () => cameraFactoryOverride is not null ? cameraFactoryOverride(store) : boothSettings.CanonCamera ?
             (boothSettings.CanonUseOfficialSdk ? new CanonCamera(store, boothSettings.CanonManualFocusConfirmed) : new CanonWpdCamera(store, manualFocusConfirmed: boothSettings.CanonManualFocusConfirmed)) : new FixtureCamera(store, fixtureFiles),
             transformFactoryOverride?.Invoke() ?? (IPhotoTransform?)cloud ?? new RehearsalTransform(), rehearsalDelay);
@@ -259,8 +262,8 @@ public sealed partial class MainWindow : Window
             if (!kioskLocked) openFolder(folder);
         });
         files.Name = "OpenFiles"; actions.Children.Add(files);
-        var shareStatus = Text(cloud is null ? "Partage en ligne désactivé dans les réglages." : "Préparation de votre lien…", 17);
-        var qr = new Image { Width = 230, Height = 230, IsVisible = false, HorizontalAlignment = HorizontalAlignment.Left };
+        var shareStatus = Text(cloud is null ? "Partage en ligne désactivé dans les réglages." : "Préparation de votre lien…", 17); shareStatus.Name = "ShareStatus";
+        var qr = new Image { Name = "ShareQr", Width = 230, Height = 230, IsVisible = false, HorizontalAlignment = HorizontalAlignment.Left };
         var retry = Button("Réessayer le partage", () => ShareAsync(qr, shareStatus)); retry.IsVisible = cloud is not null;
         actions.Children.Add(qr); actions.Children.Add(shareStatus); actions.Children.Add(retry);
         var again = Button("Une nouvelle séance", () => { RenderHome(); return Task.CompletedTask; });
@@ -402,10 +405,16 @@ public sealed partial class MainWindow : Window
             using var generator=new QRCodeGenerator();using var data=generator.CreateQrCode(result.Url,QRCodeGenerator.ECCLevel.M);
             using var code=new PngByteQRCode(data);qr.Source=Bitmap(code.GetGraphic(3));
             qr.Width=qr.Height=data.ModuleMatrix.Count*3;qr.IsVisible=true;
-            label.Text=$"Scannez pour télécharger vos photos{(boothSettings.GalleryBaseUrl.Length==0?" (ZIP)":"")}. Lien valable jusqu’au {result.ExpiresAt.LocalDateTime:dd/MM}.";
+            label.Text=$"Scannez pour retrouver vos photos. Lien valable jusqu’au {result.ExpiresAt.LocalDateTime:dd/MM}.";
         }
         catch (OperationCanceledException) when(token.IsCancellationRequested) { }
-        catch (Exception exception) { label.Text=exception.Message; }
+        catch (Exception exception)
+        {
+            if (screen == "result" && controller.Session?.Id == session.Id && !token.IsCancellationRequested)
+                label.Text=exception is HttpRequestException or OperationCanceledException
+                    ? "Le partage attend la connexion. Vous pouvez imprimer vos photos et réessayer le partage ici."
+                    : exception.Message;
+        }
         finally { sharing=false; }
     }
 

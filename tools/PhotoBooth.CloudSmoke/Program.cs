@@ -19,7 +19,7 @@ using var client=new BoothCloudClient(api,key,store);
 var generationConfigured=await client.CheckAsync();
 var published=await client.PublishAsync(controller.Session,controller.FinalAssets,controller.Sheet!);
 using var http=new HttpClient(new HttpClientHandler{AllowAutoRedirect=false});
-var downloaded=await http.GetByteArrayAsync(published.Url);
+var downloaded=await http.GetByteArrayAsync(published.DownloadUrl ?? published.Url);
 using var archive=new ZipArchive(new MemoryStream(downloaded));
 if(archive.Entries.Count!=(edited?9:5))throw new Exception("Archive does not contain every required photograph.");
 if(edited)for(var i=0;i<4;i++){

@@ -46,6 +46,7 @@ class FakeServices {
   providerMode = "completed";
   providerFail = false;
   claims = 0;
+  claimError = "";
   storage = new Map<string, Uint8Array>();
   send: typeof fetch = (input, init) => {
     const url = new URL(String(input));
@@ -96,6 +97,7 @@ class FakeServices {
       return reply({});
     }
     if (path.endsWith("/rpc/booth_claim_job")) {
+      if (this.claimError) return reply({ code: "P0001", message: this.claimError }, 400);
       let job = this.jobs.find((j) =>
         j.session_id === body.p_session && j.shot_index === body.p_index
       );
@@ -255,8 +257,8 @@ Deno.test("publish requires every asset; token stored only as hash; expired link
     assert(response.status === 201);
     await response.body?.cancel();
   }
-  await (await api.handle(request(`/sessions/${id}/share`, "POST", { token })))
-    .body?.cancel();
+  const shared = await (await api.handle(request(`/sessions/${id}/share`, "POST", { token }))).json();
+  assert(shared.gallery_url === config.galleryOrigin + "/#" + token);
   assert(
     fake.sessions[0].share_hash === await hash(token) &&
       fake.sessions[0].share_hash !== token,
@@ -265,7 +267,9 @@ Deno.test("publish requires every asset; token stored only as hash; expired link
     request("/downloads/resolve", "POST", { token }, false),
   );
   assert(found.status === 200);
-  assert((await found.json()).assets.length === 3);
+  const resolved = await found.json();
+  assert(resolved.assets.length === 3 && resolved.mode === "original" && resolved.photo_count === 1 && resolved.used_original_fallback === false);
+  assert(fake.providerCreates === 0);
   fake.sessions[0].expires_at = "2020-01-01T00:00:00Z";
   const expired = await api.handle(
     request("/downloads/resolve", "POST", { token }, false),
@@ -378,4 +382,36 @@ Deno.test("explicit universe and prompt freeze across updates; rejected changes 
   const payload = imageRequest(config, "https://test/image.jpg", "removed_theme", "Frozen test scene");
   const prompt = payload.input[0].content[0].text!;
   assert(prompt.includes("Frozen test scene") && prompt.includes("corpulence") && prompt.includes("aides à la mobilité"));
+});
+
+Deno.test("every mutation rejects outsiders and gallery capabilities before all external calls", async () => {
+  let calls = 0;
+  const api = new CloudApi(config, () => { calls++; throw new Error("Forbidden network"); });
+  for (const [path, method] of [["/sessions", "POST"], [`/sessions/${id}/photos/0`, "POST"], [`/sessions/${id}/assets/photo-1.jpg`, "PUT"], [`/sessions/${id}/share`, "POST"], ["/booth/check", "GET"]]) {
+    for (const bearer of ["", "a".repeat(64), "fake-openai", "fake-service"]) {
+      const response = await api.handle(new Request("https://local.test/photobooth-api" + path, {method, headers: {Authorization: "Bearer " + bearer}}));
+      assert(response.status === 401); await response.body?.cancel();
+    }
+  }
+  assert(calls === 0);
+});
+Deno.test("server limits reject before any provider call and expose only safe codes", async () => {
+  for (const code of ["event_quota_reached", "generation_rate_limited", "generation_busy", "generation_disabled", "sensitive SQL details"]) {
+    const fake = new FakeServices(); const api = new CloudApi(config, fake.send);
+    await (await api.handle(request("/sessions", "POST", { id, photo_count: 1, mode: "surprise" }))).body?.cancel();
+    await (await api.handle(request(`/sessions/${id}/assets/original-1.jpg`, "PUT", fixture))).body?.cancel();
+    fake.claimError = code;
+    const response = await api.handle(request(`/sessions/${id}/photos/0`, "POST", {}));
+    assert(response.status === (code === "generation_disabled" || code === "sensitive SQL details" ? 503 : 429));
+    assert((await response.json()).code === (code === "sensitive SQL details" ? "database_unavailable" : code));
+    assert(fake.providerCreates === 0 && fake.claims === 0);
+  }
+});
+Deno.test("parallel duplicate starts cannot create two provider requests", async () => {
+  const fake = new FakeServices(); const api = new CloudApi(config, fake.send);
+  await (await api.handle(request("/sessions", "POST", { id, photo_count: 1, mode: "surprise" }))).body?.cancel();
+  await (await api.handle(request(`/sessions/${id}/assets/original-1.jpg`, "PUT", fixture))).body?.cancel();
+  const responses = await Promise.all(Array.from({length: 12}, () => api.handle(request(`/sessions/${id}/photos/0`, "POST", {}))));
+  for (const response of responses) { assert(response.status === 202); await response.body?.cancel(); }
+  assert(fake.providerCreates === 1);
 });

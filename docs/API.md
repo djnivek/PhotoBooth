@@ -12,9 +12,9 @@ Le contrat [OpenAPI](../contracts/openapi.json) décrit cette implémentation pe
 | POST /sessions/{id}/photos/{index} | Borne propriétaire | Lancer une édition de l’original déjà téléversé ; JSON `{}` |
 | GET /sessions/{id}/photos/{index} | Borne propriétaire | État distant et URL signée du résultat ; aucune nouvelle édition |
 | POST /sessions/{id}/share | Borne propriétaire | Publier après présence de tous les fichiers requis |
-| POST /downloads/resolve | Jeton de partage secret | URLs temporaires pour la page mobile préparée |
+| POST /downloads/resolve | Jeton de partage secret | Galerie mobile, métadonnées et URLs privées temporaires |
 
-L’impression est locale et n’a aucune route Internet. Le mode Original n’appelle pas OpenAI.
+La prise de vue, la composition et l’impression Au naturel sont locales, même avec cloud activé et réseau coupé. Le partage QR seul attend Internet, sans bloquer Imprimer. Le mode Métamorphose appelle le serveur pour générer ; une panne conserve les originaux et propose leur impression.
 Le gateway JWT est désactivé parce que l’API valide son propre Bearer aléatoire ; il ne s’agit
 pas d’un proxy anonyme. Le code borne est réservé aux créations/mutations, le jeton QR donne
 uniquement accès aux téléchargements d’une séance.
@@ -31,10 +31,10 @@ et contrôle dimensions/orientation. Les chemins sont construits par le serveur,
    OpenAI une URL signée de cet original, sans nouvel upload depuis le PC.
 3. Interroger le même travail. États : queued, starting, running, ready, failed, uncertain.
 4. Composer et vérifier la planche localement. Téléverser résultats/planche/ZIP.
-5. Publier avec un jeton aléatoire de 32 octets. Retour : ZIP signé jusqu’à l’expiration de séance.
+5. Publier avec un jeton aléatoire de 32 octets. Retour : `gallery_url` pour le QR et `download_url` pour l’archive. La galerie montre chaque paire original/métamorphose, ou les seuls originaux en mode Au naturel et après repli explicite.
 
 Le client journalise les originaux déjà envoyés et les appels image tentés. La réservation
-SQL est transactionnelle, unique par séance/pose, avec plafond de 2400 images. Une interruption
+SQL est transactionnelle, unique par séance/pose, avec plafond de 2400 images, huit départs par minute et quatre travaux non résolus simultanés. Le compteur inclut les appels incertains et ne se remet jamais à zéro automatiquement. Un interrupteur serveur permet d’arrêter les nouvelles générations. Une interruption
 ambiguë ne remet jamais un travail en attente. Les uploads répétés avec un contenu identique
 sont acceptés ; un autre SHA pour le même fichier retourne 409. Partage idempotent avec le même
 jeton ; une séance reste liée au hash du code borne avec lequel elle a été créée.
@@ -55,3 +55,7 @@ valable jusqu’à expiration, sauf suppression de l’objet. Pas de listing pub
 ## Catalogue et choix (0.3.0)
 
 `GET /styles` est public et renvoie la version et les métadonnées d’affichage, sans prompts. `POST /sessions` accepte `style` : un identifiant du catalogue ou `chef` (défaut). Le serveur conserve choix, univers tiré et scène pour les poses de cette séance. Même UUID avec un choix différent donne 409. Les anciens clients restent compatibles. Voir [UNIVERS](UNIVERS.md).
+
+## Protection 0.3.1
+
+Voir [SECURITY](SECURITY.md) pour les limites, la révocation, les états incertains et les tests de permissions. Le navigateur ne reçoit aucun code borne ni clé fournisseur. Son unique API est le résolveur de liens, jamais une route de génération.
