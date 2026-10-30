@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-30T17:21:10.433331Z",
+  "generatedAt": "2026-10-30T18:07:30.861654Z",
   "title": "Design System: Estell’Art",
   "extensions": {
     "colorMeta": {
@@ -163,6 +163,10 @@
       "button-primary": {
         "displayName": "Primary action label",
         "purpose": "Large native primary-button label."
+      },
+      "display-compact": {
+        "displayName": "Compact home display",
+        "purpose": "Home headline when client width < 1100 OR client height < 760 logical units. Subtitle becomes 20 rather than 22; choice-stack gaps become 12 rather than 19. Button minimum heights stay 54/70."
       }
     },
     "shadows": [],
@@ -208,7 +212,12 @@
         "purpose": "Rehearsal pause with positioning live view before the next countdown."
       }
     ],
-    "breakpoints": []
+    "breakpoints": [
+      {
+        "name": "home-compact",
+        "value": "ClientSize.Width < 1100 || ClientSize.Height < 760 (Avalonia logical units)"
+      }
+    ]
   },
   "components": [
     {
@@ -277,7 +286,7 @@
   ],
   "narrative": {
     "northStar": "Piste de fête chromatique",
-    "overview": "“Piste de fête chromatique” is the working visual direction: a dark aubergine room, a clear lemon action, and generous photography. Estell’Art is personal and festive without reducing the room available for posing. Large flat areas and direct French labels give the guest a short, readable path.\n\nThis system records the implemented Avalonia desktop interface, targeting Windows with native local states rehearsed on macOS. The name and direction are working choices under the delegated delivery brief; an unanswered preference is not approval. Code-led preparation for this delivery is not a confirmed standing workflow preference. No web, iOS, or Android design is asserted here.\n\nSource authority is `src/PhotoBooth.App/App.axaml` and `src/PhotoBooth.App/MainWindow.cs`, with capture timing in `src/PhotoBooth.Core/Session.cs` and `src/PhotoBooth.Runtime/BoothController.cs`. The latest targeted finish review accepted the permanent field labels, accurate cloud-disable confirmation, and native local dialog/result states. The result at 1024 × 768 and the visible unlock error were reviewed. Connected QR sharing, physical printing, Canon/Windows operation, and the prepared but undeployed web gallery are not visually validated journeys.",
+    "overview": "“Piste de fête chromatique” is the working visual direction: a dark aubergine room, a clear lemon action, and generous photography. Estell’Art is personal and festive without reducing the room available for posing. Large flat areas and direct French labels give the guest a short, readable path.\n\nThis system records the implemented Avalonia desktop interface, targeting Windows with native local states rehearsed on macOS. The name and direction are working choices under the delegated delivery brief; an unanswered preference is not approval. Code-led preparation for this delivery is not a confirmed standing workflow preference. No web, iOS, or Android design is asserted here.\n\nSource authority is `src/PhotoBooth.App/App.axaml` and `src/PhotoBooth.App/MainWindow.cs`, with capture timing in `src/PhotoBooth.Core/Session.cs` and `src/PhotoBooth.Runtime/BoothController.cs`. The latest targeted finish review accepted the permanent field labels, accurate cloud-disable confirmation, and native local dialog/result states. The result at 1024 × 768 and the visible unlock error were reviewed. Connected QR sharing, physical printing, Canon/Windows operation, and the prepared but undeployed web gallery are not visually validated journeys. A Windows native rehearsal subsequently exposed window overflow missed by headless checks. The startup/work-area, compact-home, and client/panel-bound corrections are implemented; final Windows native validation remains pending. Estell’Art’s name and palette are unchanged.",
     "keyCharacteristics": [
       "Aubergine surfaces, pale lavender text, and a lemon primary action.",
       "Expressive Bricolage Grotesque display text with familiar desktop body text.",
@@ -311,14 +320,14 @@
       "**Do** use the exact composed image for the result preview and keep photographic content proportionate with uniform scaling.",
       "**Do** keep camera, printing, and cloud status explicit and distinguish local calibration images from real guest photography.",
       "**Do** preserve the brief, single capture cue and the readable badge over the framing image.",
-      "**Do** check the actual desktop window sizes when changing copy, spacing, or controls; there is no implemented breakpoint system."
+      "**Do** check actual desktop sizes and containing-panel bounds when changing copy, spacing, or controls, including both sides of the home compact thresholds and 960 × 700."
     ],
     "donts": [
       "**Don't** replace the result preview with an unrelated decorative image.",
       "**Don't** turn the capture cue into a repeating strobe or an opaque frame that hides the photograph.",
       "**Don't** describe calibration geometry or rehearsal filters as personal photos or generated AI artwork.",
       "**Don't** treat the HTML documentation specimens as a web product or as exact reproductions of platform-owned Fluent control states.",
-      "**Don't** infer a validated connected QR or web-gallery journey, an approved permanent workflow, a phone layout, a compact breakpoint, or a reduced-motion variant from this delivery."
+      "**Don't** infer a validated connected QR or web-gallery journey, an approved permanent workflow, a phone layout, compact rules beyond the documented home condition, or a reduced-motion variant from this delivery."
     ]
   }
 }

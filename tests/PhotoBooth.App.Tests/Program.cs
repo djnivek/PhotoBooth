@@ -16,7 +16,7 @@ Pump(150);
 Capture("desktop-1280x800.png");
 window.Width = 1024; window.Height = 768; Pump(80); Capture("desktop-1024x768.png");
 AssertHomeFits();
-window.Width = 960; window.Height = 700; Pump(80); AssertHomeFits();
+window.Width = 960; window.Height = 700; Pump(80); AssertHomeFits(); Capture("desktop-960x700.png");
 window.Width = 1280; window.Height = 800; Pump(80);
 AssertHomeFits();
 Click("StartSession"); Until(() => Find("TakePhotos") is not null, 3000);
@@ -54,7 +54,7 @@ unlock.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "DÃ
 Until(() => window.WindowState == WindowState.Normal, 3000);
 if (File.ReadAllText(Path.Combine(root, "kiosk.json")).Contains("381629")) throw new Exception("Plain PIN stored");
 window.Close(); Pump(100);
-Console.WriteLine("PASS UI: home at two sizes, start, live fixture, countdown, four captures, result, print export, PIN fullscreen and protected close. No paid API or printer.");
+Console.WriteLine("PASS UI: home at three sizes with bounds checks, start, live fixture, countdown, four captures, result, print export, PIN fullscreen and protected close. No paid API or printer.");
 Directory.Delete(root, true);
 
 Button? Find(string name) => window.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == name);
@@ -88,5 +88,9 @@ void AssertHomeFits()
         var point=control.TranslatePoint(new Point(0,0),window)??throw new Exception("Detached control "+name);
         if(point.X<0||point.Y<0||point.X+control.Bounds.Width>window.ClientSize.Width+1||point.Y+control.Bounds.Height>window.ClientSize.Height+1)
             throw new Exception($"{name} exceeds {window.ClientSize}: {point}, {control.Bounds.Size}");
+        var viewport=control.GetVisualAncestors().OfType<Control>().First(c=>c.Name is "SessionBody" or "Header");
+        var origin=viewport.TranslatePoint(new Point(0,0),window)!.Value;
+        if(point.X<origin.X-1||point.Y<origin.Y-1||point.X+control.Bounds.Width>origin.X+viewport.Bounds.Width+1||point.Y+control.Bounds.Height>origin.Y+viewport.Bounds.Height+1)
+            throw new Exception($"{name} is clipped by {viewport.Name}: {point}, {control.Bounds.Size}");
     }
 }
