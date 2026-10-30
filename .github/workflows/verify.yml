@@ -8,7 +8,7 @@ permissions:
 jobs:
   windows-rehearsal:
     runs-on: windows-2022
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       AVALONIA_TELEMETRY_OPTOUT: '1'
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
@@ -23,3 +23,18 @@ jobs:
       - name: Run local-only rehearsal checks
         shell: pwsh
         run: ./scripts/verify.ps1
+      - name: Package and execute the extracted Windows app
+        shell: pwsh
+        run: ./scripts/package-windows.ps1 -Version 0.2.0
+      - name: Keep package and executable evidence
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: EstellArt-win-x64
+          if-no-files-found: error
+          path: |
+            artifacts/package/*.zip
+            artifacts/package/*.sha256
+            artifacts/package/diagnostics/*.json
+            artifacts/package/diagnostics/*.png
+            artifacts/package/diagnostics/*error.txt

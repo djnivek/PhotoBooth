@@ -18,6 +18,7 @@ aucune feuille DNP, aucun lancement sur le Windows10 cible, aucune édition Open
 | OpenAPI3.0.3 | Validation formelle réussie avec openapi-spec-validator0.7.2 |
 | CI Windows initiale | [Run41088358348](https://github.com/djnivek/PhotoBooth/actions/runs/41088358348) réussi : PR4, WindowsServer2022, tests natifs headless et simulation |
 | CI Windows cloud | [Run41096255110](https://github.com/djnivek/PhotoBooth/actions/runs/41096255110) réussi sur le commit de PR5 : client, DPAPI, UI et API simulées |
+| CI Windows Canon | [Run41098262975](https://github.com/djnivek/PhotoBooth/actions/runs/41098262975) réussi sur PR6 : adaptateur fictif et application native |
 | Supabase réel | ZIP 5 fichiers puis ZIP 9 fichiers (4 originaux + 4 effets locaux + planche), octets vérifiés, publication rejouée, 0 génération |
 | Isolation distante | Quatre tables RLS activées, aucun SELECT anon/authenticated ; bucket privé ; budget started=0 relu |
 | Galerie hébergée | Non : API Pages retourne422, forfait incompatible avec dépôt privé ; QR ZIP disponible |
@@ -53,3 +54,15 @@ sanitisés dans [evidence](evidence/) ne contiennent ni token QR, ni mot de pass
 
 État de facturation Supabase déclaré sans souscription payante créée ; affichage détaillé du
 forfait non relu via MCP restreint. Aucun upgrade ni appel OpenAI pendant les vérifications.
+
+## Auto-test du paquet
+
+`EstellArt.exe --self-test <dossier>` exerce les quatre combinaisons avec des dépendances
+fictives imposées : capture, montage, raster GDI, journal d’impression, ZIP avec originaux,
+QR, PIN et stockage des credentials. Il ignore les réglages utilisateur pour ne jamais
+activer un appareil ni une API. Version et OS sont consignés dans `self-test.json`.
+
+`--smoke-ui <dossier>` ouvre la vraie fenêtre de cet exécutable, avec un profil isolé,
+enregistre ses pixels et ferme automatiquement. Ce mode ne prouve que le démarrage natif
+et son rendu d’accueil ; la recette métier complète est celle des tests headless séparés.
+La CI doit exercer ces deux modes **après extraction du ZIP** avant toute release.
