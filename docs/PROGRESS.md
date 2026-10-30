@@ -27,6 +27,9 @@ Les PR 3/5/6/7/8/9 contiennent désormais des screenshots ; poursuivre cette pra
 
 ## Portes de validation
 
+En préparation : version0.2.2, textes invités simplifiés (« Surprise », aucun bandeau de
+simulation), captures mises à jour. Aucun changement du traitement photo ou de l’impression.
+
 - **Mac maintenant** : UI native, séquences, images synthétiques/locales, orientation réelle,
   montage, fichiers finaux, sécurité des reprises, requêtes API simulées, packaging croisé.
 - **PC ce soir** : lancer le paquet téléchargé sans SDK, tester UI, fichiers simulés, dialogue

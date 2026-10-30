@@ -16,7 +16,7 @@ Estelle and the guests at her birthday on 31 October 2026. Kevin operates the bo
 
 ## Product Purpose
 
-A joyful, personal birthday photo booth. Choose 1 or 4 photos and Original or Surprise IA; live view to pose, countdown, real captures, result preview, optional one-sheet 4x6 print and QR downloads.
+A joyful, personal birthday photo booth. Choose 1 or 4 photos and Original or Surprise; live view to pose, countdown, real captures, result preview, optional one-sheet 4x6 print and QR downloads.
 
 ## Operating Context
 
@@ -40,7 +40,7 @@ Portable C# core and 26 preparation checks. No UI currently exists. Synthetic ph
 - Keep the live picture visible during the countdown.
 - Preview and print the exact same composed image.
 - Never turn an uncertain API or printer outcome into an automatic duplicate.
-- Make simulation and real operation unmistakable to the operator.
+- Keep technical operating choices in operator settings. Kevin explicitly requests no simulation/rehearsal labels in the interface; the guest option is “Surprise”.
 
 ## Open Decisions
 
