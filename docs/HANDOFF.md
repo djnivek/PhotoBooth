@@ -13,7 +13,8 @@ Mise à jour : 30 octobre 2026. Anniversaire demain. Lire [PROGRESS](PROGRESS.md
 - Plein écran/code testé dans le rendu natif headless ; commandes système Windows non bloquées.
 - GitHub Pages refusé pour ce dépôt privé : QR vers ZIP, galerie web préparée mais non hébergée.
 - Canon sans SDK propriétaire intégré via FC.SDK3.2.1021/WPD, 25 tests de séquence fictive passés.
-- Paquet Windows0.2.0 : script et auto-tests codés ; passage CI de l’EXE extrait requis avant publication.
+- [Paquet Windows 0.2.0 publié](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0) : ZIP extrait et EXE réellement exécuté sur Windows Server 2022, quatre parcours simulés réussis.
+- Accueil Windows vérifié à 992×700 puis 960×700 après redimensionnement ; débordements corrigés. Captures versionnées et ajoutées aux PR 3/5/6/7.
 
 ## Secrets et machines
 
@@ -48,7 +49,7 @@ Le script shell accepte `PHOTOBOOTH_DOTNET`. Deno 2.9.2, Node 22. Tests HTTP ent
 
 ## Essai ce soir
 
-1. Télécharger/extracter le paquet autonome une fois publié et lancer `EstellArt.exe`.
+1. Télécharger/extracter [le paquet 0.2.0](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0) et lancer `EstellArt.exe`.
 2. Garder caméra/impression simulées. Tester 1 puis 4, original puis effet local, compte à rebours,
    aperçu et fichier d’impression. Vérifier les photos locales sélectionnées et le code plein écran.
 3. Provisionner la connexion borne. Contrôle de connexion sans frais. Clé OpenAI uniquement sur Supabase.
@@ -79,7 +80,7 @@ Après une soumission incertaine, regarder le spooler : pas de renvoi automatiqu
 - Les originaux du photomaton sont non retouchés mais normalisés en JPEG 2560px, pas RAW capteur.
 - Expiration 7 jours des liens, pas suppression des objets. Décider du nettoyage après la fête.
 - Pas de réouverture d’ancienne séance par UI, malgré les fichiers/journaux conservés.
-- Windows 10 Pro 22H2 à tester ; succès CI Windows Server2022 distinct.
+- Windows 10 Pro 22H2 à tester ; succès CI Windows Server 2022 distinct.
 - Revue Claude demandée : contrôle automatique a refusé la transmission du brief privé. Question
   explicite d’autorisation déjà envoyée, encore sans réponse. Aucun brief transmis.
 - Nom de travail Estell’Art, choisi pour avancer ; pas d’approbation de nom inventée.
@@ -99,4 +100,12 @@ Le CI conserve le paquet et ces preuves ; ne publier la release qu’après leur
 
 Les fichiers de démarrage sont dans `docs/DEMARRAGE_WINDOWS.txt` (copié LISEZ-MOI.txt au paquet).
 Le paquet est personnel et non signé ; la provenance et le SHA doivent correspondre à GitHub.
-Le prochain handoff doit ajouter le lien réel de release, le hash du ZIP et le run Windows.
+Release : [v0.2.0](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0), commit
+`c4ba8336b222237a6730fc87cd3c34a0b8273235`, [run41105339893](https://github.com/djnivek/PhotoBooth/actions/runs/41105339893).
+ZIP : 71 147 879 octets ; SHA-256 `cdd86b7c3f429fc4b329a512d3c1ffae2ffffa88e887420ead33a92653db7d57`.
+Reçus et captures : [evidence/windows-0.2.0](evidence/windows-0.2.0/README.md).
+API relue au handoff : répond, séances activées, génération désactivée tant que la clé OpenAI manque.
+
+Kevin demande des screenshots dans les PR pour commenter le design. Joindre des images versionnées
+et des liens de commit immuables à chaque changement d’interface ; distinguer simulation, fenêtre
+Windows réelle et matériel. Ne pas retirer les captures après merge.

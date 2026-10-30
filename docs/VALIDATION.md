@@ -1,7 +1,7 @@
 # Validation — 30 octobre 2026
 
 **Application et API codées ; simulation native et partage distant vérifiés. Aucun Canon,
-aucune feuille DNP, aucun lancement sur le Windows10 cible, aucune édition OpenAI facturée.**
+aucune feuille DNP, aucun lancement sur le Windows 10 cible, aucune édition OpenAI facturée.**
 
 | Vérification | Résultat |
 | --- | --- |
@@ -16,16 +16,19 @@ aucune feuille DNP, aucun lancement sur le Windows10 cible, aucune édition Open
 | API Deno | 9 tests, typecheck et lint : auth, idempotence, réservation, erreurs ambiguës, originaux requis, hash et expiration |
 | Galerie préparée | 5 tests DOM sans navigateur : 1/4 liens, archive, jeton hors URL de requête, expiration, rejet d’URL étrangère |
 | OpenAPI3.0.3 | Validation formelle réussie avec openapi-spec-validator0.7.2 |
-| CI Windows initiale | [Run41088358348](https://github.com/djnivek/PhotoBooth/actions/runs/41088358348) réussi : PR4, WindowsServer2022, tests natifs headless et simulation |
+| CI Windows initiale | [Run41088358348](https://github.com/djnivek/PhotoBooth/actions/runs/41088358348) réussi : PR4, Windows Server 2022, tests natifs headless et simulation |
 | CI Windows cloud | [Run41096255110](https://github.com/djnivek/PhotoBooth/actions/runs/41096255110) réussi sur le commit de PR5 : client, DPAPI, UI et API simulées |
 | CI Windows Canon | [Run41098262975](https://github.com/djnivek/PhotoBooth/actions/runs/41098262975) réussi sur PR6 : adaptateur fictif et application native |
+| EXE Windows extrait | [Run41105339893](https://github.com/djnivek/PhotoBooth/actions/runs/41105339893) réussi sur main `c4ba833` : paquet autonome extrait, quatre parcours, raster, archives2/3/5/9 fichiers, QR, DPAPI |
+| Fenêtre Windows réelle | Pixels bureau et rendu natif à 992×700, puis 960×700 après resize : Réglages, Démarrer et planche visibles dans leurs panneaux ; revue Impeccable acceptée à échelle 1 |
 | Supabase réel | ZIP 5 fichiers puis ZIP 9 fichiers (4 originaux + 4 effets locaux + planche), octets vérifiés, publication rejouée, 0 génération |
 | Isolation distante | Quatre tables RLS activées, aucun SELECT anon/authenticated ; bucket privé ; budget started=0 relu |
 | Galerie hébergée | Non : API Pages retourne422, forfait incompatible avec dépôt privé ; QR ZIP disponible |
 
-Les captures de pixels réels Avalonia/Skia sont versionnées dans `.impeccable/review/`.
-Ce sont des rendus headless, pas des screenshots d’une machine Windows physique. La revue
-Impeccable reste limitée aux états observés. L’accès navigateur est désactivé dans Work :
+Les rendus headless Avalonia/Skia sont versionnés dans `.impeccable/review/`.
+Les captures du véritable exécutable Windows sont dans [windows-0.2.0](evidence/windows-0.2.0/README.md) :
+Windows Server 2022 sur runner GitHub, pas le photomaton Windows 10. La revue Impeccable reste limitée
+aux états observés. L’accès navigateur est désactivé dans Work :
 aucune validation visuelle mobile de la galerie n’est revendiquée.
 
 ## Reproduire
@@ -45,7 +48,7 @@ sanitisés dans [evidence](evidence/) ne contiennent ni token QR, ni mot de pass
 
 ## À prouver sur les machines
 
-- Paquet autonome lancé réellement, puis Windows10Pro22H2 exact (distinct de Server2022).
+- Windows 10 Pro 22H2 exact (distinct du lancement déjà réussi sur Server 2022).
 - Liaison caméra, version/runtime Canon retenu, vraie live view, autofocus/flash et transfert.
 - Pilote DS620, paramètres 4×6, feuille réelle, marge et couleur.
 - Un appel OpenAI manuel puis quatre : modèle disponible, résultat, temps et coût mesurés.

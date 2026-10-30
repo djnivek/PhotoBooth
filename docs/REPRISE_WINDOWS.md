@@ -2,9 +2,11 @@
 
 ## PC sans caméra ni imprimante — ce soir
 
-Le paquet attendu est Windows x64 autonome. Extraire **tout** le ZIP dans un dossier local avant
+Télécharger [Estell’Art 0.2.0 Windows x64](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0)
+avec un compte ayant accès au dépôt privé. Extraire **tout** le ZIP dans un dossier local avant
 `EstellArt.exe` ; ne pas lancer depuis la vue ZIP du navigateur. Pas de SDK .NET requis.
-La version exacte et le lien du paquet seront inscrits ici par le lot de packaging.
+Le ZIP est accompagné de son SHA-256. Il a été extrait et exécuté sur Windows Server 2022 ;
+[preuves et captures](evidence/windows-0.2.0/README.md). Le lancement sur le Windows 10 cible reste à vérifier.
 
 1. Lancer en répétition (défaut). Tester 1/4 poses, Au naturel/Surprise IA simulée, placement,
    décompte 5 secondes, effet de capture, aperçu. Aucun appareil ni Internet requis pour ce parcours.

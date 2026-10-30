@@ -1,0 +1,40 @@
+{
+  "version": "0.2.0.0",
+  "utc": "2026-10-30T18:17:45.3502388+00:00",
+  "os": "Microsoft Windows 10.0.20348",
+  "architecture": "X64",
+  "camera_sdk": "3.2.1021.0",
+  "cases": [
+    {
+      "count": 1,
+      "mode": "Original",
+      "sheet_sha256": "839c134c5a38fb6dd6085b645a2f4a7006f7920bd2dde336f8db0f4c03b87105",
+      "archive_entries": 2,
+      "simulated_print_jobs": 1
+    },
+    {
+      "count": 1,
+      "mode": "Surprise",
+      "sheet_sha256": "68cd62a0e786ed9c97cb0ed971723419d2dd2bdef5902b4fa2cf5eca0e189d98",
+      "archive_entries": 3,
+      "simulated_print_jobs": 1
+    },
+    {
+      "count": 4,
+      "mode": "Original",
+      "sheet_sha256": "ea4ccb3442ae7b658f5370b65d70c3bd96e2c7395a57dcb2a3acb8c6142f1a6e",
+      "archive_entries": 5,
+      "simulated_print_jobs": 1
+    },
+    {
+      "count": 4,
+      "mode": "Surprise",
+      "sheet_sha256": "3368d3f904ddc4646c797de233aabf076710ec0488ce79d43f794afc216dddbe",
+      "archive_entries": 9,
+      "simulated_print_jobs": 1
+    }
+  ],
+  "paid_api_calls": 0,
+  "hardware_access": false,
+  "success": true
+}

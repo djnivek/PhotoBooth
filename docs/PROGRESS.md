@@ -15,10 +15,12 @@ commerciale, la flotte de bornes et la maintenance longue durée ne sont pas le 
 | [PR 4](https://github.com/djnivek/PhotoBooth/pull/4) — adaptateurs Windows | Fusionnée ; CI Windows réussie, matériel non testé | Canon EDSDK, GDI DNP, journal anti-doublon |
 | [PR 5](https://github.com/djnivek/PhotoBooth/pull/5) — API et partage | Fusionnée ; backend déployé, tests Mac et CI Windows passés | Originaux + résultats privés, OpenAI asynchrone, QR ZIP |
 | [PR 6](https://github.com/djnivek/PhotoBooth/pull/6) — Canon sans SDK | Fusionnée, tests Mac et CI Windows passés ; matériel non testé | WPD/PTP avec pilote Windows existant |
-| PR 7 — paquet Windows | Codé ; auto-test Mac passé, vérification EXE Windows en cours | EXE autonome, téléchargement et handoff |
+| [PR 7](https://github.com/djnivek/PhotoBooth/pull/7) — paquet Windows | Fusionnée, `c4ba833` ; [release 0.2.0](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0) publiée | ZIP extrait et exécuté sur Windows, quatre modes simulés, cadrage natif corrigé et revu |
 
 Chaque livraison passe par une PR, les vérifications applicables, puis un merge.
 Le tableau doit évoluer avec les numéros et liens réels, sans appeler « fait » un simple contrat.
+Le [reçu Windows](evidence/windows-0.2.0/README.md) conserve le commit, le SHA et les captures.
+Les PR 3/5/6/7 contiennent désormais des screenshots ; poursuivre cette pratique à chaque modification UI.
 
 ## Portes de validation
 

@@ -68,3 +68,19 @@ The regenerated `settings.png` and `settings-bottom.png` are valid. The USB chec
 clear — this verdict covers only the observed native settings update, not camera compatibility, physical Windows operation or connected QR sharing.
 
 disposition: ship
+
+# PR7 final targeted review — native Windows viewport correction
+
+## verdict
+
+Resolved — inspected `artifacts/windows-ci-pr7-final/diagnostics/desktop-client.png`, `native-home.png` and `native-minimum.png`. The real Windows desktop pixels and rendered client agree at 992×700: Settings, the entire photo sheet and the full Start button are visible. After resizing to 960×700, all three remain visible; subtitle wrapping retains readable copy and the footer remains clear. No material regression is visible in this correction.
+
+The two diagnostic JSON files report scaling 1, all three controls inside the client and parent viewport, and `controls_inside_client: true`. At 960×700, Settings and HomeSheet end at x=924; Start ends at y=625 with its full 70 px height. These measurements corroborate the images rather than substituting for them.
+
+Reviewed MainWindow.cs changes from f9195b1 through 9c14516: actual ClientSize constraints update on open and resize, SessionBody explicitly stretches its content, and compact home spacing/display sizes preserve button sizes. The observed outcome addresses both the horizontal overflow and the prior parent-clipped Start action.
+
+## remaining
+
+clear — this verdict covers the corrected native Windows home layout at the observed 992×700 and resized 960×700, scaling 1. It does not certify other DPI scales, hardware operation, connected QR or paid AI. The diagnostic evidence records zero paid API calls and no hardware access.
+
+disposition: ship
