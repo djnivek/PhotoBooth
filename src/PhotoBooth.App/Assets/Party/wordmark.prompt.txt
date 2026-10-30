@@ -1,0 +1,5 @@
+Use case: logo-brand. Asset type: transparent wordmark artwork for a native touchscreen family party photo booth.
+Primary request: Create an exceptionally elegant, joyful custom typographic wordmark reading exactly "Colors Party". Two lines, Colors above Party, beautifully drawn confident retro editorial lettering with rounded high contrast serif-like strokes and restrained playful curves. Wide generous letters, easily readable at 400px width. Colors in muted sage green, Party in deep wine red velvet. Very subtle warm butter-yellow inline highlights may be used. No gradients or 3D render. A handmade boutique celebration invitation, classy not childish.
+Composition: lettering fills a balanced roughly 4:3 box with comfortable transparent margins, no cropping.
+Text verbatim: "Colors Party". No other text, no by Estelle, no date, no tagline.
+Constraints: fully transparent background, clean antialiased letter edges, no rectangle/paper, no shadows, no photographic objects, no confetti scatter, no watermark. Only the two-word custom lettering.

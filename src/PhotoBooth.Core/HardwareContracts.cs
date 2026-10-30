@@ -12,6 +12,8 @@ public interface IPhotoCamera : IAsyncDisposable
 {
     Task<CameraStatus> ConnectAsync(CancellationToken cancellationToken);
     IAsyncEnumerable<LiveViewFrame> LiveViewAsync(CancellationToken cancellationToken);
+    // Called with live view running, before every countdown. Must fail if preparation cannot complete.
+    Task PrepareCaptureAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     Task<CapturedPhoto> CaptureAsync(Guid sessionId, int shotIndex, CancellationToken cancellationToken);
 }
 

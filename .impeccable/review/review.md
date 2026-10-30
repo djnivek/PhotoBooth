@@ -84,3 +84,7 @@ Reviewed MainWindow.cs changes from f9195b1 through 9c14516: actual ClientSize c
 clear — this verdict covers the corrected native Windows home layout at the observed 992×700 and resized 960×700, scaling 1. It does not certify other DPI scales, hardware operation, connected QR or paid AI. The diagnostic evidence records zero paid API calls and no hardware access.
 
 disposition: ship
+
+# Colors Party replacement world
+
+The screenshots at these paths now show the user-approved replacement world. The historical reviews above concern earlier source revisions. The current full review and targeted verdict are persisted in [docs/reviews/colors-party/impeccable.md](../../docs/reviews/colors-party/impeccable.md).

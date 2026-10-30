@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "PhotoBooth API",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "description": "Personal booth API. Server-only OpenAI key, background xhigh edits, one durable claim per pose, private storage. No paid automated tests. Printing is local."
   },
   "servers": [
@@ -402,6 +402,25 @@
           }
         }
       }
+    },
+    "/styles": {
+      "get": {
+        "operationId": "getStyles",
+        "summary": "Public display metadata only, no prompts or credentials",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Ordered catalog for memory caching. No generation or storage writes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StyleCatalog"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -476,6 +495,12 @@
               "original",
               "surprise"
             ]
+          },
+          "style": {
+            "type": "string",
+            "default": "chef",
+            "pattern": "^[a-z][a-z0-9_]{0,47}$",
+            "description": "Catalog id, or chef for one random universe for the whole session. The choice and scene prompt are frozen at creation."
           }
         }
       },
@@ -593,6 +618,61 @@
           },
           "image_generation_enabled": {
             "type": "boolean"
+          }
+        }
+      },
+      "StyleCatalog": {
+        "type": "object",
+        "required": [
+          "version",
+          "styles"
+        ],
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "styles": {
+            "type": "array",
+            "maxItems": 200,
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "label",
+                "description",
+                "asset",
+                "color",
+                "phrases"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string",
+                  "maxLength": 48
+                },
+                "description": {
+                  "type": "string",
+                  "maxLength": 140
+                },
+                "asset": {
+                  "type": "string",
+                  "maxLength": 80
+                },
+                "color": {
+                  "type": "string",
+                  "pattern": "^#[0-9A-Fa-f]{6}$"
+                },
+                "phrases": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "maxLength": 120
+                  }
+                }
+              }
+            }
           }
         }
       }

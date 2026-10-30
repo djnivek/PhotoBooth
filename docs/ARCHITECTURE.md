@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart LR
-  CAMERA[Canon USB ou photos locales] --> APP[Estell’Art · Avalonia]
+  CAMERA[Canon USB ou photos locales] --> APP[Colors Party · Avalonia]
   APP --> LOCAL[JPEG et journaux atomiques locaux]
   APP -->|Original envoyé une fois| API[API Supabase authentifiée]
   API --> STORAGE[Storage privé]
@@ -30,7 +30,7 @@ Le paquet autonome embarquera son runtime ; aucun changement de Windows n’est 
 ## D02 — Plein écran et code
 
 F11, Échap et fermeture de la fenêtre demandent le code lorsque le plein écran est verrouillé.
-Code de 6–12 chiffres, PBKDF2-SHA256 salé, 600 000 itérations, comparaison constante,
+Code facultatif de quatre caractères, PBKDF2-SHA256 salé, 600 000 itérations, comparaison constante,
 cinq erreurs puis 30 secondes d’attente. Hash, sel et verrouillage sont persistés ; pas le code.
 Les réglages sont accessibles seulement après déverrouillage. Le mode n’empêche pas les
 raccourcis système Windows : prévoir un compte standard et limiter l’accès au clavier.
@@ -50,7 +50,7 @@ Le bouton de départ du décompte attend une première image de visée dans l’
 
 Le cycle ouvre la séance, active la pompe d’événements, choisit le transfert vers le PC,
 affiche les JPEG de visée puis les arrête avant un unique déclenchement. Le JPEG complet est
-normalisé et sauvé atomiquement avant accusé de transfert. Après 35 secondes sans JPEG,
+normalisé et sauvé atomiquement avant accusé de transfert. Après 33 secondes sans JPEG,
 erreur explicite, sans deuxième déclenchement. Régler JPEG haute qualité et vérifier la mise
 au point : ne pas supposer que la commande de déclenchement fait correctement l’autofocus.
 
@@ -126,3 +126,9 @@ l’événement, via l’API Storage avant suppression des métadonnées. Vérif
 | Offre Supabase / stockage externe | Volume mesuré par séance et nombre attendu de photos |
 | Purge cloud / rétention locale | Après récupération des souvenirs de l’anniversaire |
 | Galerie web | Hébergement compatible choisi sans upgrade implicite |
+
+## Catalogue et préparation caméra (0.3.0)
+
+Les six univers embarqués sont remplacés en mémoire par GET /styles au lancement ou sur action opérateur. La réponse tardive attend l’accueil si un invité choisit déjà. Les prompts restent serveur ; seule la scène est figée en base par séance. Voir [UNIVERS](UNIVERS.md).
+
+Avant chaque décompte : nouvelle visée, préparation caméra, contrôle de fraîcheur. Un seul déclenchement, transfert JPEG entier, puis reprise de visée. La voie WPD refuse l’autofocus non confirmé ; le secours explicitement configuré exige un objectif en MF et une netteté vérifiée par l’opérateur. Aucun délai arbitraire ne vaut confirmation de focus.

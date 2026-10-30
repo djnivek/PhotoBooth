@@ -1,99 +1,121 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using PhotoBooth.App;
 using PhotoBooth.Core;
 using PhotoBooth.Imaging;
+using PhotoBooth.Runtime;
 
-var root = Path.Combine(Path.GetTempPath(), "estellart-ui-" + Guid.NewGuid().ToString("N"));
+var root = Path.Combine(Path.GetTempPath(), "colors-party-ui-" + Guid.NewGuid().ToString("N"));
 Environment.SetEnvironmentVariable("PHOTOBOOTH_DATA_DIR", root);
 AppBuilder.Configure<App>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).SetupWithoutStarting();
 var screenshots = Path.Combine(Environment.CurrentDirectory, ".impeccable", "review");
 Directory.CreateDirectory(screenshots);
 var openedFolders = new List<string>();
-var window = new MainWindow((_, token) => Task.Delay(90, token), openedFolders.Add); window.Show();
-Pump(150);
-Capture("desktop-1280x800.png");
-window.Width = 1024; window.Height = 768; Pump(80); Capture("desktop-1024x768.png");
-AssertHomeFits();
-window.Width = 960; window.Height = 700; Pump(80); AssertHomeFits(); Capture("desktop-960x700.png");
+var catalogCalls = 0; var failCatalog = false;
+var serverCatalog = StyleCatalog.BuiltIn;
+Task<StyleCatalog> LoadCatalog(CancellationToken token)
+{ catalogCalls++; if(failCatalog)throw new IOException("Offline fixture");return Task.FromResult(serverCatalog); }
+var transform = new DelayedTransform();
+var window = new MainWindow((_, token) => Task.Delay(140, token), openedFolders.Add,
+    catalogLoader:LoadCatalog, transformFactory:()=>transform); window.Show();
+Pump(200);
+if(catalogCalls!=1)throw new Exception("Expected exactly one startup catalog request.");
+Capture("desktop-1280x800.png"); AssertHomeFits();
+window.Width = 1024; window.Height = 768; Pump(80); Capture("desktop-1024x768.png"); AssertHomeFits();
+window.Width = 960; window.Height = 700; Pump(80); Capture("desktop-960x700.png"); AssertHomeFits();
 window.Width = 1280; window.Height = 800; Pump(80);
-AssertHomeFits();
-Click("StartSession"); Until(() => Find("TakePhotos") is not null, 3000);
-Pump(300); Capture("positioning.png");
-Click("TakePhotos"); Pump(45); Capture("countdown.png");
-Until(() => window.GetVisualDescendants().OfType<TextBlock>().Any(t => t.Text == "Clic !"), 3000);
-Capture("capture-flash.png");
+Click("StartSession"); Until(() => Find("TakePhotos") is {IsEnabled:true,IsVisible:true}, 3000);
+Capture("positioning.png"); Click("TakePhotos");
+Until(()=>window.GetVisualDescendants().OfType<TextBlock>().Any(t=>t.Text=="3"),3000);Capture("countdown.png");
+Until(()=>window.GetVisualDescendants().OfType<TextBlock>().Any(t=>t.Text=="Gardez la pose"),3000);Capture("capture-flash.png");
 Until(() => Find("PrintPreview") is not null, 10000);
 Capture("result.png"); Click("PrintPreview");
 Until(() => Directory.GetFiles(root, "print-preview.jpg", SearchOption.AllDirectories).Length == 1, 3000);
 var file = Directory.GetFiles(root, "print-preview.jpg", SearchOption.AllDirectories).Single();
-if (new FileInfo(file).Length < 10000) throw new Exception("Print preview is empty.");
+if(new FileInfo(file).Length<10000)throw new Exception("Print preview is empty.");
 window.Width=1024;window.Height=768;Pump(80);Capture("result-1024x768.png");
 window.Width=1280;window.Height=800;Pump(80);
-Click("Settings"); Until(() => window.OwnedWindows.Count > 0, 2000);
-var settings = window.OwnedWindows.Single(); Pump(50);
-using (var settingsFrame = settings.CaptureRenderedFrame()!) settingsFrame.Save(Path.Combine(screenshots, "settings.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
-((ScrollViewer)settings.Content!).Offset=new Vector(0,10000);Pump(80);
-using (var settingsFrame = settings.CaptureRenderedFrame()!) settingsFrame.Save(Path.Combine(screenshots, "settings-bottom.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
-settings.GetVisualDescendants().OfType<TextBox>().Single(t => t.Name == "ExitPin").Text = "381629";
-settings.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "Activer le plein écran"))
-    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-Until(() => window.WindowState == WindowState.FullScreen, 2000);
-Click("OpenFiles"); Pump(100);
-if(openedFolders.Count!=0)throw new Exception("Locked kiosk opened the filesystem without the PIN.");
-Until(() => window.OwnedWindows.Count > 0, 2000);
-var unlock = window.OwnedWindows.Single(); Pump(50);
-using (var unlockFrame = unlock.CaptureRenderedFrame()!) unlockFrame.Save(Path.Combine(screenshots, "unlock.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
-unlock.GetVisualDescendants().OfType<TextBox>().Single(t => t.PasswordChar == '●').Text = "000000";
-unlock.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "Déverrouiller"))
-    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-Until(()=>unlock.GetVisualDescendants().OfType<TextBlock>().Any(t=>t.Text?.StartsWith("Code incorrect")==true),2000);
-using (var unlockFrame = unlock.CaptureRenderedFrame()!) unlockFrame.Save(Path.Combine(screenshots, "unlock-error.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
-if(openedFolders.Count!=0||window.WindowState!=WindowState.FullScreen)throw new Exception("Wrong PIN opened the filesystem.");
-unlock.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,"Retour à la fête"))
-    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-Until(()=>window.OwnedWindows.Count==0,2000);
-if(openedFolders.Count!=0||window.WindowState!=WindowState.FullScreen)throw new Exception("Cancelled PIN opened the filesystem.");
-window.Close();Until(()=>window.OwnedWindows.Count>0,2000);
-window.OwnedWindows.Single().GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,"Retour à la fête"))
-    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-Until(()=>window.OwnedWindows.Count==0,2000);
-Click("OpenFiles");Until(()=>window.OwnedWindows.Count>0,2000);
-unlock=window.OwnedWindows.Single();
-unlock.GetVisualDescendants().OfType<TextBox>().Single(t => t.PasswordChar == '●').Text = "381629";
-unlock.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "Déverrouiller"))
-    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-Until(() => window.WindowState == WindowState.Normal, 3000);
-Until(()=>openedFolders.Count==1,2000);
-if(openedFolders[0]!=Path.GetDirectoryName(file))throw new Exception("Unlocked folder does not match the reviewed session.");
-if (File.ReadAllText(Path.Combine(root, "kiosk.json")).Contains("381629")) throw new Exception("Plain PIN stored");
-Click("NewSession");Until(()=>Find("StartSession") is not null,2000);
-window.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,"Surprise"))
-    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-Pump(80);Capture("surprise-choice.png");
-Click("StartSession");Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);
-Click("TakePhotos");Until(()=>Find("PrintPreview") is not null,10000);
-Capture("surprise-result.png");
-Click("Settings"); Until(()=>window.OwnedWindows.Count>0,2000);
-window.OwnedWindows.Single().GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,"Activer le plein écran"))
-    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-Until(()=>window.WindowState==WindowState.FullScreen,2000);
-window.Close();Until(()=>window.OwnedWindows.Count>0,2000);
-unlock=window.OwnedWindows.Single();
-unlock.GetVisualDescendants().OfType<TextBox>().Single(t=>t.PasswordChar=='●').Text="381629";
-unlock.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,"Déverrouiller"))
-    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-Until(()=>window.WindowState==WindowState.Normal,2000);
-window.Close(); Pump(100);
-if(window.IsVisible)throw new Exception("Window did not close after correct PIN.");
+Click("NewSession"); ClickLabel("Métamorphose"); Pump(80); Capture("surprise-choice.png");
+AssertStylesFit();
+window.Width=960;window.Height=700;Pump(80);AssertStylesFit();Capture("styles-960x700.png");
+window.Width=1280;window.Height=800;Pump(80);
+Click("BackFromStyles");ClickLabel("Métamorphose");
+if(catalogCalls!=1)throw new Exception("Opening styles must never fetch the catalog.");
+Click("Style_halloween");Capture("halloween-choice.png");Click("StartStyledSession");
+Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);Click("TakePhotos");
+Until(()=>transform.Entered.Task.IsCompleted,10000);Pump(100);Capture("processing-halloween.png");
+if(!window.ProcessingAnimationRunning)throw new Exception("Processing animation did not start.");
+transform.Resume.SetResult();Until(()=>Find("PrintPreview") is not null,10000);Capture("surprise-result.png");
+if(window.ProcessingAnimationRunning)throw new Exception("Processing timer leaked after result.");
+if(transform.Choice!="halloween")throw new Exception("Selected style was lost before image processing.");
+Click("Settings");Until(()=>window.OwnedWindows.Count>0,2000);
+var settings=window.OwnedWindows.Single();Pump(80);CaptureDialog(settings,"settings.png");
+((ScrollViewer)settings.Content!).Offset=new Vector(0,10000);Pump(80);CaptureDialog(settings,"settings-bottom.png");
+settings.GetVisualDescendants().OfType<CheckBox>().Single(t=>t.Name=="ProtectSettings").IsChecked=true;
+settings.GetVisualDescendants().OfType<TextBox>().Single(t=>t.Name=="ExitPin").Text="E629";
+DialogClick(settings,"Activer le plein écran");Until(()=>window.WindowState==WindowState.FullScreen,2000);
+if(!settings.IsVisible)throw new Exception("Entering fullscreen must leave settings open.");
+if(Find("Settings")!.IsVisible)throw new Exception("Settings button leaked into fullscreen guest UI.");
+DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);
+// Short press, moving away, and release must not authorize or open the protected panel.
+HoldCorner(350);Pump(100);if(window.OwnedWindows.Count!=0)throw new Exception("Short corner tap opened settings.");
+var corner=new Point(20,window.ClientSize.Height-20);
+window.MouseDown(corner,MouseButton.Left);Pump(100);window.MouseMove(new Point(100,window.ClientSize.Height-20));Pump(3050);window.MouseUp(corner,MouseButton.Left);
+if(window.OwnedWindows.Count!=0)throw new Exception("Leaving the corner failed to cancel its hold.");
+HoldCorner(3150);Until(()=>window.OwnedWindows.Count==1,2000);
+var unlock=window.OwnedWindows.Single();CaptureDialog(unlock,"unlock.png");
+unlock.GetVisualDescendants().OfType<TextBox>().Single().Text="0000";DialogClick(unlock,"Déverrouiller");
+Until(()=>unlock.GetVisualDescendants().OfType<TextBlock>().Any(t=>t.Text?.StartsWith("Code incorrect")==true),2000);CaptureDialog(unlock,"unlock-error.png");
+if(window.WindowState!=WindowState.FullScreen)throw new Exception("Wrong code exited fullscreen.");
+unlock.GetVisualDescendants().OfType<TextBox>().Single().Text="E629";DialogClick(unlock,"Déverrouiller");
+Until(()=>window.OwnedWindows.Any(w=>w.Title=="Réglages de la borne"),3000);settings=window.OwnedWindows.Single();
+if(window.WindowState!=WindowState.FullScreen)throw new Exception("Corner unlock should preserve fullscreen.");
+if(File.ReadAllText(Path.Combine(root,"kiosk.json")).Contains("E629"))throw new Exception("Plain code stored.");
+// Refresh supports newly added and removed universes; unknown artwork uses local fallback.
+var added=new PhotoStyle("ocean","Sous l’océan","Une fête sous les vagues.","new_unbundled_asset","#512831",["Les poissons préparent la fête."]);
+serverCatalog=new("test.2",StyleCatalog.BuiltIn.Styles.Where(s=>s.Id!="halloween").Append(added).ToArray());
+DialogClick(settings,"Actualiser les univers");Until(()=>catalogCalls==2,2000);
+failCatalog=true;DialogClick(settings,"Actualiser les univers");Until(()=>catalogCalls==3,2000);
+if(window.CatalogCount!=6)throw new Exception("Network failure replaced the in-memory catalog.");
+DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);
+Click("NewSession");ClickLabel("Métamorphose");Pump(80);
+if(Find("Style_ocean") is null||Find("Style_halloween") is not null)throw new Exception("Refreshed catalog not applied.");
+if((Find("Style_ocean")!.Background as Avalonia.Media.ISolidColorBrush)?.Color!=Avalonia.Media.Color.Parse("#E0E7D8"))throw new Exception("Inaccessible server colour did not use the readable sage fallback.");
+Capture("dynamic-styles.png");AssertStylesFit();
+var backButton=Find("BackFromStyles")!;
+var backPoint=backButton.TranslatePoint(new Point(10,backButton.Bounds.Height/2),window)!.Value;
+if((window.InputHitTest(backPoint) as Control)?.Name=="AdminCorner")throw new Exception("Hidden corner intercepts the guest Retour button.");
+if(catalogCalls!=3)throw new Exception("Style picker fetched again.");
+// With no code configured, the same hold opens settings directly.
+HoldCorner(3150);Until(()=>window.OwnedWindows.Count==1,2000);unlock=window.OwnedWindows.Single();
+unlock.GetVisualDescendants().OfType<TextBox>().Single().Text="E629";DialogClick(unlock,"Déverrouiller");
+Until(()=>window.OwnedWindows.Any(w=>w.Title=="Réglages de la borne"),3000);settings=window.OwnedWindows.Single();
+settings.GetVisualDescendants().OfType<CheckBox>().Single(t=>t.Name=="ProtectSettings").IsChecked=false;
+DialogClick(settings,"Enregistrer le code");Until(()=>!File.Exists(Path.Combine(root,"kiosk.json")),2000);
+DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);
+var touchPoint=new Point(20,window.ClientSize.Height-20);
+using(var touch=window.TouchBegin(touchPoint)) {Pump(3150);window.TouchEnd(touch,touchPoint);Pump(50);}
+Until(()=>window.OwnedWindows.Any(w=>w.Title=="Réglages de la borne"),2000);settings=window.OwnedWindows.Single();
+DialogClick(settings,"Quitter le plein écran");Until(()=>window.WindowState==WindowState.Normal,2000);
+DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);window.Close();Pump(100);
+// A slow startup catalog must not replace the picker underneath a guest.
+var deferredCatalog=new TaskCompletionSource<StyleCatalog>();
+window=new MainWindow(catalogLoader:_=>deferredCatalog.Task);window.Show();Pump(80);
+ClickLabel("Métamorphose");
+deferredCatalog.SetResult(serverCatalog);Pump(80);
+if(Find("Style_halloween") is null||Find("Style_ocean") is not null)throw new Exception("Background catalog changed an active picker.");
+Click("BackFromStyles");ClickLabel("Métamorphose");
+if(Find("Style_ocean") is null||Find("Style_halloween") is not null)throw new Exception("Pending catalog was not applied on home.");
+window.Close();Pump(80);
 foreach(var driverError in new[]{false,true})
 {
     var delayed=new DelayedUiCamera(driverError);var cameraOpens=0;
-    window=new MainWindow(cameraFactory:store=>++cameraOpens==1?delayed:new FixtureCamera(store));window.Show();Pump(80);
+    window=new MainWindow(refreshCatalogOnOpen:false,cameraFactory:store=>++cameraOpens==1?delayed:new FixtureCamera(store));window.Show();Pump(80);
     var start=Find("StartSession")!;Click("StartSession");
     if(start.IsEnabled)throw new Exception("Start accepts another tap while connecting.");
     Until(()=>delayed.Entered.Task.IsCompleted&&Find("CancelSession") is not null,2000);
@@ -109,20 +131,30 @@ foreach(var driverError in new[]{false,true})
     Click("CancelSession");Until(()=>Find("StartSession") is not null,2000);
     window.Close();Pump(80);
 }
-Console.WriteLine("PASS UI: home at three sizes, capture/print flow, protected file access and close, slow connection cancellation and late driver error recovery. No paid API or printer.");
-Directory.Delete(root, true);
-
+Console.WriteLine("PASS UI: three home sizes, six style choices, explicit style flow, processing timer cleanup, dynamic add/remove/offline catalog, four-character code, optional protection, three-second corner hold and cancellation, print export and camera cancellation. No network, paid API or hardware.");
+Directory.Delete(root,true);
+void HoldCorner(int milliseconds)
+{var p=new Point(20,window.ClientSize.Height-20);window.MouseMove(p);window.MouseDown(p,MouseButton.Left);Pump(milliseconds);window.MouseUp(p,MouseButton.Left);Pump(50);}
+void DialogClick(Window dialog,string label)=>dialog.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,label)).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+void ClickLabel(string label){Pump(50);window.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,label)).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump(50);}
+void CaptureDialog(Window dialog,string name)
+{dialog.InvalidateVisual();Pump(100);using var image=dialog.CaptureRenderedFrame()!;image.Save(Path.Combine(screenshots,name),Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);}
+void AssertStylesFit()
+{foreach(var b in window.GetVisualDescendants().OfType<Button>().Where(b=>b.Name?.StartsWith("Style_")==true||b.Name=="StartStyledSession"))
+ {var p=b.TranslatePoint(new Point(),window)!.Value;if(p.X<0||p.Y<0||p.X+b.Bounds.Width>window.ClientSize.Width+1||p.Y+b.Bounds.Height>window.ClientSize.Height+1)throw new Exception("Style button clipped: "+b.Name);}}
 Button? Find(string name) => window.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == name);
 void Click(string name)
 {
     var button = Find(name) ?? throw new Exception("Missing button " + name);
     if (!button.IsEnabled || !button.IsVisible) throw new Exception("Unavailable button " + name);
-    button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Pump(30);
 }
 void Pump(int milliseconds)
 {
-    var end = DateTime.UtcNow.AddMilliseconds(milliseconds);
-    do { Dispatcher.UIThread.RunJobs(); Thread.Sleep(5); } while (DateTime.UtcNow < end);
+    // Run the platform loop too: RunJobs alone excludes timer events and would
+    // never exercise the real hold gesture or processing animation.
+    using var cancellation = new CancellationTokenSource(milliseconds);
+    Dispatcher.UIThread.MainLoop(cancellation.Token);
 }
 void Until(Func<bool> predicate, int timeout)
 {
@@ -161,4 +193,13 @@ sealed class DelayedUiCamera(bool driverError):IPhotoCamera
     {await Task.Delay(Timeout.Infinite,token);yield break;}
     public Task<CapturedPhoto> CaptureAsync(Guid session,int shot,CancellationToken token)=>throw new InvalidOperationException("Unexpected capture");
     public ValueTask DisposeAsync()=>ValueTask.CompletedTask;
+}
+
+sealed class DelayedTransform:IPhotoTransform
+{
+    public TaskCompletionSource Entered {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public TaskCompletionSource Resume {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public string? Choice;
+    public async Task<TransformResult> TransformAsync(Guid id,IReadOnlyList<byte[]> photos,IProgress<string> progress,CancellationToken token,string styleChoice=StyleCatalog.Chef)
+    {Choice=styleChoice;Entered.TrySetResult();await Resume.Task.WaitAsync(token);return await new RehearsalTransform().TransformAsync(id,photos,progress,token,styleChoice);}
 }

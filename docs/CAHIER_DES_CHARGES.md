@@ -25,7 +25,7 @@ présente les résultats, permet de les récupérer sur téléphone et imprime s
 ## Parcours visiteur
 
 1. Choisir **1 photo** ou **4 photos**.
-2. Choisir **Original** ou **Surprise IA**. Aucun catalogue de styles à choisir.
+2. Choisir **Au naturel** ou **Métamorphose**, puis un des six univers ou **La Surprise du Chef**.
 3. Montrer les personnes **en direct depuis le Canon** afin qu’elles se placent.
 4. Afficher un bouton « C’est parti ». Après appui, afficher **5, 4, 3, 2, 1**
    en surimpression de la visée. Durée administrable de 3 à 10 secondes ; défaut proposé : 5.
@@ -46,7 +46,7 @@ présente les résultats, permet de les récupérer sur téléphone et imprime s
 
 ```mermaid
 flowchart LR
-  A[1 ou 4 photos] --> B[Original ou Surprise IA]
+  A[1 ou 4 photos] --> B[Au naturel ou Métamorphose]
   B --> C[Visée en direct et placement]
   C --> D[Décompte sur la visée]
   D --> E[Déclenchement et sauvegarde JPEG]
@@ -121,3 +121,5 @@ code de sortie et écran de diagnostic. Aucun de ces réglages ne doit encombrer
 Paiement à la séance, vidéo, GIF, partage par SMS/email, choix de style par le visiteur,
 reconnaissance des personnes, plusieurs appareils à la fois, retouche manuelle et galerie publique
 globale. La première version cible une seule borne et le matériel confirmé.
+
+Évolution 0.3.0 : Colors Party by Estelle, décompte 3 secondes, catalogue serveur actualisable dans les réglages, code facultatif de quatre caractères et maintien de trois secondes en bas à gauche. [Détails du catalogue](UNIVERS.md).

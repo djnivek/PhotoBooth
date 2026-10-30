@@ -14,7 +14,7 @@ Session Captured(int count = 4, PhotoMode mode = PhotoMode.Original)
     for (var i = 0; i < count; i++)
     {
         s.StartCountdown();
-        for (var tick = 0; tick < 5; tick++) s.Tick();
+        for (var tick = 0; tick < s.Options.CountdownSeconds; tick++) s.Tick();
         s.RecordCapture(new CapturedPhoto(Guid.NewGuid(), $"original-{i}"));
     }
     return s;
@@ -34,7 +34,7 @@ foreach (var count in new[] { 1, 4 }) foreach (var mode in new[] { PhotoMode.Ori
         {
             Check(s.WantsLiveView);
             s.StartCountdown();
-            for (var t = 5; t >= 1; t--) { Check(s.SecondsRemaining == t && s.WantsLiveView); s.Tick(); }
+            for (var t = s.Options.CountdownSeconds; t >= 1; t--) { Check(s.SecondsRemaining == t && s.WantsLiveView); s.Tick(); }
             Check(s.Stage == SessionStage.Capturing && !s.WantsLiveView);
             s.RecordCapture(new CapturedPhoto(Guid.NewGuid(), $"capture-{i}"));
         }
@@ -65,7 +65,7 @@ Test("cannot double-start or over-tick countdown", () =>
 {
     var s = new Session(new SessionOptions(1, PhotoMode.Original)); s.StartCountdown();
     Throws<InvalidOperationException>(s.StartCountdown);
-    for (var i = 0; i < 5; i++) s.Tick();
+    for (var i = 0; i < s.Options.CountdownSeconds; i++) s.Tick();
     Throws<InvalidOperationException>(s.Tick);
 });
 Test("four-shot session requires four distinct captures", () =>
@@ -74,7 +74,7 @@ Test("four-shot session requires four distinct captures", () =>
     var photo = new CapturedPhoto(Guid.NewGuid(), "original");
     for (var i = 0; i < 2; i++)
     {
-        s.StartCountdown(); for (var t = 0; t < 5; t++) s.Tick();
+        s.StartCountdown(); for (var t = 0; t < s.Options.CountdownSeconds; t++) s.Tick();
         if (i == 0) s.RecordCapture(photo);
         else Throws<ArgumentException>(() => s.RecordCapture(photo));
     }
@@ -162,21 +162,47 @@ Test("layout rejects unsupported dimensions", () =>
     Throws<ArgumentOutOfRangeException>(() => PrintLayout.FourBySix(4, -1));
     Throws<ArgumentOutOfRangeException>(() => PrintLayout.FourBySix(4, 60, 9999));
 });
-Test("PIN has no short or nonnumeric default", () =>
+Test("Operator code is exactly four printable characters", () =>
 {
-    Throws<ArgumentException>(() => KioskExitGate.Create("1234"));
-    Throws<ArgumentException>(() => KioskExitGate.Create("abcdef"));
+    Throws<ArgumentException>(() => KioskExitGate.Create("123"));
+    Throws<ArgumentException>(() => KioskExitGate.Create("a bc"));
 });
 Test("exit PIN rejects wrong code and enforces cooldown", () =>
 {
     var clock = new ManualTime();
-    var gate = KioskExitGate.Create("864209", clock); // Test fixture only; never an application default.
-    Check(gate.TryAuthorizeExit("864209"));
+    var gate = KioskExitGate.Create("E429", clock); // Test fixture only; never an application default.
+    Check(gate.TryAuthorizeExit("E429"));
     for (var i = 0; i < 5; i++) Check(!gate.TryAuthorizeExit("wrong"));
-    Check(!gate.TryAuthorizeExit("864209"));
+    Check(!gate.TryAuthorizeExit("E429"));
     clock.Advance(TimeSpan.FromSeconds(30));
-    Check(!gate.TryAuthorizeExit("000000"));
-    Check(gate.TryAuthorizeExit("864209"));
+    Check(!gate.TryAuthorizeExit("0000"));
+    Check(gate.TryAuthorizeExit("E429"));
+});
+
+Test("catalog accepts new identifiers without prompts and rejects malformed metadata", () =>
+{
+    var json = System.Text.Json.JsonSerializer.Serialize(StyleCatalog.BuiltIn);
+    var loaded = StyleCatalog.Parse(json);
+    Check(loaded.Styles.Length == 6 && loaded.Find("not_bundled").Id == StyleCatalog.Chef);
+    Check(new SessionOptions(4, PhotoMode.Surprise, styleChoice: "ocean").StyleChoice == "ocean");
+    Throws<InvalidDataException>(() => StyleCatalog.Parse("{\"version\":\"x\",\"styles\":[null]}"));
+    Throws<ArgumentException>(() => new SessionOptions(1, PhotoMode.Surprise, styleChoice: "../path"));
+});
+Test("corner hold requires a complete continuous three seconds and triggers once", () =>
+{
+    var clock = new HoldTime(); var hold = new CornerHold(clock);
+    hold.Begin(); clock.Advance(2999); Check(!hold.Poll()); clock.Advance(1); Check(hold.Poll()); Check(!hold.Poll());
+    hold.Begin(); clock.Advance(2000); hold.Cancel(); clock.Advance(2000); Check(!hold.Poll());
+    hold.Begin(); clock.Advance(3000); Check(hold.Poll());
+});
+Test("four-character operator code roundtrip and legacy credential compatibility", () =>
+{
+    var gate = KioskExitGate.Create("E62!"); Check(gate.TryAuthorizeExit("E62!"));
+    Check(KioskExitGate.Restore(gate.Export()).TryAuthorizeExit("E62!"));
+    var salt = System.Security.Cryptography.RandomNumberGenerator.GetBytes(16);
+    var hash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2("381629",salt,600000,System.Security.Cryptography.HashAlgorithmName.SHA256,32);
+    var old = new KioskExitGate.Credential(Convert.ToBase64String(salt),Convert.ToBase64String(hash),0,default);
+    Check(KioskExitGate.Restore(old).TryAuthorizeExit("381629"));
 });
 
 var failed = 0;
@@ -193,4 +219,12 @@ sealed class ManualTime : TimeProvider
     private DateTimeOffset now = DateTimeOffset.UnixEpoch;
     public override DateTimeOffset GetUtcNow() => now;
     public void Advance(TimeSpan elapsed) => now += elapsed;
+}
+
+sealed class HoldTime : TimeProvider
+{
+    private long timestamp;
+    public override long TimestampFrequency => 1000;
+    public override long GetTimestamp() => timestamp;
+    public void Advance(long milliseconds) => timestamp += milliseconds;
 }

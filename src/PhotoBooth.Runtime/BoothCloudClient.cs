@@ -38,17 +38,17 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
         return result.RootElement.GetProperty("image_generation_enabled").GetBoolean();
     }
 
-    private async Task<string> EnsureSession(Guid id, int count, PhotoMode mode, CancellationToken token)
+    private async Task<string> EnsureSession(Guid id, int count, PhotoMode mode, CancellationToken token, string styleChoice = StyleCatalog.Chef)
     {
         using var result = await SendJsonAsync(HttpMethod.Post, "sessions", new { id = id.ToString(), photo_count = count,
-            mode = mode == PhotoMode.Surprise ? "surprise" : "original" }, token);
+            mode = mode == PhotoMode.Surprise ? "surprise" : "original", style = styleChoice }, token);
         return result.RootElement.GetProperty("style").GetString()!;
     }
 
     public async Task<TransformResult> TransformAsync(Guid sessionId, IReadOnlyList<byte[]> originals,
-        IProgress<string> progress, CancellationToken token)
+        IProgress<string> progress, CancellationToken token, string styleChoice = StyleCatalog.Chef)
     {
-        var style = await EnsureSession(sessionId, originals.Count, PhotoMode.Surprise, token);
+        var style = await EnsureSession(sessionId, originals.Count, PhotoMode.Surprise, token, styleChoice);
         using var concurrency = new SemaphoreSlim(2);
         var tasks = originals.Select(async (bytes, index) =>
         {
@@ -99,7 +99,7 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
         if (session.Stage != SessionStage.Ready || photos.Count != session.Options.PhotoCount ||
             !session.Results.Select(r => r.AssetKey).SequenceEqual(photos.Select(p => p.Key)) || session.SheetAssetKey != sheet.Key)
             throw new InvalidOperationException("Le partage doit correspondre exactement à l’aperçu validé.");
-        await EnsureSession(session.Id, photos.Count, session.Options.Mode, token);
+        await EnsureSession(session.Id, photos.Count, session.Options.Mode, token, session.Options.StyleChoice);
         var images = new List<byte[]>();
         foreach (var photo in photos) images.Add(await store.ReadVerifiedAsync(photo, token));
         var sheetBytes = await store.ReadVerifiedAsync(sheet, token);
@@ -191,7 +191,7 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
         try { using var body=JsonDocument.Parse(await response.Content.ReadAsByteArrayAsync());code=body.RootElement.GetProperty("code").GetString(); } catch(JsonException) { } catch(KeyNotFoundException) { }
         throw new IOException(code switch
         {
-            "openai_not_configured"=>"La clé OpenAI doit être configurée dans Supabase avant le premier essai IA.",
+            "openai_not_configured"=>"La clé OpenAI doit être configurée dans Supabase avant le premier essai de métamorphose.",
             "unauthorized"=>"Le code de connexion de la borne est incorrect. Vérifiez les réglages.",
             "generation_uncertain_no_auto_retry"=>"La génération est incertaine. Aucun nouvel appel payant n’a été relancé automatiquement.",
             _=>$"Service momentanément indisponible ({(int)response.StatusCode}, {code??"réseau"}). Les photos restent enregistrées localement."

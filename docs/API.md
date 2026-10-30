@@ -51,3 +51,7 @@ La séance expire après 7 jours. Les URLs d’image intermédiaires expirent ap
 l’entrée OpenAI après 30 minutes ; le ZIP partagé après la durée restante de la séance.
 Pas de purge automatique, pas de révocation immédiate d’un ZIP déjà signé : son URL reste
 valable jusqu’à expiration, sauf suppression de l’objet. Pas de listing public du bucket.
+
+## Catalogue et choix (0.3.0)
+
+`GET /styles` est public et renvoie la version et les métadonnées d’affichage, sans prompts. `POST /sessions` accepte `style` : un identifiant du catalogue ou `chef` (défaut). Le serveur conserve choix, univers tiré et scène pour les poses de cette séance. Même UUID avec un choix différent donne 409. Les anciens clients restent compatibles. Voir [UNIVERS](UNIVERS.md).

@@ -1,49 +1,53 @@
-ESTELL'ART - ANNIVERSAIRE D'ESTELLE
+COLORS PARTY BY ESTELLE
 
-1. Extraire tout le ZIP dans un dossier, puis lancer EstellArt.exe.
-   Ne pas lancer l'application depuis l'aperçu du ZIP.
-   Application Windows x64 autonome : pas d'installation .NET nécessaire.
+1. Extraire tout le ZIP, puis lancer ColorsParty.exe.
+   Ne pas lancer depuis l’aperçu du ZIP. Aucun SDK .NET à installer.
 
-2. PREMIER ESSAI SANS MATERIEL
-   Tout est simulé par défaut : caméra, effet IA et impression.
-   Choisir une ou quatre poses, puis Démarrer et On est prêts !
+2. ESSAI SANS MATERIEL
+   Par défaut : caméra locale, effet local, impression vers fichier, aucun appel payant.
+   Choisir une ou quatre poses, Au naturel ou Métamorphose.
+   Métamorphose propose six univers et La Surprise du Chef.
+   Démarrer, se placer dans la visée, puis On est prêts ! Chaque pose suit 3, 2, 1.
    Réglages permet de choisir vos propres photos locales.
-   Imprimer enregistre un fichier tant que l'envoi à l'imprimante est désactivé.
+   Imprimer écrit print-preview.jpg tant que l’envoi à l’imprimante reste désactivé.
 
 3. OPENAI ET TELECHARGEMENT
-   L'opérateur ajoute OPENAI_API_KEY dans les Secrets du projet Supabase PhotoBooth.
-   Cette clé ne doit jamais être mise dans cette application.
-   Dans Réglages, saisir le code de connexion distinct de la borne, puis activer la connexion.
-   Le contrôle de connexion est gratuit ; une séance Surprise en ligne est facturée par OpenAI.
-   Au naturel ne fait aucun appel OpenAI. Le QR télécharge un ZIP valable 7 jours.
-   Il contient les photos et la planche ; en mode IA, les originaux sont dans originaux/.
+   Ajouter OPENAI_API_KEY dans les Secrets du projet Supabase PhotoBooth.
+   Ne jamais mettre cette clé dans la borne. Saisir le code de connexion distinct
+   dans Réglages, puis activer la connexion. Le contrôle de connexion est gratuit.
+   Une séance Métamorphose en ligne est facturée. Au naturel n’appelle pas OpenAI.
+   Le QR télécharge un ZIP valable 7 jours : photos et planche, plus originaux/.
+   Réglages > Actualiser les univers récupère les ajouts et retraits du serveur.
 
-4. CANON / DNP SUR LE PHOTOMATON
-   Fermer DSLR Booth et EOS Utility, sans les désinstaller.
-   Allumer et brancher le Canon, réglé en JPEG. Activer Canon USB dans Réglages.
-   Laisser la connexion avancée SDK décochée : le pilote Windows existant est utilisé.
-   Ne pas remplacer le pilote USB. Le Canon EOS4000D doit encore être testé physiquement.
-   Choisir la vraie file DNP DS620, papier 4x6, puis activer l'impression réelle.
-   Une mire et une planche de quatre photos doivent être vérifiées sur le papier avant la fête.
-   Un numéro de travail signifie envoyé au spooler, pas papier déjà sorti.
+4. CANON ET DNP
+   Fermer DSLR Booth et EOS Utility sans les désinstaller. Canon allumé, USB, JPEG.
+   Cocher Utiliser le Canon USB ; laisser SDK officiel décoché par défaut.
+   Le pilote WPD actuel ne confirme pas de façon fiable l’autofocus du 4000D.
+   Pour le premier essai : régler l’objectif en MF, faire la netteté à la distance
+   des invités, puis cocher Mise au point manuelle vérifiée et enregistrer le matériel.
+   Sans cette préparation, la capture WPD est bloquée. Tester la netteté sur le boîtier.
+   Ne pas remplacer le pilote USB. Compatibilité 4000D encore à vérifier physiquement.
+   Choisir la file DNP DS620, papier 4x6, une copie, puis activer l’envoi réel.
+   Vérifier une mire et une planche de quatre sur le papier avant la fête.
+   Accepté par le spooler ne signifie pas encore imprimé. Pas de renvoi automatique.
 
-5. PLEIN ECRAN
-   Choisir dans Réglages un code de 6 à 12 chiffres puis Activer le plein écran.
-   Réglages, F11, Echap ou fermeture demandent le code pour sortir.
-   Les commandes système Windows restent accessibles : limiter l'accès au clavier.
+5. REGLAGES ET PLEIN ECRAN
+   Réglages est visible au démarrage. Le code est facultatif, quatre caractères.
+   Cocher Protéger les réglages avec un code, saisir le code puis l’enregistrer.
+   Activer le plein écran laisse les réglages ouverts ; les fermer pour les invités.
+   Maintenir trois secondes en bas à gauche pour les retrouver.
+   Avec un code, il est demandé ; sans code, ouverture directe.
+   F11, Echap et fermeture demandent aussi le code configuré pour sortir.
+   Les raccourcis système Windows ne sont pas neutralisés.
 
 DONNEES ET REPRISE
-   Photos et réglages : %LOCALAPPDATA%\EstellArt
-   Les photos ne sont pas effacées automatiquement. Les originaux sont des JPEG
-   non retouchés normalisés à 2560 pixels, pas des RAW capteur.
-   Si le démarrage échoue : lire startup-error.txt dans ce dossier.
-   Si une impression est incertaine : vérifier la file Windows avant de réessayer.
-   Une erreur IA propose de garder les originaux ; ne pas recréer une séance
-   pour relancer une génération sans vérifier celle déjà demandée.
+   Photos et réglages restent dans %LOCALAPPDATA%\EstellArt pour compatibilité.
+   Pas de purge automatique. Originaux JPEG non retouchés, normalisés à 2560 pixels.
+   Une panne de démarrage produit startup-error.txt dans ce dossier.
+   Après une impression incertaine, regarder la file Windows avant de réessayer.
+   Une erreur de génération permet de garder les originaux explicitement.
 
-   Cet exécutable personnel n'est pas signé par un certificat commercial.
-   Windows peut afficher un avertissement de provenance. Vérifier le SHA-256
-   contre le fichier fourni et télécharger uniquement depuis le dépôt privé PhotoBooth.
-
-   Ce paquet est une répétition vérifiée sur Windows Server2022. Le Windows10 Pro22H2
-   cible, le Canon, la DNP et le premier appel OpenAI restent les essais terrain.
+   Exécutable personnel non signé par certificat commercial. Vérifier le SHA-256
+   fourni et télécharger uniquement depuis le dépôt privé PhotoBooth.
+   La validation automatisée sur Windows Server 2022 ne remplace pas Windows 10,
+   le Canon, la DNP ou le premier essai OpenAI réel.

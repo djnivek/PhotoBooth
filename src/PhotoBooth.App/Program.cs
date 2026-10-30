@@ -12,13 +12,13 @@ internal static class Program
         {
             if(args.FirstOrDefault()=="--self-test")
             {
-                if(args.Length!=2)throw new ArgumentException("Usage: EstellArt.exe --self-test <output-directory>");
+                if(args.Length!=2)throw new ArgumentException("Usage: ColorsParty.exe --self-test <output-directory>");
                 SmokeOutput=Path.GetFullPath(args[1]);
                 PackageSelfTest.RunAsync(SmokeOutput).GetAwaiter().GetResult();return 0;
             }
             if(args.FirstOrDefault()=="--smoke-ui")
             {
-                if(args.Length!=2)throw new ArgumentException("Usage: EstellArt.exe --smoke-ui <output-directory>");
+                if(args.Length!=2)throw new ArgumentException("Usage: ColorsParty.exe --smoke-ui <output-directory>");
                 SmokeOutput=Path.GetFullPath(args[1]);Directory.CreateDirectory(SmokeOutput);
                 Environment.SetEnvironmentVariable("PHOTOBOOTH_DATA_DIR",Path.Combine(SmokeOutput,"isolated-ui-"+Guid.NewGuid().ToString("N")));
             }

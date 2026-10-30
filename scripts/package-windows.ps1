@@ -1,5 +1,5 @@
 param(
-    [ValidatePattern('^\d+\.\d+\.\d+(-[A-Za-z0-9.-]+)?$')][string]$Version = '0.2.2',
+    [ValidatePattern('^\d+\.\d+\.\d+(-[A-Za-z0-9.-]+)?$')][string]$Version = '0.3.0',
     [string]$OutputRoot = 'artifacts/package'
 )
 $ErrorActionPreference = 'Stop'
@@ -10,7 +10,7 @@ Push-Location (Join-Path $PSScriptRoot '..')
 try {
     $output = [IO.Path]::GetFullPath($OutputRoot)
     $stage = Join-Path $output ('.staging-' + [Guid]::NewGuid().ToString('N'))
-    $zip = Join-Path $output "EstellArt-$Version-win-x64.zip"
+    $zip = Join-Path $output "ColorsParty-$Version-win-x64.zip"
     if (Test-Path -LiteralPath $zip) { throw "Package already exists: $zip. Use a fresh OutputRoot." }
     New-Item -ItemType Directory -Path $stage -Force | Out-Null
     dotnet publish src/PhotoBooth.App/PhotoBooth.App.csproj --configuration Release --runtime win-x64 --self-contained true `
@@ -32,7 +32,7 @@ try {
     Expand-Archive -LiteralPath $zip -DestinationPath $unpacked
     $diagnostics = Join-Path $output 'diagnostics'
     New-Item -ItemType Directory -Path $diagnostics -Force | Out-Null
-    $executable = Join-Path $unpacked 'EstellArt.exe'
+    $executable = Join-Path $unpacked 'ColorsParty.exe'
     foreach ($mode in @('--self-test', '--smoke-ui')) {
         $process = Start-Process -FilePath $executable -ArgumentList @($mode, ('"' + $diagnostics + '"')) -PassThru
         if ($mode -eq '--smoke-ui') { & (Join-Path $PSScriptRoot 'capture-window.ps1') -ApplicationProcess $process -OutputDirectory $diagnostics }

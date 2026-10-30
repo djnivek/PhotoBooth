@@ -1,0 +1,77 @@
+{
+  "version": "2026-10-30.1",
+  "styles": [
+    {
+      "id": "colors_party",
+      "label": "Colors Party",
+      "description": "Du velours, des couleurs et vous.",
+      "asset": "colors_party",
+      "color": "#E0E7D8",
+      "phrases": [
+        "Une pincée de couleurs.",
+        "Le velours entre en scène.",
+        "Vos sourires sont entre de bonnes mains."
+      ]
+    },
+    {
+      "id": "halloween",
+      "label": "Halloween",
+      "description": "Des citrouilles très bien habillées.",
+      "asset": "halloween",
+      "color": "#F3D5C3",
+      "phrases": [
+        "Les citrouilles ajustent leur tenue.",
+        "Une pincée de mystère.",
+        "Les fantômes se tiennent à carreau."
+      ]
+    },
+    {
+      "id": "space",
+      "label": "Dans les étoiles",
+      "description": "Votre équipage change de planète.",
+      "asset": "space",
+      "color": "#E7DFF0",
+      "phrases": [
+        "Les étoiles s’alignent.",
+        "Votre équipage prépare son entrée.",
+        "Un petit détour par Saturne."
+      ]
+    },
+    {
+      "id": "fantasy",
+      "label": "Pays imaginaire",
+      "description": "Les licornes sont de la partie.",
+      "asset": "fantasy",
+      "color": "#F4E6B7",
+      "phrases": [
+        "Les licornes lissent leur crinière.",
+        "Un peu de poussière de fée.",
+        "Le jardin sort ses habits de fête."
+      ]
+    },
+    {
+      "id": "elves",
+      "label": "Petits lutins",
+      "description": "Petits dans un monde trop grand.",
+      "asset": "elves",
+      "color": "#DCE6D7",
+      "phrases": [
+        "Les lutins sortent le grand jeu.",
+        "Les champignons dressent la table.",
+        "Le petit monde s’agite en cuisine."
+      ]
+    },
+    {
+      "id": "disco",
+      "label": "Disco velours",
+      "description": "La piste n’attendait que vous.",
+      "asset": "disco",
+      "color": "#F1D5D3",
+      "phrases": [
+        "La boule à facettes se réveille.",
+        "Le velours chauffe la piste.",
+        "Les paillettes répètent leur numéro."
+      ]
+    }
+  ]
+}

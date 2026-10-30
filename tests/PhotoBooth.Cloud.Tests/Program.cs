@@ -11,6 +11,24 @@ var passed=0;
 void Check(bool ok,string label){if(!ok)throw new Exception(label);passed++;}
 try
 {
+    var catalogJson=JsonSerializer.Serialize(StyleCatalog.BuiltIn);
+    using(var handler=new CatalogHttp(catalogJson))
+    {
+        var catalog=await StyleCatalogClient.FetchAsync("https://test.supabase.co/functions/v1/photobooth-api",default,handler);
+        Check(catalog.Styles.Length==6&&handler.Calls==1,"Public catalog uses exactly one unauthenticated request");
+    }
+    foreach(var invalid in new[]{"{}",new string('x',256*1024+1),catalogJson.Replace("Halloween","Halloween AI"),catalogJson.Replace("Halloween","Halloween-party")})
+    {
+        try {await StyleCatalogClient.FetchAsync("https://test.supabase.co",default,new CatalogHttp(invalid));throw new Exception("Invalid catalog accepted");}
+        catch(InvalidDataException){Check(true,"Malformed, oversized or forbidden guest copy rejected");}
+    }
+    using(var cancellation=new CancellationTokenSource(30))
+    {
+        try {await StyleCatalogClient.FetchAsync("https://test.supabase.co",cancellation.Token,new CatalogHttp(null));throw new Exception("Stalled catalog body ignored cancellation");}
+        catch(OperationCanceledException){Check(true,"Catalog body reads honor cancellation after headers");}
+    }
+    try {await StyleCatalogClient.FetchAsync("http://test.invalid",default,new CatalogHttp(catalogJson));throw new Exception("Insecure catalog accepted");}
+    catch(ArgumentException){Check(true,"Catalog rejects HTTP before sending");}
     var originals=Enumerable.Range(0,4).Select(FixtureCamera.CreateFixture).ToArray();
     var sheet=PhotoProcessor.Compose(originals);
     var zip=BoothCloudClient.BuildArchive(originals,sheet);
@@ -93,7 +111,7 @@ Console.WriteLine($"PASS {passed} cloud client checks; HTTP fully replaced by a 
 
 sealed class FailingTransform:IPhotoTransform
 {
-    public Task<TransformResult> TransformAsync(Guid id,IReadOnlyList<byte[]> photos,IProgress<string> progress,CancellationToken token)=>throw new IOException("Simulated API failure");
+    public Task<TransformResult> TransformAsync(Guid id,IReadOnlyList<byte[]> photos,IProgress<string> progress,CancellationToken token,string styleChoice=StyleCatalog.Chef)=>throw new IOException("Simulated API failure");
 }
 sealed class FallbackPrinter:IPhotoPrinter
 {
@@ -143,4 +161,24 @@ sealed class FakeHttp(byte[] fixture):HttpMessageHandler
         }
         throw new Exception("Unexpected request "+path);
     }
+}
+
+sealed class CatalogHttp(string? json):HttpMessageHandler
+{
+    public int Calls;
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)
+    {
+        Calls++;
+        if(request.Headers.Authorization is not null||request.Method!=HttpMethod.Get||!request.RequestUri!.AbsolutePath.EndsWith("/styles"))throw new Exception("Catalog request contract violated");
+        return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK){Content=json is null?new StreamContent(new StalledRead()):new StringContent(json)});
+    }
+}
+sealed class StalledRead:Stream
+{
+    public override bool CanRead=>true;public override bool CanSeek=>false;public override bool CanWrite=>false;
+    public override long Length=>throw new NotSupportedException();public override long Position{get=>throw new NotSupportedException();set=>throw new NotSupportedException();}
+    public override async ValueTask<int> ReadAsync(Memory<byte> buffer,CancellationToken token=default){await Task.Delay(Timeout.Infinite,token);return 0;}
+    public override int Read(byte[] buffer,int offset,int count)=>throw new NotSupportedException();
+    public override void Flush()=>throw new NotSupportedException();public override long Seek(long offset,SeekOrigin origin)=>throw new NotSupportedException();
+    public override void SetLength(long value)=>throw new NotSupportedException();public override void Write(byte[] buffer,int offset,int count)=>throw new NotSupportedException();
 }

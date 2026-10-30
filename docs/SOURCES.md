@@ -39,3 +39,7 @@ ou mesures des fournisseurs.
 - [Stockage Supabase](https://supabase.com/docs/guides/storage/pricing) : 1 Go Free, 100 Go Pro ; ne pas confondre avec le disque Postgres.
 
 - [FC.SDK3.2.1021](https://github.com/SharpAstro/FC.SDK/tree/0800943d2d4aaaa8ffc5da11b5ce57bfed9614a7) : source correspondant au package NuGet, MIT, transports WPD sans changement de pilote ; preuves déclarées 6D/450D, **pas 4000D**. Adaptateur personnel testé contre un faux transport seulement.
+
+## Préparation du focus (Colors Party)
+
+Source primaire examinée : [FC.SDK commit 0800943](https://github.com/SharpAstro/FC.SDK/tree/0800943d2d4aaaa8ffc5da11b5ce57bfed9614a7), version embarquée 3.2.1021. `TakePictureAsync`, `AutoFocusLiveViewAsync`, `CancelAutoFocusAsync`, `GetFocusStateAsync` et `StateChanged/AfResult` ont été examinés. L’ACK d’autofocus n’est pas un état de verrouillage ; la documentation du payload AfResult ne permet pas d’attester son sens sur EOS4000D. Ne pas inventer une valeur de succès ni réutiliser des mesures d’autres boîtiers. La voie MF demande confirmation opérateur et mode MF réel.

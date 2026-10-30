@@ -1,0 +1,68 @@
+{
+  "utc": "2026-10-30T21:23:30.904106+00:00",
+  "project": "frkckrvsdsiwivdfyjau",
+  "api_version": "0.3.0",
+  "catalog_version": "2026-10-30.1",
+  "styles": [
+    "colors_party",
+    "halloween",
+    "space",
+    "fantasy",
+    "elves",
+    "disco"
+  ],
+  "public_prompts_exposed": false,
+  "explicit_style_and_replay_verified": true,
+  "conflicting_choice_rejected": true,
+  "generation_routes_called": 0,
+  "photos_uploaded": 0,
+  "openai_key_configured": false,
+  "checks": [
+    {
+      "route": "/health",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "route": "/styles",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "route": "/booth/check",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "route": "/booth/check",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 400
+    }
+  ],
+  "source_sha256": {
+    "supabase/functions/photobooth-api/index.ts": "7cfc87b2ce2523a2e93fc77d56d22201029f0a33f332b5c811b7e7820a2e31d6",
+    "supabase/functions/photobooth-api/cloud.ts": "0bad8fb5133b49519b6912ba1399afa3183dfcb0e2177d059362b2e8df46c485",
+    "supabase/functions/photobooth-api/styles.json": "ad4b8c19d97e44db62647c0c542efd8ac06684934686be241034dc7720a2a546",
+    "supabase/migrations/20261030204756_freeze_style_prompts.sql": "d416a4c864237d72332c2dc5190a23f6121e65c179c9086ab900b4911f757553"
+  }
+}

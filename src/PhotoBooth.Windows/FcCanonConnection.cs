@@ -36,6 +36,42 @@ internal sealed class FcCanonConnection : ICanonConnection
         if(error is EdsError.DeviceBusy or EdsError.ObjectNotReady)return null;
         Check(error,"recevoir la visée");return jpeg;
     }
+    public async Task PrepareFocusAsync(bool manualFocusConfirmed, CancellationToken token)
+    {
+        var (error, state) = await Camera.GetFocusStateAsync(token);
+        Check(error, "vérifier la mise au point");
+        if (manualFocusConfirmed)
+        {
+            if (!state.LensAttached || state.FocusMode != EdsAFMode.ManualFocus)
+                throw new IOException("Placez l’objectif sur MF et vérifiez la netteté avant d’activer la mise au point manuelle dans les réglages.");
+            return;
+        }
+        if (!state.AutoFocusAvailable || !Camera.SupportsLiveViewAutoFocus)
+            throw new IOException("L’autofocus n’est pas disponible. Vérifiez l’objectif et son commutateur AF. La mise au point manuelle reste accessible dans les réglages.");
+        // The pinned package exposes an AfResult event but does not document its payload.
+        // Do not guess that a zero ACK or an arbitrary delay means focus lock on a 4000D.
+        var outcome = new TaskCompletionSource<uint>(TaskCreationOptions.RunContinuationsAsynchronously);
+        void OnState(object? sender, FC.SDK.CanonStateChangedEventArgs args)
+        { if (args.EventType == CanonEventType.AfResult) outcome.TrySetResult(args.Param); }
+        Camera.StateChanged += OnState;
+        try
+        {
+            await Camera.DrainEventsAsync(token);
+            Check(await Camera.AutoFocusLiveViewAsync(token), "lancer la mise au point");
+            uint? result = null;
+            try { result = await outcome.Task.WaitAsync(TimeSpan.FromSeconds(8), token); }
+            catch (TimeoutException) { }
+            throw new IOException(result is null
+                ? "Le Canon n’a pas confirmé la mise au point. Vérifiez la netteté sur l’objectif en MF, puis activez la mise au point manuelle dans les réglages."
+                : $"Le pilote a reçu le résultat autofocus {result}, dont le sens reste à vérifier sur ce boîtier. Utilisez une mise au point manuelle vérifiée ou le SDK Canon officiel.");
+        }
+        finally
+        {
+            Camera.StateChanged -= OnState;
+            using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            Check(await Camera.CancelAutoFocusAsync(cleanup.Token), "libérer l’autofocus");
+        }
+    }
     public async Task TriggerAsync(CancellationToken token)=>Check(await Camera.TakePictureAsync(token),"déclencher la photo");
     public async Task<string?> FileNameAsync(uint handle,CancellationToken token)
     {var (error,name)=await Camera.GetObjectFileNameAsync(handle,token);Check(error,"identifier la photo");return name;}

@@ -4,6 +4,7 @@ using PhotoBooth.Runtime;
 
 var root = Path.Combine(Path.GetTempPath(), "photobooth-runtime-" + Guid.NewGuid().ToString("N"));
 var passed = 0;
+async Task WaitFor(Func<bool> ready) { using var limit=new CancellationTokenSource(5000); while(!ready())await Task.Delay(10,limit.Token); }
 void Check(bool ok, string description) { if (!ok) throw new Exception(description); passed++; }
 try
 {
@@ -19,7 +20,7 @@ try
         Check(controller.Session!.Stage == SessionStage.Ready, $"{count}/{mode} reaches preview");
         Check(controller.FinalAssets.Count == count, "All poses persisted");
         Check(controller.Session.PrintStage == PrintStage.NotRequested, "No automatic printing");
-        Check(ticks == count * 5 + count - 1, "Countdown per pose plus repositioning pauses");
+        Check(ticks == count * 3 + count - 1, "Countdown per pose plus repositioning pauses");
         var sent = await controller.GetPrintBytesAsync();
         Check(SessionStore.Hash(sent) == controller.Sheet!.Sha256, "Print is exact reviewed master");
         Check(File.Exists(Path.Combine(root, controller.Session.Id.ToString("N"), "session.json")), "Durable session manifest");
@@ -59,12 +60,37 @@ try
         Check(factories==2,"No camera was opened for the rejected overlapping session");
     }
     {
-        var gate = KioskExitGate.Create("381629");
-        for (var i = 0; i < 5; i++) gate.TryAuthorizeExit("000000");
+        var store = new SessionStore(root); var controlled = new PreparationCamera(store);
+        await using var controller = new BoothController(store, () => controlled, new RehearsalTransform(), (_, _) => Task.CompletedTask);
+        await controller.BeginAsync(new(4, PhotoMode.Original)); var run = controller.TakeAsync();
+        await WaitFor(() => controlled.LiveStarts == 1);
+        Check(controller.Session!.Stage == SessionStage.Positioning && controlled.Shots == 0, "No countdown before the first live frame");
+        controlled.Frames[0].SetResult(); await controlled.FocusEntered.Task;
+        Check(controller.Session.Stage == SessionStage.Positioning && controlled.Shots == 0, "Focus preparation completes before countdown and shutter");
+        controlled.FocusReady.SetResult();
+        for (var next = 1; next < 4; next++)
+        {
+            await WaitFor(() => controlled.LiveStarts == next + 1);
+            Check(controlled.Shots == next && controller.Session.Stage == SessionStage.Positioning, "Each next pose waits for a newly started preview");
+            controlled.Frames[next].SetResult();
+        }
+        await run;
+        Check(controller.Session.Stage == SessionStage.Ready && controlled.Shots == 4 && controlled.Preparations == 4, "All four poses require their own camera preparation");
+    }
+    {
+        var store = new SessionStore(root); var controlled = new PreparationCamera(store); controlled.Frames[0].SetResult();
+        await using var controller = new BoothController(store, () => controlled, new RehearsalTransform(), (_, _) => Task.CompletedTask);
+        await controller.BeginAsync(new(1, PhotoMode.Original)); var run = controller.TakeAsync(); await controlled.FocusEntered.Task;
+        await controller.CancelAsync(); controlled.FocusReady.TrySetResult(); await run;
+        Check(controlled.Shots == 0 && controller.Session!.Stage == SessionStage.Cancelled, "Cancellation during autofocus never fires the shutter");
+    }
+    {
+        var gate = KioskExitGate.Create("E629");
+        for (var i = 0; i < 5; i++) gate.TryAuthorizeExit("0000");
         var restored = KioskExitGate.Restore(gate.Export());
-        Check(!restored.TryAuthorizeExit("381629"), "PIN cooldown survives restart");
-        var valid = KioskExitGate.Restore(KioskExitGate.Create("381629").Export());
-        Check(valid.TryAuthorizeExit("381629"), "Salted credential survives restart");
+        Check(!restored.TryAuthorizeExit("E629"), "PIN cooldown survives restart");
+        var valid = KioskExitGate.Restore(KioskExitGate.Create("E629").Export());
+        Check(valid.TryAuthorizeExit("E629"), "Salted credential survives restart");
     }
 }
 finally { Directory.Delete(root, recursive: true); }
@@ -100,4 +126,23 @@ sealed class DelayedConnectionCamera(bool failsAfterCancel):IPhotoCamera
     {await Task.Delay(Timeout.Infinite,token);yield break;}
     public Task<CapturedPhoto> CaptureAsync(Guid session,int shot,CancellationToken token)=>throw new InvalidOperationException("Unexpected shutter");
     public ValueTask DisposeAsync(){DisposedWhileConnecting|=connecting;Disposed=true;return ValueTask.CompletedTask;}
+}
+
+sealed class PreparationCamera(SessionStore store) : IPhotoCamera
+{
+    private readonly FixtureCamera inner = new(store);
+    public TaskCompletionSource[] Frames = Enumerable.Range(0,4).Select(_ => new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously)).ToArray();
+    public TaskCompletionSource FocusEntered = new(TaskCreationOptions.RunContinuationsAsynchronously), FocusReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public int LiveStarts, Shots, Preparations;
+    public Task<CameraStatus> ConnectAsync(CancellationToken token) => inner.ConnectAsync(token);
+    public async IAsyncEnumerable<LiveViewFrame> LiveViewAsync([System.Runtime.CompilerServices.EnumeratorCancellation]CancellationToken token)
+    {
+        var index = Interlocked.Increment(ref LiveStarts)-1; await Frames[index].Task.WaitAsync(token);
+        yield return new(FixtureCamera.CreateFixture(index),DateTimeOffset.UtcNow); await Task.Delay(Timeout.Infinite,token);
+    }
+    public async Task PrepareCaptureAsync(CancellationToken token)
+    {Preparations++;FocusEntered.TrySetResult();await FocusReady.Task.WaitAsync(token);}
+    public Task<CapturedPhoto> CaptureAsync(Guid session,int shot,CancellationToken token)
+    {Shots++;return inner.CaptureAsync(session,shot,token);}
+    public ValueTask DisposeAsync()=>ValueTask.CompletedTask;
 }

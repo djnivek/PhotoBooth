@@ -25,6 +25,10 @@ Le tableau doit évoluer avec les numéros et liens réels, sans appeler « fait
 Le [reçu Windows](evidence/windows-0.2.1/README.md) conserve le commit, le SHA et les captures.
 Les PR 3/5/6/7/8/9 contiennent désormais des screenshots ; poursuivre cette pratique à chaque modification UI.
 
+## Colors Party 0.3.0
+
+En cours sur `feat/colors-party` : identité approuvée, univers serveur, prompts figés, réglages avec code facultatif et maintien de trois secondes, préparation caméra. Les tests locaux ciblés passent. CI, PR, déploiement et release seront consignés dans [le reçu](evidence/colors-party/README.md). Aucune validation matérielle ou génération payante ajoutée.
+
 ## Portes de validation
 
 [PR11](https://github.com/djnivek/PhotoBooth/pull/11) : textes invités simplifiés pour la version0.2.2

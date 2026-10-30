@@ -13,6 +13,7 @@ public interface ICanonConnection : IAsyncDisposable
     Task StartPreviewAsync(CancellationToken token);
     Task StopPreviewAsync(CancellationToken token);
     Task<byte[]?> ReadPreviewAsync(CancellationToken token);
+    Task PrepareFocusAsync(bool manualFocusConfirmed, CancellationToken token);
     Task TriggerAsync(CancellationToken token);
     Task<string?> FileNameAsync(uint handle,CancellationToken token);
     Task<byte[]> DownloadAsync(uint handle,CancellationToken token);
@@ -21,11 +22,12 @@ public interface ICanonConnection : IAsyncDisposable
 }
 
 /// <summary>Windows' existing WPD/MTP driver; no proprietary Canon DLL and no driver replacement.</summary>
-public sealed class CanonWpdCamera(SessionStore store,ICanonConnection? connection=null,TimeSpan? captureTimeout=null) : IPhotoCamera
+public sealed class CanonWpdCamera(SessionStore store,ICanonConnection? connection=null,TimeSpan? captureTimeout=null, bool manualFocusConfirmed=false) : IPhotoCamera
 {
     private readonly ICanonConnection link=connection??new FcCanonConnection();
     private readonly Channel<uint> objects=Channel.CreateUnbounded<uint>(new UnboundedChannelOptions {SingleReader=true});
-    private bool connected,preview;
+    private bool connected,preview,prepared;
+    private readonly SemaphoreSlim previewCommands = new(1, 1);
     private int capturing;
     private bool disposed;
 
@@ -42,14 +44,17 @@ public sealed class CanonWpdCamera(SessionStore store,ICanonConnection? connecti
     public async IAsyncEnumerable<LiveViewFrame> LiveViewAsync([EnumeratorCancellation]CancellationToken cancellationToken)
     {
         if(!connected||preview||Volatile.Read(ref capturing)!=0)throw new InvalidOperationException("La caméra n’est pas disponible pour la visée.");
-        preview=true;
+        preview=true; prepared=false;
         try
         {
             await link.StartPreviewAsync(cancellationToken);
             var lastFrame=DateTimeOffset.UtcNow;
             while(!cancellationToken.IsCancellationRequested)
             {
-                var jpeg=await link.ReadPreviewAsync(cancellationToken);
+                byte[]? jpeg;
+                await previewCommands.WaitAsync(cancellationToken);
+                try { jpeg=await link.ReadPreviewAsync(cancellationToken); }
+                finally { previewCommands.Release(); }
                 if(jpeg is {Length:>0}) {lastFrame=DateTimeOffset.UtcNow;yield return new(jpeg,DateTimeOffset.UtcNow);}
                 else if(DateTimeOffset.UtcNow-lastFrame>TimeSpan.FromSeconds(8))throw new IOException("Le Canon ne fournit plus de visée. Vérifiez son écran et la connexion USB.");
                 await Task.Delay(80,cancellationToken);
@@ -62,10 +67,20 @@ public sealed class CanonWpdCamera(SessionStore store,ICanonConnection? connecti
         }
     }
 
+    public async Task PrepareCaptureAsync(CancellationToken token)
+    {
+        if (!connected || !preview) throw new InvalidOperationException("La visée est nécessaire pour préparer la photo.");
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token); deadline.CancelAfter(TimeSpan.FromSeconds(12));
+        await previewCommands.WaitAsync(deadline.Token);
+        try { await link.PrepareFocusAsync(manualFocusConfirmed, deadline.Token); prepared=true; }
+        finally { previewCommands.Release(); }
+    }
+
     public async Task<CapturedPhoto> CaptureAsync(Guid sessionId,int shotIndex,CancellationToken cancellationToken)
     {
-        if(!connected||preview)throw new InvalidOperationException("La visée doit être arrêtée avant la prise de photo.");
+        if(!connected||preview||!prepared)throw new InvalidOperationException("La préparation doit réussir et la visée doit être arrêtée avant la photo.");
         if(Interlocked.CompareExchange(ref capturing,1,0)!=0)throw new InvalidOperationException("Une capture est déjà en cours.");
+        prepared=false;
         using var deadline=CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(captureTimeout??TimeSpan.FromSeconds(35));
         try

@@ -11,12 +11,15 @@ public sealed record SessionOptions
     public int PhotoCount { get; }
     public PhotoMode Mode { get; }
     public int CountdownSeconds { get; }
+    public string StyleChoice { get; }
 
-    public SessionOptions(int photoCount, PhotoMode mode, int countdownSeconds = 5)
+    public SessionOptions(int photoCount, PhotoMode mode, int countdownSeconds = 3, string styleChoice = StyleCatalog.Chef)
     {
         if (photoCount is not (1 or 4)) throw new ArgumentOutOfRangeException(nameof(photoCount));
         if (!Enum.IsDefined(mode)) throw new ArgumentOutOfRangeException(nameof(mode));
         if (countdownSeconds is < 3 or > 10) throw new ArgumentOutOfRangeException(nameof(countdownSeconds));
+        if (!StyleCatalog.ValidId(styleChoice)) throw new ArgumentException("Invalid style identifier.", nameof(styleChoice));
+        StyleChoice = mode == PhotoMode.Original ? StyleCatalog.Chef : styleChoice;
         PhotoCount = photoCount;
         Mode = mode;
         CountdownSeconds = countdownSeconds;
