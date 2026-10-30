@@ -18,3 +18,5 @@ supabase/.branches/
 *.db
 *.db-*
 *.log
+
+**/node_modules/

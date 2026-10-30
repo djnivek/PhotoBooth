@@ -83,6 +83,7 @@ try
         var first=await cloud.PublishAsync(controller.Session!,controller.FinalAssets,controller.Sheet!);
         var second=await cloud.PublishAsync(controller.Session!,controller.FinalAssets,controller.Sheet!);
         Check(first.Url==second.Url,"Share retry preserves download URL");
+        Check(first.Url.StartsWith("https://gallery.test/#") && first.DownloadUrl!.EndsWith("archive.zip"),"Server gallery is the default QR target; ZIP remains separately available");
         Check(handler.ShareTokens.Distinct().Count()==1,"Share capability persists across retries");
         Check(handler.Uploads.Count==6,"Four photos, sheet and archive uploaded");
         Check(handler.Starts==0,"Original sharing cannot invoke generation");
@@ -157,7 +158,7 @@ sealed class FakeHttp(byte[] fixture):HttpMessageHandler
         {
             using var input=JsonDocument.Parse(await request.Content!.ReadAsByteArrayAsync(token));
             lock(gate)ShareTokens.Add(input.RootElement.GetProperty("token").GetString()!);
-            return Json(new{download_url="https://test.supabase.co/storage/archive.zip",expires_at=DateTimeOffset.UtcNow.AddDays(7)});
+            return Json(new{gallery_url="https://gallery.test/#"+input.RootElement.GetProperty("token").GetString(),download_url="https://test.supabase.co/storage/archive.zip",expires_at=DateTimeOffset.UtcNow.AddDays(7)});
         }
         throw new Exception("Unexpected request "+path);
     }

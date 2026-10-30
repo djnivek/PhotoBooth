@@ -141,7 +141,33 @@ foreach(var driverError in new[]{false,true})
     Click("CancelSession");Until(()=>Find("StartSession") is not null,2000);
     window.Close();Pump(80);
 }
-Console.WriteLine("PASS UI: three home sizes, six style choices, explicit style flow, processing timer cleanup, dynamic add/remove/offline catalog, four-character code, optional protection, three-second corner hold and cancellation, print export and camera cancellation. No network, paid API or hardware.");
+// Standard capture and its exact print master remain usable with cloud enabled and no network.
+var cloudSettingsTask = new BoothSettings { CloudEnabled=true }.SaveAsync(Path.Combine(root,"booth-settings.json"));
+Until(()=>cloudSettingsTask.IsCompleted,3000);cloudSettingsTask.GetAwaiter().GetResult();
+var credentialTask = CredentialStore.SaveAsync(Path.Combine(root,"cloud-credential"),"offline-test-only");
+Until(()=>credentialTask.IsCompleted,3000);credentialTask.GetAwaiter().GetResult();
+foreach(var count in new[]{1,4})
+{
+    var offline = new OfflineHttp();
+    window = new MainWindow((_,_)=>Task.CompletedTask, refreshCatalogOnOpen:false,
+        cloudFactory:store=>new BoothCloudClient("https://offline.invalid/api","offline-test-only",store,handler:offline));
+    window.Show();Pump(80);
+    if(count==1)ClickLabel("Une photo");
+    var previous = Directory.GetFiles(root,"print-preview.jpg",SearchOption.AllDirectories).ToHashSet();
+    Click("StartSession");Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);Click("TakePhotos");
+    Until(()=>Find("PrintPreview") is not null,10000);
+    Until(()=>window.GetVisualDescendants().OfType<TextBlock>().Any(t=>t.Name=="ShareStatus" && t.Text!.Contains("attend la connexion")),3000);
+    if(offline.GenerationCalls!=0 || offline.Calls!=1)throw new Exception("Original mode attempted a transformation or retried offline sharing.");
+    if(window.GetVisualDescendants().OfType<Image>().Single(t=>t.Name=="ShareQr").IsVisible)throw new Exception("QR exposed before publication.");
+    Click("PrintPreview");
+    Until(()=>Directory.GetFiles(root,"print-preview.jpg",SearchOption.AllDirectories).Except(previous).Any(),3000);
+    var printed=Directory.GetFiles(root,"print-preview.jpg",SearchOption.AllDirectories).Except(previous).Single();
+    using var manifest=System.Text.Json.JsonDocument.Parse(File.ReadAllText(Path.Combine(Path.GetDirectoryName(printed)!,"session.json")));
+    var master=Path.Combine(root,"sessions",manifest.RootElement.GetProperty("sheet").GetProperty("Key").GetString()!);
+    if(!File.ReadAllBytes(printed).SequenceEqual(File.ReadAllBytes(master)))throw new Exception("Offline print differs from the reviewed sheet.");
+    Capture($"offline-original-{count}.png");window.Close();Pump(80);
+}
+Console.WriteLine("PASS UI: three home sizes, six style choices, explicit style flow, processing timer cleanup, dynamic add/remove/offline catalog, four-character code, optional protection, three-second corner hold and cancellation, print export, cloud-enabled offline originals (one/four), exact offline print bytes and camera cancellation. No network, paid API or hardware.");
 Directory.Delete(root,true);
 void HoldCorner(int milliseconds)
 {var p=new Point(20,window.ClientSize.Height-20);window.MouseMove(p);window.MouseDown(p,MouseButton.Left);Pump(milliseconds);window.MouseUp(p,MouseButton.Left);Pump(50);}
@@ -212,4 +238,11 @@ sealed class DelayedTransform:IPhotoTransform
     public string? Choice;
     public async Task<TransformResult> TransformAsync(Guid id,IReadOnlyList<byte[]> photos,IProgress<string> progress,CancellationToken token,string styleChoice=StyleCatalog.Chef)
     {Choice=styleChoice;Entered.TrySetResult();await Resume.Task.WaitAsync(token);return await new RehearsalTransform().TransformAsync(id,photos,progress,token,styleChoice);}
+}
+
+sealed class OfflineHttp:HttpMessageHandler
+{
+    public int Calls; public int GenerationCalls;
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)
+    { Calls++;if(request.RequestUri!.AbsolutePath.Contains("/photos/"))GenerationCalls++;throw new HttpRequestException("Network disconnected"); }
 }

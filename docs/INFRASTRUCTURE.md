@@ -6,12 +6,12 @@
 | Organisation Supabase | [PhotoBooth](https://supabase.com/dashboard/org/scludlpexfemjustncsc) |
 | Projet | [PhotoBooth](https://supabase.com/dashboard/project/frkckrvsdsiwivdfyjau), Paris eu-west-3, Nano |
 | Offre | Création sans souscription payante ; affichage Free à confirmer dans le dashboard, aucun upgrade effectué |
-| Postgres | Deux migrations appliquées ; sessions/jobs/assets/budget, RLS activée, accès anon/authenticated refusé |
+| Postgres | Quatre migrations appliquées ; sessions/jobs/assets/budget, RLS activée, accès anon/authenticated refusé |
 | Storage | Bucket booth-private privé, uploads et téléchargements signés vérifiés |
 | Edge Function | photobooth-api déployée, API métier active et authentifiée |
 | OpenAI | Aucun appel payé ; clé absente à la dernière vérification à 17:03 UTC |
-| Galerie web | Code prêt ; création Pages refusée HTTP422 : forfait incompatible avec dépôt privé |
-| QR | ZIP signé fonctionnel, pas dépendant de la galerie web |
+| Galerie web | Projet Vercel colors-party-estelle créé ; déploiement et test public en cours |
+| QR | API 0.3.1 : galerie dans gallery_url, ZIP dans download_url |
 
 Le CLI Supabase fonctionne sur cette organisation ; le MCP de cette session est limité aux
 anciennes organisations. L’automatisation navigateur est désactivée dans Work. Aucun autre
@@ -46,5 +46,4 @@ pas du serveur. Après chaque migration, relire les policies et le caractère pr
 La migration de conservation des originaux suit la migration initiale : ne pas modifier une
 migration déjà appliquée, ni effacer les objets de test par SQL direct sur storage.objects.
 
-Pour la galerie, seul `web/gallery/` pourra être publié. Le workflow manuel reste inactif
-tant qu’un hébergement compatible n’est pas choisi ; ne pas rendre tout le dépôt public.
+Pour la galerie, seul `web/gallery/` est destiné au projet Vercel `prj_5KSPB6nZ2ZwTqddXNhAqJar2WGQV`, équipe `team_jzsF4GGbmDkEYQx63pfkroVS`. Aucun secret dans ce projet statique. Domaine canonique `https://colors-party-estelle.vercel.app`, également configuré dans `GALLERY_ORIGIN`. Ne pas activer GitHub Pages ni rendre le dépôt public.

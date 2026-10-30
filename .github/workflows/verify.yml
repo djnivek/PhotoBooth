@@ -14,6 +14,8 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: '1'
     steps:
       - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
       - uses: actions/setup-dotnet@v6.0.0
         with:
           global-json-file: global.json
@@ -23,9 +25,20 @@ jobs:
       - name: Run local-only rehearsal checks
         shell: pwsh
         run: ./scripts/verify.ps1
+      - name: Test gallery in Chromium
+        shell: pwsh
+        run: |
+          npm ci --prefix tests/browser
+          if ($LASTEXITCODE -ne 0) { throw "Browser dependencies failed" }
+          Push-Location tests/browser
+          npx playwright-core install chromium
+          if ($LASTEXITCODE -ne 0) { throw "Chromium installation failed" }
+          node gallery.cjs
+          if ($LASTEXITCODE -ne 0) { throw "Gallery browser checks failed" }
+          Pop-Location
       - name: Package and execute the extracted Windows app
         shell: pwsh
-        run: ./scripts/package-windows.ps1 -Version 0.3.0
+        run: ./scripts/package-windows.ps1 -Version 0.3.1
       - name: Keep package and executable evidence
         if: always()
         uses: actions/upload-artifact@v7.0.2
@@ -38,3 +51,6 @@ jobs:
             artifacts/package/diagnostics/*.json
             artifacts/package/diagnostics/*.png
             artifacts/package/diagnostics/*error.txt
+            artifacts/gallery/*.png
+            artifacts/gallery/*.json
+            .impeccable/review/offline-original-*.png

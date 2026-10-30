@@ -1,0 +1,11 @@
+{
+  "name": "colors-party-gallery-tests",
+  "private": true,
+  "version": "0.3.1",
+  "scripts": {
+    "test": "node gallery.cjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.64.1"
+  }
+}

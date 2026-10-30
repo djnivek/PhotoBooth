@@ -2,6 +2,12 @@
 
 30 octobre 2026. Anniversaire le 31. Lire l’état Git/PR et les reçus avant de poursuivre. Les phases codé, testé localement, CI Windows, fusionné, déployé, publié et testé physiquement sont distinctes.
 
+## Mise à jour 0.3.1 en validation
+
+Branche `feat/offline-secure-gallery`. Standard hors ligne avec cloud activé, QR vers une galerie originaux/métamorphoses, limites serveur et arrêt administrateur. Migration de protection appliquée ; test transactionnel annulé réussi, compteur resté à zéro, audit sécurité Supabase sans alerte. Tests navigateur/captures, publication et release encore à confirmer dans le reçu final. Aucun appel payant autorisé dans ces tests.
+
+La galerie utilise le projet Vercel dédié `colors-party-estelle` dans Kevin's projects. Seuls les fichiers statiques de `web/gallery/` sont publics. Les photos restent privées dans Supabase. Le dépôt GitHub reste privé.
+
 ## Livraison 0.3.0
 
 [PR12](https://github.com/djnivek/PhotoBooth/pull/12) fusionnée sur `d217c000d0cc6efce73c965d95e311f2d9f4209f`. [Version Windows0.3.0 publiée](https://github.com/djnivek/PhotoBooth/releases/tag/v0.3.0), validation complète Mac et Windows réussie, backend déployé, revue visuelle terminée. [Reçus et captures](evidence/colors-party/README.md). La release contient l’application exacte construite depuis ce commit ; les ajouts de documentation/tests de livraison ne changent pas son code.
@@ -17,7 +23,7 @@
 
 ## État des liaisons
 
-API Supabase existante avec originaux et résultats privés, ZIP et QR signé, déjà vérifiée avec des mires sans génération. Le nouvel endpoint et sa migration sont déployés. Huit vérifications distantes ont confirmé catalogue public, auth, choix explicite et conflits ; aucun upload ou appel de génération. [Reçu](evidence/colors-party/backend.json). La clé OpenAI est encore absente. La galerie web est préparée mais non hébergée (Pages refusé pour le dépôt privé), le QR pointe vers le ZIP.
+API Supabase existante avec originaux et résultats privés, ZIP et QR signé, déjà vérifiée avec des mires sans génération. Le nouvel endpoint et sa migration sont déployés. Huit vérifications distantes ont confirmé catalogue public, auth, choix explicite et conflits ; aucun upload ou appel de génération. [Reçu](evidence/colors-party/backend.json). La clé OpenAI est encore absente. État historique 0.3.0 : Pages était refusé pour le dépôt privé et le QR pointait vers le ZIP. Le nouveau parcours 0.3.1 est décrit ci-dessus.
 
 **Canon : point matériel prioritaire.** FC.SDK3.2.1021 via le pilote WPD existant n’atteste pas de l’autofocus sur le 4000D. L’accusé de commande n’est pas une netteté confirmée. L’app ne le transforme pas en succès. Pour demain : objectif MF, netteté réglée à la distance des invités, case « Mise au point manuelle vérifiée sur le Canon », puis Enregistrer le matériel. Vérifier vrai JPEG et retour de visée entre les quatre poses. L’autre voie EDSDK exige un SDK légalement obtenu, absent de ce dépôt. Ne pas copier les DLL de DSLR Booth ni remplacer son pilote.
 
@@ -46,4 +52,4 @@ Stockage Free conservé à la demande de Kevin ; revoir après les essais réuss
 
 `sh scripts/verify.sh`, ou `./scripts/verify.ps1` sur Windows. Sur ce Mac : `PHOTOBOOTH_DOTNET=/tmp/photobooth-dotnet/dotnet`, `DOTNET_CLI_HOME=/tmp/photobooth-dotnet-home`. Tests C# exécutables, Deno et Node ; pas dotnet test. Construire avec `--disable-build-servers -m:1`, puis tests `--no-build`.
 
-`./scripts/package-windows.ps1 -Version 0.3.0` publie un ZIP autonome, l’extrait puis exécute `--self-test` et `--smoke-ui` sur Windows. Release privée, SHA256, captures et reçus. Sources seules dans Git. PR autorisée à être ouverte puis fusionnée après vérification ; revenir sur main propre. Aucun auteur ou co-auteur assistant.
+`./scripts/package-windows.ps1 -Version 0.3.1` publie un ZIP autonome, l’extrait puis exécute `--self-test` et `--smoke-ui` sur Windows. Release privée, SHA256, captures et reçus. Sources seules dans Git. PR autorisée à être ouverte puis fusionnée après vérification ; revenir sur main propre. Aucun auteur ou co-auteur assistant.
