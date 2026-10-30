@@ -1,0 +1,33 @@
+<Application xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Class="PhotoBooth.App.App" RequestedThemeVariant="Dark">
+  <Application.Styles>
+    <FluentTheme />
+    <Style Selector="Window">
+      <Setter Property="Background" Value="#241931" />
+      <Setter Property="Foreground" Value="#F3EAF4" />
+      <Setter Property="FontFamily" Value="Segoe UI, Arial" />
+      <Setter Property="FontSize" Value="20" />
+    </Style>
+    <Style Selector="Button">
+      <Setter Property="MinHeight" Value="54" />
+      <Setter Property="Padding" Value="22,12" />
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="FontSize" Value="20" />
+      <Setter Property="Background" Value="#3D2D49" />
+      <Setter Property="Foreground" Value="#F3EAF4" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Button.primary">
+      <Setter Property="Background" Value="#F5E764" />
+      <Setter Property="Foreground" Value="#241931" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="MinHeight" Value="70" />
+      <Setter Property="FontSize" Value="25" />
+    </Style>
+    <Style Selector="Button.selected"><Setter Property="Background" Value="#F3EAF4" /><Setter Property="Foreground" Value="#241931" /></Style>
+    <Style Selector="Button:pointerover /template/ ContentPresenter"><Setter Property="Background" Value="#6A4A79" /><Setter Property="Foreground" Value="White" /></Style>
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter"><Setter Property="Background" Value="#FFF39B" /><Setter Property="Foreground" Value="#241931" /></Style>
+    <Style Selector="Button:focus-visible"><Setter Property="BorderBrush" Value="#F5E764" /><Setter Property="BorderThickness" Value="3" /></Style>
+    <Style Selector="Button:disabled"><Setter Property="Opacity" Value="0.45" /></Style>
+    <Style Selector="TextBox"><Setter Property="MinHeight" Value="50" /><Setter Property="FontSize" Value="20" /></Style>
+  </Application.Styles>
+</Application>

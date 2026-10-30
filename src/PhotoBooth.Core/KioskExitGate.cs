@@ -29,6 +29,17 @@ public sealed class KioskExitGate
         return new(salt, Hash(pin, salt), time ?? TimeProvider.System);
     }
 
+    public sealed record Credential(string Salt, string Hash, int Failures, DateTimeOffset LockedUntil);
+    public Credential Export() => new(Convert.ToBase64String(salt), Convert.ToBase64String(expectedHash), failures, lockedUntil);
+    public static KioskExitGate Restore(Credential credential, TimeProvider? time = null)
+    {
+        var salt = Convert.FromBase64String(credential.Salt);
+        var hash = Convert.FromBase64String(credential.Hash);
+        if (salt.Length != 16 || hash.Length != 32 || credential.Failures < 0)
+            throw new ArgumentException("Invalid kiosk credential.");
+        return new(salt, hash, time ?? TimeProvider.System) { failures = credential.Failures, lockedUntil = credential.LockedUntil };
+    }
+
     public bool TryAuthorizeExit(string pin)
     {
         var now = time.GetUtcNow();

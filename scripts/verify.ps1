@@ -1,4 +1,5 @@
 $ErrorActionPreference = 'Stop'
+$env:AVALONIA_TELEMETRY_OPTOUT = '1'
 Push-Location (Join-Path $PSScriptRoot '..')
 try {
     dotnet build PhotoBooth.slnx --configuration Release --disable-build-servers -m:1
@@ -7,6 +8,10 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Domain checks failed' }
     dotnet run --project tests/PhotoBooth.Imaging.Tests --configuration Release --no-build
     if ($LASTEXITCODE -ne 0) { throw 'Imaging checks failed' }
+    dotnet run --project tests/PhotoBooth.Runtime.Tests --configuration Release --no-build
+    if ($LASTEXITCODE -ne 0) { throw 'Runtime checks failed' }
+    dotnet run --project tests/PhotoBooth.App.Tests --configuration Release --no-build
+    if ($LASTEXITCODE -ne 0) { throw 'UI checks failed' }
     deno check supabase/functions/photobooth-api/index.ts
     if ($LASTEXITCODE -ne 0) { throw 'Edge function type check failed' }
     deno lint supabase/functions/photobooth-api

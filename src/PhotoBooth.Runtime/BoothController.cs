@@ -1,0 +1,193 @@
+using PhotoBooth.Core;
+using PhotoBooth.Imaging;
+using SkiaSharp;
+
+namespace PhotoBooth.Runtime;
+
+public sealed record TransformResult(string Style, IReadOnlyList<byte[]> Photos);
+public interface IPhotoTransform
+{
+    Task<TransformResult> TransformAsync(Guid sessionId, IReadOnlyList<byte[]> originals,
+        IProgress<string> progress, CancellationToken token);
+}
+
+public sealed class RehearsalTransform : IPhotoTransform
+{
+    public Task<TransformResult> TransformAsync(Guid sessionId, IReadOnlyList<byte[]> originals,
+        IProgress<string> progress, CancellationToken token)
+    {
+        var photos = originals.Select(bytes =>
+        {
+            token.ThrowIfCancellationRequested();
+            using var bitmap = PhotoProcessor.DecodeUpright(bytes);
+            using var canvas = new SKCanvas(bitmap);
+            using var paint = new SKPaint { Color = new SKColor(90, 38, 130, 45), BlendMode = SKBlendMode.SrcOver };
+            canvas.DrawRect(0, 0, bitmap.Width, bitmap.Height, paint);
+            return PhotoProcessor.Jpeg(bitmap);
+        }).ToArray();
+        return Task.FromResult(new TransformResult("Simulation couleur — aucune IA", photos));
+    }
+}
+
+public sealed class BoothController : IAsyncDisposable
+{
+    private readonly SessionStore store;
+    private readonly Func<IPhotoCamera> cameraFactory;
+    private readonly IPhotoTransform transform;
+    private readonly Func<TimeSpan, CancellationToken, Task> delay;
+    private IPhotoCamera? camera;
+    private CancellationTokenSource? sessionCancellation;
+    private CancellationTokenSource? liveCancellation;
+    private Task? liveTask;
+    private bool taking;
+    public Session? Session { get; private set; }
+    public StoredAsset? Sheet { get; private set; }
+    public IReadOnlyList<StoredAsset> FinalAssets { get; private set; } = [];
+    public string Message { get; private set; } = "";
+    public bool IsTaking => taking;
+    public event Action? Changed;
+    public event Action<byte[]>? Frame;
+    public SessionStore Store => store;
+
+    public BoothController(SessionStore store, Func<IPhotoCamera> cameraFactory, IPhotoTransform transform,
+        Func<TimeSpan, CancellationToken, Task>? delay = null)
+    {
+        this.store = store; this.cameraFactory = cameraFactory; this.transform = transform;
+        this.delay = delay ?? ((duration, token) => Task.Delay(duration, token));
+    }
+
+    public async Task BeginAsync(SessionOptions options)
+    {
+        if (taking) throw new InvalidOperationException("Une séance est en cours.");
+        await CloseCameraAsync();
+        sessionCancellation?.Dispose(); sessionCancellation = new();
+        Session = new Session(options); Sheet = null; FinalAssets = [];
+        Message = "Placez-vous dans le cadre."; Notify();
+        try
+        {
+            camera = cameraFactory();
+            var status = await camera.ConnectAsync(sessionCancellation.Token);
+            if (!status.Connected || !status.CanCapture || !status.CanLiveView)
+                throw new InvalidOperationException("La caméra ne propose pas la prise de vue et le retour vidéo.");
+            StartLiveView();
+        }
+        catch (Exception exception) { await FailAsync(exception); }
+    }
+
+    public async Task TakeAsync()
+    {
+        if (taking || Session is not { Stage: SessionStage.Positioning } || camera is null) return;
+        taking = true;
+        var token = sessionCancellation!.Token;
+        try
+        {
+            while (Session.Captures.Count < Session.Options.PhotoCount)
+            {
+                Session.StartCountdown(); Message = "Gardez le sourire !"; Notify();
+                while (Session.Stage == SessionStage.Countdown)
+                {
+                    await delay(TimeSpan.FromSeconds(1), token);
+                    token.ThrowIfCancellationRequested();
+                    Session.Tick(); Notify();
+                }
+                // Release the preview stream before issuing the shutter command.
+                await StopLiveViewAsync();
+                Message = "Clic !"; Notify();
+                var capture = await camera.CaptureAsync(Session.Id, Session.Captures.Count, token);
+                token.ThrowIfCancellationRequested();
+                Session.RecordCapture(capture);
+                await SaveManifestAsync("captured", token);
+                if (Session.Stage == SessionStage.Positioning)
+                {
+                    Message = "Une autre pose ?"; StartLiveView(); Notify();
+                    await delay(TimeSpan.FromMilliseconds(1500), token);
+                }
+            }
+            await CloseCameraAsync();
+            Message = Session.Options.Mode == PhotoMode.Surprise ? "Vos photos changent de décor…" : "On prépare vos souvenirs…";
+            Notify();
+            var originals = new List<byte[]>();
+            foreach (var shot in Session.Captures)
+                originals.Add(await File.ReadAllBytesAsync(store.Resolve(shot.LocalAssetKey), token));
+            List<StoredAsset> final = [];
+            if (Session.Options.Mode == PhotoMode.Surprise)
+            {
+                var result = await transform.TransformAsync(Session.Id, originals,
+                    new Progress<string>(message => { Message = message; Notify(); }), token);
+                if (result.Photos.Count != originals.Count) throw new InvalidDataException("Il manque une photo transformée.");
+                Session.AssignStyle(result.Style);
+                foreach (var bytes in result.Photos)
+                    final.Add(await store.SavePhotoAsync(Session.Id, PhotoProcessor.Normalize(bytes), token));
+            }
+            else
+                final.AddRange(Session.Captures.Select((photo, i) => new StoredAsset(photo.LocalAssetKey,
+                    SessionStore.Hash(originals[i]), originals[i].LongLength)));
+            var finalBytes = new List<byte[]>();
+            foreach (var asset in final) finalBytes.Add(await store.ReadVerifiedAsync(asset, token));
+            Sheet = await store.SavePhotoAsync(Session.Id, PhotoProcessor.Compose(finalBytes), token);
+            FinalAssets = final;
+            Session.CompleteProcessing(Session.Captures.Select((shot, i) => new FinalPhoto(shot.Id, final[i].Key)), Sheet.Key);
+            Message = "Vos souvenirs sont prêts.";
+            await SaveManifestAsync("ready", token);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        { Message = "Séance annulée. Les photos déjà prises sont conservées."; }
+        catch (Exception exception) { await FailAsync(exception); }
+        finally { taking = false; Notify(); }
+    }
+
+    public async Task<byte[]> GetPrintBytesAsync(CancellationToken token = default)
+    {
+        if (Session?.Stage != SessionStage.Ready || Sheet is null) throw new InvalidOperationException("La planche n’est pas prête.");
+        var bytes = await store.ReadVerifiedAsync(Sheet, token);
+        using var raster = PhotoProcessor.DecodeUpright(bytes);
+        if (raster.Width != 1800 || raster.Height != 1200) throw new InvalidDataException("Format d’impression incorrect.");
+        return bytes;
+    }
+
+    public async Task CancelAsync()
+    {
+        sessionCancellation?.Cancel();
+        if (Session is { Stage: not (SessionStage.Ready or SessionStage.Failed or SessionStage.Cancelled) }) Session.Cancel();
+        await StopLiveViewAsync();
+        Message = "Séance annulée."; Notify();
+    }
+
+    private void StartLiveView()
+    {
+        liveCancellation = CancellationTokenSource.CreateLinkedTokenSource(sessionCancellation!.Token);
+        var token = liveCancellation.Token;
+        var currentCamera = camera!;
+        liveTask = Task.Run(async () =>
+        {
+            try
+            {
+                await foreach (var frame in currentCamera.LiveViewAsync(token))
+                    if (Session?.WantsLiveView == true) Frame?.Invoke(frame.Jpeg.ToArray());
+            }
+            catch (OperationCanceledException) when (token.IsCancellationRequested) { }
+            catch (Exception) { Message = "Retour vidéo interrompu. Vérifiez la caméra avant de continuer."; Notify(); }
+        }, token);
+    }
+
+    private async Task StopLiveViewAsync()
+    {
+        liveCancellation?.Cancel();
+        if (liveTask is not null) { try { await liveTask; } catch (OperationCanceledException) { } }
+        liveTask = null; liveCancellation?.Dispose(); liveCancellation = null;
+    }
+    private async Task CloseCameraAsync()
+    { await StopLiveViewAsync(); if (camera is not null) { await camera.DisposeAsync(); camera = null; } }
+    private async Task FailAsync(Exception exception)
+    {
+        if (Session is { Stage: not (SessionStage.Ready or SessionStage.Failed or SessionStage.Cancelled) }) Session.Fail(exception.GetType().Name);
+        Message = exception.Message; await CloseCameraAsync();
+        await SaveManifestAsync("failed", CancellationToken.None); Notify();
+    }
+    private Task SaveManifestAsync(string state, CancellationToken token) => Session is null ? Task.CompletedTask :
+        store.WriteManifestAsync(Session.Id, new { schema = 1, state, Session.Id, Session.Options,
+            Session.StyleId, captures = Session.Captures, final = FinalAssets, sheet = Sheet,
+            updatedAt = DateTimeOffset.UtcNow }, token);
+    private void Notify() => Changed?.Invoke();
+    public async ValueTask DisposeAsync() { await CancelAsync(); await CloseCameraAsync(); sessionCancellation?.Dispose(); }
+}

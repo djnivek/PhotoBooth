@@ -22,6 +22,7 @@ public sealed class FixtureCamera(SessionStore store, IReadOnlyList<string>? fil
 
     public async Task<CapturedPhoto> CaptureAsync(Guid sessionId, int shotIndex, CancellationToken cancellationToken)
     {
+        await Task.Delay(200, cancellationToken);
         var jpeg = await GetImageAsync(shotIndex, cancellationToken);
         var asset = await store.SavePhotoAsync(sessionId, jpeg, cancellationToken);
         next = shotIndex + 1;

@@ -1,0 +1,309 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-30T16:02:44.602296Z",
+  "title": "Design System: Estell’Art",
+  "extensions": {
+    "colorMeta": {
+      "lemon": {
+        "role": "primary",
+        "displayName": "Party Lemon",
+        "tonalRamp": [
+          "oklch(15.00% 0.15090 103.23)",
+          "oklch(26.43% 0.15090 103.23)",
+          "oklch(37.86% 0.15090 103.23)",
+          "oklch(49.29% 0.15090 103.23)",
+          "oklch(60.71% 0.15090 103.23)",
+          "oklch(72.14% 0.15090 103.23)",
+          "oklch(83.57% 0.15090 103.23)",
+          "oklch(95.00% 0.15090 103.23)"
+        ]
+      },
+      "lemon-hover": {
+        "role": "primary",
+        "displayName": "Light Lemon",
+        "tonalRamp": [
+          "oklch(15.00% 0.10940 101.49)",
+          "oklch(26.43% 0.10940 101.49)",
+          "oklch(37.86% 0.10940 101.49)",
+          "oklch(49.29% 0.10940 101.49)",
+          "oklch(60.71% 0.10940 101.49)",
+          "oklch(72.14% 0.10940 101.49)",
+          "oklch(83.57% 0.10940 101.49)",
+          "oklch(95.00% 0.10940 101.49)"
+        ]
+      },
+      "aubergine": {
+        "role": "neutral",
+        "displayName": "Deep Aubergine",
+        "tonalRamp": [
+          "oklch(15.00% 0.04687 304.20)",
+          "oklch(26.43% 0.04687 304.20)",
+          "oklch(37.86% 0.04687 304.20)",
+          "oklch(49.29% 0.04687 304.20)",
+          "oklch(60.71% 0.04687 304.20)",
+          "oklch(72.14% 0.04687 304.20)",
+          "oklch(83.57% 0.04687 304.20)",
+          "oklch(95.00% 0.04687 304.20)"
+        ]
+      },
+      "plum-surface": {
+        "role": "neutral",
+        "displayName": "Plum Surface",
+        "tonalRamp": [
+          "oklch(15.00% 0.05245 309.87)",
+          "oklch(26.43% 0.05245 309.87)",
+          "oklch(37.86% 0.05245 309.87)",
+          "oklch(49.29% 0.05245 309.87)",
+          "oklch(60.71% 0.05245 309.87)",
+          "oklch(72.14% 0.05245 309.87)",
+          "oklch(83.57% 0.05245 309.87)",
+          "oklch(95.00% 0.05245 309.87)"
+        ]
+      },
+      "plum-hover": {
+        "role": "neutral",
+        "displayName": "Lifted Plum",
+        "tonalRamp": [
+          "oklch(15.00% 0.08310 314.52)",
+          "oklch(26.43% 0.08310 314.52)",
+          "oklch(37.86% 0.08310 314.52)",
+          "oklch(49.29% 0.08310 314.52)",
+          "oklch(60.71% 0.08310 314.52)",
+          "oklch(72.14% 0.08310 314.52)",
+          "oklch(83.57% 0.08310 314.52)",
+          "oklch(95.00% 0.08310 314.52)"
+        ]
+      },
+      "lavender-white": {
+        "role": "neutral",
+        "displayName": "Lavender White",
+        "tonalRamp": [
+          "oklch(15.00% 0.01637 322.70)",
+          "oklch(26.43% 0.01637 322.70)",
+          "oklch(37.86% 0.01637 322.70)",
+          "oklch(49.29% 0.01637 322.70)",
+          "oklch(60.71% 0.01637 322.70)",
+          "oklch(72.14% 0.01637 322.70)",
+          "oklch(83.57% 0.01637 322.70)",
+          "oklch(95.00% 0.01637 322.70)"
+        ]
+      },
+      "lavender-muted": {
+        "role": "neutral",
+        "displayName": "Muted Lavender",
+        "tonalRamp": [
+          "oklch(15.00% 0.03700 317.29)",
+          "oklch(26.43% 0.03700 317.29)",
+          "oklch(37.86% 0.03700 317.29)",
+          "oklch(49.29% 0.03700 317.29)",
+          "oklch(60.71% 0.03700 317.29)",
+          "oklch(72.14% 0.03700 317.29)",
+          "oklch(83.57% 0.03700 317.29)",
+          "oklch(95.00% 0.03700 317.29)"
+        ]
+      },
+      "stage-dark": {
+        "role": "neutral",
+        "displayName": "Dark Stage",
+        "tonalRamp": [
+          "oklch(15.00% 0.02747 305.00)",
+          "oklch(26.43% 0.02747 305.00)",
+          "oklch(37.86% 0.02747 305.00)",
+          "oklch(49.29% 0.02747 305.00)",
+          "oklch(60.71% 0.02747 305.00)",
+          "oklch(72.14% 0.02747 305.00)",
+          "oklch(83.57% 0.02747 305.00)",
+          "oklch(95.00% 0.02747 305.00)"
+        ]
+      },
+      "paper-white": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Home headline; bundled regular/upright variable Bricolage face, with SemiBold requested by native code."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Result heading."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Capture and result instructions."
+      },
+      "brand": {
+        "displayName": "Brand",
+        "purpose": "Persistent Estell’Art wordmark."
+      },
+      "countdown": {
+        "displayName": "Countdown",
+        "purpose": "Large countdown number and Clic badge."
+      },
+      "body": {
+        "displayName": "Desktop body",
+        "purpose": "Native control family and baseline body text; Segoe UI with Arial fallback."
+      },
+      "label": {
+        "displayName": "Choice label",
+        "purpose": "Choice-section headings."
+      },
+      "button-primary": {
+        "displayName": "Primary action label",
+        "purpose": "Large native primary-button label."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "countdown-duration",
+        "value": "5s",
+        "purpose": "Default SessionOptions countdown before each capture."
+      },
+      {
+        "name": "countdown-step",
+        "value": "1s",
+        "purpose": "Core countdown tick interval."
+      },
+      {
+        "name": "badge-pulse",
+        "value": "scale = 1 + 0.12 * exp(-elapsedMilliseconds / 110)",
+        "purpose": "Restarts when the countdown text changes, including Clic !; no explicit reduced-motion branch."
+      },
+      {
+        "name": "badge-pulse-sampling",
+        "value": "30ms",
+        "purpose": "Native DispatcherTimer sampling interval."
+      },
+      {
+        "name": "badge-pulse-stop",
+        "value": "550ms",
+        "purpose": "Stops sampling after the pulse age exceeds this duration."
+      },
+      {
+        "name": "capture-veil-duration",
+        "value": "170ms",
+        "purpose": "One white capture veil per transition into Capturing."
+      },
+      {
+        "name": "capture-veil-opacity",
+        "value": "0.22",
+        "purpose": "Translucent white cue preserves framing visibility beneath the badge."
+      },
+      {
+        "name": "between-poses",
+        "value": "1500ms",
+        "purpose": "Rehearsal pause with positioning live view before the next countdown."
+      }
+    ],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Documentation rendering of the application overrides; native Avalonia Fluent pressed and platform behavior remain authoritative.",
+      "html": "<button class=\"ds-primary\">Démarrer</button>",
+      "css": ".ds-primary{padding:12px 22px;border-radius:12px;border:0;font-family:\"Segoe UI\",Arial,sans-serif;text-align:center;cursor:pointer;background:#F5E764;color:#241931;font-size:25px;min-height:70px;font-weight:600}.ds-primary:hover:enabled{background:#FFF39B;color:#241931}.ds-primary:focus-visible{border:3px solid #F5E764;outline:0}.ds-primary:disabled{opacity:0.45;cursor:default}"
+    },
+    {
+      "name": "Secondary action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Documentation rendering of the application overrides; native Avalonia Fluent pressed and platform behavior remain authoritative.",
+      "html": "<button class=\"ds-secondary\">Réglages</button>",
+      "css": ".ds-secondary{padding:12px 22px;border-radius:12px;border:0;font-family:\"Segoe UI\",Arial,sans-serif;text-align:center;cursor:pointer;background:#3D2D49;color:#F3EAF4;font-size:20px;min-height:54px;font-weight:400}.ds-secondary:hover:enabled{background:#6A4A79;color:#FFFFFF}.ds-secondary:focus-visible{border:3px solid #F5E764;outline:0}.ds-secondary:disabled{opacity:0.45;cursor:default}"
+    },
+    {
+      "name": "Selected option",
+      "kind": "button",
+      "refersTo": "choice-selected",
+      "description": "Documentation rendering of the application overrides; native Avalonia Fluent pressed and platform behavior remain authoritative.",
+      "html": "<button class=\"ds-selected\" aria-pressed=\"true\">Quatre photos</button>",
+      "css": ".ds-selected{padding:12px 22px;border-radius:12px;border:0;font-family:\"Segoe UI\",Arial,sans-serif;text-align:center;cursor:pointer;background:#F3EAF4;color:#241931;font-size:20px;min-height:54px;font-weight:400}.ds-selected:hover:enabled{background:#6A4A79;color:#FFFFFF}.ds-selected:focus-visible{border:3px solid #F5E764;outline:0}.ds-selected:disabled{opacity:0.45;cursor:default}"
+    },
+    {
+      "name": "PIN field",
+      "kind": "input",
+      "refersTo": "text-field",
+      "description": "Size and type reflect the native TextBox overrides. Browser-owned input chrome is illustrative; Fluent owns the actual border, fill, selection and focus states.",
+      "html": "<input class=\"ds-pin\" type=\"password\" maxlength=\"12\" placeholder=\"Votre code\" aria-label=\"Code de sortie\">",
+      "css": ".ds-pin{font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;min-height:50px;color-scheme:dark}.ds-pin:focus-visible{outline:revert}"
+    },
+    {
+      "name": "Paper photo frame",
+      "kind": "card",
+      "refersTo": "photo-frame",
+      "description": "White surround from the home preview. The specimen uses simplified calibration geometry, never a fabricated personal photograph.",
+      "html": "<div class=\"ds-paper\"><svg class=\"ds-calibration\" viewBox=\"0 0 1200 800\" role=\"img\" aria-label=\"Calibration geometry\"><rect width=\"1200\" height=\"800\" fill=\"#D6A6E8\"/><g fill=\"#302342\"><rect x=\"40\" y=\"40\" width=\"80\" height=\"80\"/><circle cx=\"1100\" cy=\"100\" r=\"40\"/><circle cx=\"450\" cy=\"400\" r=\"30\"/><rect x=\"40\" y=\"660\" width=\"200\" height=\"100\"/></g></svg></div>",
+      "css": ".ds-paper{background:#FFFFFF;padding:12px;border-radius:4px;max-width:360px}.ds-calibration{display:block;width:100%;height:auto}"
+    },
+    {
+      "name": "Countdown badge",
+      "kind": "custom",
+      "refersTo": "countdown-badge",
+      "description": "Static specimen of the native badge. The actual app uses the bundled Bricolage font and pulse equation documented in motion metadata; a panel without that font will use its local sans-serif fallback.",
+      "html": "<div class=\"ds-stage\"><div class=\"ds-countdown\" aria-label=\"Trois secondes\">3</div></div>",
+      "css": ".ds-stage{display:flex;align-items:center;justify-content:center;min-height:230px;background:#150F1C}.ds-countdown{background:#241931;color:#FFFFFF;border-radius:16px;padding:0 26px;font-family:\"Bricolage Grotesque\",sans-serif;font-size:152px;font-weight:700}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Piste de fête chromatique",
+    "overview": "“Piste de fête chromatique” is the working visual direction: a dark aubergine room, a clear lemon action, and generous photography. Estell’Art is personal and festive without reducing the room available for posing. Large flat areas and direct French labels give the guest a short, readable path.\n\nThis system records the implemented Avalonia desktop rehearsal, targeting Windows with the same UI rehearsed on macOS. The name and direction are working choices under the delegated delivery brief; an unanswered preference is not approval. Code-led preparation for this delivery is not a confirmed standing workflow preference. No web, iOS, or Android design is asserted here.\n\nSource authority is `src/PhotoBooth.App/App.axaml` and `src/PhotoBooth.App/MainWindow.cs`, with capture timing in `src/PhotoBooth.Core/Session.cs` and `src/PhotoBooth.Runtime/BoothController.cs`. The latest finish review accepted the corrected capture veil within the native rehearsal scope. It does not establish hardware, printing, online sharing, or Windows-device validation.",
+    "keyCharacteristics": [
+      "Aubergine surfaces, pale lavender text, and a lemon primary action.",
+      "Expressive Bricolage Grotesque display text with familiar desktop body text.",
+      "Large native controls, visible framing during countdown, and one brief capture cue.",
+      "Flat composition and a literal preview of the composed photo sheet."
+    ],
+    "rules": [
+      {
+        "name": "The Primary Action Rule",
+        "body": "Lemon identifies primary buttons and keyboard focus. Selected choices use the pale lavender fill instead.",
+        "section": "colors"
+      },
+      {
+        "name": "The Display Threshold Rule",
+        "body": "The text helper uses Bricolage Grotesque at 28 logical units and above, and Segoe UI with Arial fallback below that threshold. Buttons retain the desktop body family.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Surface Rule",
+        "body": "Application content has no custom shadows. Tonal separation and the white photo frame supply depth; native window decoration remains platform-owned.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Live Frame Rule",
+        "body": "Keep the framing image visible beneath the countdown. A capture produces one restrained veil, guarded against repeated updates in the same Capturing state.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "**Do** preserve the native Button, TextBox, owned-dialog, file-picker, and keyboard interaction semantics.",
+      "**Do** use the exact composed image for the result preview and keep photographic content proportionate with uniform scaling.",
+      "**Do** keep the explicit rehearsal status visible and distinguish local calibration images from real guest photography.",
+      "**Do** preserve the brief, single capture cue and the readable badge over the framing image.",
+      "**Do** check the actual desktop window sizes when changing copy, spacing, or controls; there is no implemented breakpoint system."
+    ],
+    "donts": [
+      "**Don't** replace the result preview with an unrelated decorative image.",
+      "**Don't** turn the capture cue into a repeating strobe or an opaque frame that hides the photograph.",
+      "**Don't** describe calibration geometry or rehearsal filters as personal photos or generated AI artwork.",
+      "**Don't** treat the HTML documentation specimens as a web product or as exact reproductions of platform-owned Fluent control states.",
+      "**Don't** infer an approved permanent workflow, phone layout, compact breakpoint, or reduced-motion variant from this delivery."
+    ]
+  }
+}
