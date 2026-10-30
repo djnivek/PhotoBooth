@@ -1,6 +1,6 @@
 # Final rehearsal hardening
 
-Base: `65d40e207ff77fb806042968d0c3a5b8bdf35ac7`. Version being prepared: 0.2.1.
+Base: `65d40e207ff77fb806042968d0c3a5b8bdf35ac7`. Delivery: 0.2.1, merged as `2e026337ab8341bc37608d55dcc3ea67be0db314` in PR9.
 The owner authorized the external code review and asked to keep the current storage plan
 until tomorrow's successful trials. No paid image generation is part of validation.
 
@@ -21,6 +21,7 @@ The extracted 0.2.1 EXE completed four synthetic paths and opened its native win
 The post-review additions increase runtime checks to43 and cloud checks to39, and add repeated-session
 and delayed-camera UI coverage. The second-session fix was made after Claude's reviewed diff;
 its verification is independent regression testing, not a new external approval.
+The final complete local suite and [Windows CI41116066419](https://github.com/djnivek/PhotoBooth/actions/runs/41116066419) passed after all four fixes.
 These checks use synthetic images and injected devices, not physical Canon or DNP hardware.
 
 ## External review status

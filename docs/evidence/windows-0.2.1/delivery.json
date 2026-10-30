@@ -1,0 +1,33 @@
+{
+  "version": "0.2.1",
+  "artifact": "EstellArt-0.2.1-win-x64.zip",
+  "sha256": "e51329e3b769600bb6ae222021968048bbdff85e278520d5a8bcbf74df5f9120",
+  "bytes": 71148214,
+  "source_commit": "2e026337ab8341bc37608d55dcc3ea67be0db314",
+  "windows_self_test": true,
+  "native_window_opened": true,
+  "hardware_validated": false,
+  "openai_called": false,
+  "ci_url": "https://github.com/djnivek/PhotoBooth/actions/runs/41116597603",
+  "release_url": "https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.1",
+  "archive_verified_after_download": true,
+  "release_download_sha256_verified": true,
+  "archive_files": [
+    "canon/README.txt",
+    "licenses/FC.SDK-MIT.txt",
+    "licenses/GPL3.txt",
+    "licenses/LibUsbDotNet-LGPL3.txt",
+    "licenses/OFL-BricolageGrotesque.txt",
+    "EstellArt.exe",
+    "libHarfBuzzSharp.pdb",
+    "libSkiaSharp.pdb",
+    "LISEZ-MOI.txt",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "target_windows10_tested": false,
+  "physical_camera_tested": false,
+  "physical_printer_tested": false,
+  "phone_qr_tested": false,
+  "paid_openai_test_performed": false,
+  "storage_plan_changed": false
+}

@@ -13,11 +13,11 @@ Mise à jour : 30 octobre 2026. Anniversaire demain. Lire [PROGRESS](PROGRESS.md
 - Plein écran/code testé dans le rendu natif headless ; commandes système Windows non bloquées.
 - GitHub Pages refusé pour ce dépôt privé : QR vers ZIP, galerie web préparée mais non hébergée.
 - Canon sans SDK propriétaire intégré via FC.SDK3.2.1021/WPD, 25 tests de séquence fictive passés.
-- [Paquet Windows 0.2.0 publié](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0) : ZIP extrait et EXE réellement exécuté sur Windows Server 2022, quatre parcours simulés réussis.
-- Accueil Windows vérifié à 992×700 puis 960×700 après redimensionnement ; débordements corrigés. Captures versionnées et ajoutées aux PR 3/5/6/7.
-- Correctifs 0.2.1 en préparation : accès aux fichiers protégé par le code, journal d’impression
+- [Paquet Windows 0.2.1 publié](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.1) : ZIP extrait et EXE réellement exécuté sur Windows Server 2022, quatre parcours simulés réussis.
+- Accueil Windows vérifié à 992×700 puis 960×700 après redimensionnement ; débordements corrigés. Captures versionnées et ajoutées aux PR 3/5/6/7/8/9.
+- Correctifs 0.2.1 fusionnés dans la PR9 : accès aux fichiers protégé par le code, journal d’impression
   lié à la bonne séance, connexion annulée sans chevauchement et crash de la deuxième séance corrigé.
-  Quatre régressions reproduites puis corrigées ; premier paquet Windows de PR9 vérifié.
+  Quatre régressions reproduites puis corrigées ; contrôles Windows de PR9 et de main réussis.
   Revue ciblée Claude terminée : aucun blocage dans le diff, compléments de tests intégrés.
 
 ## Secrets et machines
@@ -53,7 +53,7 @@ Le script shell accepte `PHOTOBOOTH_DOTNET`. Deno 2.9.2, Node 22. Tests HTTP ent
 
 ## Essai ce soir
 
-1. Télécharger/extracter [le paquet 0.2.0](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0) et lancer `EstellArt.exe`.
+1. Télécharger/extracter [le paquet 0.2.1](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.1) et lancer `EstellArt.exe`.
 2. Garder caméra/impression simulées. Tester 1 puis 4, original puis effet local, compte à rebours,
    aperçu et fichier d’impression. Vérifier les photos locales sélectionnées et le code plein écran.
 3. Provisionner la connexion borne. Contrôle de connexion sans frais. Clé OpenAI uniquement sur Supabase.
@@ -96,8 +96,8 @@ assistant. Garder les preuves UI dans Git, les fichiers privés et builds hors G
 
 ## Packaging reproductible
 
-Sur Windows avec PowerShell7 et SDK.NET10 : `./scripts/package-windows.ps1 -Version 0.2.0`.
-Produit attendu : `artifacts/package/EstellArt-0.2.0-win-x64.zip` et SHA-256, autonome.
+Sur Windows avec PowerShell7 et SDK.NET10 : `./scripts/package-windows.ps1 -Version 0.2.1`.
+Produit attendu : `artifacts/package/EstellArt-0.2.1-win-x64.zip` et SHA-256, autonome.
 Le script publie en single-file avec extraction des bibliothèques natives, compresse, réextrait
 le ZIP, lance cet EXE en `--self-test` puis `--smoke-ui`. Les reçus et une capture de la fenêtre
 native vont dans `artifacts/package/diagnostics/`. Aucun secret, appel réseau ou périphérique.
@@ -105,11 +105,12 @@ Le CI conserve le paquet et ces preuves ; ne publier la release qu’après leur
 
 Les fichiers de démarrage sont dans `docs/DEMARRAGE_WINDOWS.txt` (copié LISEZ-MOI.txt au paquet).
 Le paquet est personnel et non signé ; la provenance et le SHA doivent correspondre à GitHub.
-Release : [v0.2.0](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0), commit
-`c4ba8336b222237a6730fc87cd3c34a0b8273235`, [run41105339893](https://github.com/djnivek/PhotoBooth/actions/runs/41105339893).
-ZIP : 71 147 879 octets ; SHA-256 `cdd86b7c3f429fc4b329a512d3c1ffae2ffffa88e887420ead33a92653db7d57`.
-Reçus et captures : [evidence/windows-0.2.0](evidence/windows-0.2.0/README.md).
-API relue au handoff : répond, séances activées, génération désactivée tant que la clé OpenAI manque.
+Release : [v0.2.1](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.1), commit
+`2e026337ab8341bc37608d55dcc3ea67be0db314`, [run41116597603](https://github.com/djnivek/PhotoBooth/actions/runs/41116597603).
+ZIP : 71,148,214 octets ; SHA-256 `e51329e3b769600bb6ae222021968048bbdff85e278520d5a8bcbf74df5f9120`.
+Reçus et captures : [evidence/windows-0.2.1](evidence/windows-0.2.1/README.md).
+Archive retéléchargée depuis la release et SHA vérifié. Au dernier contrôle de l’API avant cette
+revue, la génération restait désactivée faute de clé OpenAI ; relire après son ajout par Kevin.
 
 Kevin demande des screenshots dans les PR pour commenter le design. Joindre des images versionnées
 et des liens de commit immuables à chaque changement d’interface ; distinguer simulation, fenêtre
