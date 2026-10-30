@@ -49,6 +49,15 @@ try
         Check(handler.UploadCalls==4,"Each original uploaded only once across generation retries");
     }
     {
+        var handler=new FakeHttp(originals[0]);
+        using var cloud=new BoothCloudClient("https://test.supabase.co/functions/v1/photobooth-api","fake-booth",new(root),handler:handler,delay:(_,_)=>Task.CompletedTask);
+        var results=await Task.WhenAll(Enumerable.Range(0,32).Select(_=>Task.Run(()=>
+            cloud.TransformAsync(Guid.NewGuid(),[originals[0]],new Progress<string>(),default))));
+        Check(results.All(r=>r.Photos.Count==1&&r.Photos[0].SequenceEqual(originals[0])),"Concurrent fake requests preserve every accepted job and result");
+        Check(handler.Starts==32,"Concurrent start accounting is exact");
+        Check(handler.UploadCalls==32,"Concurrent upload accounting is exact");
+    }
+    {
         var handler=new FakeHttp(originals[0]);var store=new SessionStore(root);
         using var cloud=new BoothCloudClient("https://test.supabase.co/functions/v1/photobooth-api","fake-booth",store,handler:handler);
         await using var controller=new BoothController(store,()=>new FixtureCamera(store),new RehearsalTransform(),(_,_)=>Task.CompletedTask);
@@ -86,6 +95,7 @@ sealed class FakeHttp(byte[] fixture):HttpMessageHandler
 {
     public int Starts;public int UploadCalls;public bool DropStartResponse;public bool CredentialSentToStorage;
     public byte[][]? Fixtures;
+    private readonly object gate=new();
     private readonly HashSet<string> started=[];
     public Dictionary<string,string> Uploads=new();public List<string> ShareTokens=[];
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)
@@ -93,26 +103,34 @@ sealed class FakeHttp(byte[] fixture):HttpMessageHandler
         var path=request.RequestUri!.AbsolutePath;
         HttpResponseMessage Json(object value)=>new(HttpStatusCode.OK){Content=JsonContent.Create(value)};
         if(path.Contains("/storage/"))
-        {CredentialSentToStorage|=request.Headers.Authorization is not null;
+        {lock(gate)CredentialSentToStorage|=request.Headers.Authorization is not null;
             var index=int.Parse(Path.GetFileNameWithoutExtension(path));
             return new(HttpStatusCode.OK){Content=new ByteArrayContent(Fixtures?[index]??fixture)};}
         if(request.Headers.Authorization?.Parameter!="fake-booth")throw new Exception("Missing booth auth");
         if(path.EndsWith("/sessions"))return Json(new{style="cinema"});
         if(path.Contains("/photos/"))
         {
-            if(request.Method==HttpMethod.Post){Starts++;started.Add(path);if(DropStartResponse)throw new HttpRequestException("Response lost after accept");return Json(new{state="running"});}
-            return !started.Contains(path)?Json(new{state="queued"}):Json(new{state="ready",url=$"https://test.supabase.co/storage/{path.Split('/').Last()}.jpg"});
+            lock(gate)
+            {
+                if(request.Method==HttpMethod.Post){Starts++;started.Add(path);if(DropStartResponse)throw new HttpRequestException("Response lost after accept");return Json(new{state="running"});}
+                return !started.Contains(path)?Json(new{state="queued"}):Json(new{state="ready",url=$"https://test.supabase.co/storage/{path.Split('/').Last()}.jpg"});
+            }
         }
         if(path.Contains("/assets/"))
         {
-            UploadCalls++;
             var bytes=await request.Content!.ReadAsByteArrayAsync(token);var digest=SessionStore.Hash(bytes);
-            if(Uploads.TryGetValue(path,out var existing)&&existing!=digest)throw new Exception("Non-idempotent asset upload");
-            Uploads[path]=digest;return Json(new{sha256=digest});
+            lock(gate)
+            {
+                UploadCalls++;
+                if(Uploads.TryGetValue(path,out var existing)&&existing!=digest)throw new Exception("Non-idempotent asset upload");
+                Uploads[path]=digest;
+            }
+            return Json(new{sha256=digest});
         }
         if(path.EndsWith("/share"))
         {
-            using var input=JsonDocument.Parse(await request.Content!.ReadAsByteArrayAsync(token));ShareTokens.Add(input.RootElement.GetProperty("token").GetString()!);
+            using var input=JsonDocument.Parse(await request.Content!.ReadAsByteArrayAsync(token));
+            lock(gate)ShareTokens.Add(input.RootElement.GetProperty("token").GetString()!);
             return Json(new{download_url="https://test.supabase.co/storage/archive.zip",expires_at=DateTimeOffset.UtcNow.AddDays(7)});
         }
         throw new Exception("Unexpected request "+path);
