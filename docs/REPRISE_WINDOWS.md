@@ -6,7 +6,7 @@ Télécharger [le dernier paquet Estell’Art Windows x64](https://github.com/dj
 avec un compte ayant accès au dépôt privé. Extraire **tout** le ZIP dans un dossier local avant
 `ColorsParty.exe` ; ne pas lancer depuis la vue ZIP du navigateur. Pas de SDK .NET requis.
 Le ZIP est accompagné de son SHA-256. Il a été extrait et exécuté sur Windows Server 2022 ;
-[preuves et captures](evidence/windows-0.2.1/README.md). Le lancement sur le Windows 10 cible reste à vérifier.
+[preuves et captures0.3.0](evidence/colors-party/README.md). Le lancement sur le Windows 10 cible reste à vérifier.
 
 1. Lancer en répétition (défaut). Tester 1/4 poses, Au naturel/Métamorphose, placement,
    décompte 3 secondes, effet de capture, aperçu. Aucun appareil ni Internet requis pour ce parcours.

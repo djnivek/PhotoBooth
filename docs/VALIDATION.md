@@ -16,6 +16,7 @@ aucune feuille DNP, aucun lancement sur le Windows 10 cible, aucune édition Ope
 | API Deno | 11 tests, typecheck et lint : auth, idempotence, réservation, erreurs ambiguës, originaux requis, hash et expiration |
 | Galerie préparée | 5 tests DOM sans navigateur : 1/4 liens, archive, jeton hors URL de requête, expiration, rejet d’URL étrangère |
 | OpenAPI3.0.3 | Validation formelle réussie avec openapi-spec-validator0.7.2 |
+| Colors Party0.3.0 Windows | [Run41131796018](https://github.com/djnivek/PhotoBooth/actions/runs/41131796018) réussi sur main d217c00 : suite complète, ZIP extrait, quatre parcours, fenêtre réelle 992×700 puis960×700, zéro appel OpenAI ; [preuves](evidence/colors-party/README.md) |
 | CI Windows initiale | [Run41088358348](https://github.com/djnivek/PhotoBooth/actions/runs/41088358348) réussi : PR4, Windows Server 2022, tests natifs headless et simulation |
 | CI Windows cloud | [Run41096255110](https://github.com/djnivek/PhotoBooth/actions/runs/41096255110) réussi sur le commit de PR5 : client, DPAPI, UI et API simulées |
 | CI Windows Canon | [Run41098262975](https://github.com/djnivek/PhotoBooth/actions/runs/41098262975) réussi sur PR6 : adaptateur fictif et application native |

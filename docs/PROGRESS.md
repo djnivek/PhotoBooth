@@ -27,7 +27,7 @@ Les PR 3/5/6/7/8/9 contiennent désormais des screenshots ; poursuivre cette pra
 
 ## Colors Party 0.3.0
 
-[PR12](https://github.com/djnivek/PhotoBooth/pull/12) ouverte : identité approuvée, univers serveur, scènes figées, réglages avec code facultatif et maintien de trois secondes, préparation caméra. Validation Release locale complète réussie ; backend déployé et huit contrôles distants réussis sans génération. Revue visuelle terminée. Vérification Windows en cours ; fusion et paquet seront consignés dans [le reçu](evidence/colors-party/README.md). Aucune validation matérielle ou génération payante ajoutée.
+[PR12](https://github.com/djnivek/PhotoBooth/pull/12) fusionnée, `d217c00` : identité approuvée, univers serveur, scènes figées, réglages avec code facultatif et maintien de trois secondes, préparation caméra. Validation Release locale complète réussie ; backend déployé et huit contrôles distants réussis sans génération. Revue visuelle terminée. [CI de livraison](https://github.com/djnivek/PhotoBooth/actions/runs/41131796018) réussie, [version0.3.0 publiée](https://github.com/djnivek/PhotoBooth/releases/tag/v0.3.0). Les preuves sont dans [le reçu](evidence/colors-party/README.md). Aucune validation matérielle ou génération payante ajoutée.
 
 ## Portes de validation
 

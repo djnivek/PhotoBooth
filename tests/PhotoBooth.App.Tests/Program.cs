@@ -83,6 +83,16 @@ DialogClick(settings,"Actualiser les univers");Until(()=>catalogCalls==2,2000);
 failCatalog=true;DialogClick(settings,"Actualiser les univers");Until(()=>catalogCalls==3,2000);
 if(window.CatalogCount!=6)throw new Exception("Network failure replaced the in-memory catalog.");
 DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);
+// Preserve the existing desktop escape guard after the operator-access refactor.
+Click("OpenFiles");Until(()=>window.OwnedWindows.Count==1,2000);unlock=window.OwnedWindows.Single();
+DialogClick(unlock,"Retour à la fête");Until(()=>window.OwnedWindows.Count==0,2000);
+if(openedFolders.Count!=0||window.WindowState!=WindowState.FullScreen)throw new Exception("Cancelling file access escaped the protected booth.");
+Click("OpenFiles");Until(()=>window.OwnedWindows.Count==1,2000);unlock=window.OwnedWindows.Single();
+unlock.GetVisualDescendants().OfType<TextBox>().Single().Text="E629";DialogClick(unlock,"Déverrouiller");
+Until(()=>openedFolders.Count==1&&window.WindowState==WindowState.Normal,2000);
+Click("Settings");Until(()=>window.OwnedWindows.Count==1,2000);settings=window.OwnedWindows.Single();
+DialogClick(settings,"Activer le plein écran");Until(()=>window.WindowState==WindowState.FullScreen,2000);
+DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);
 Click("NewSession");ClickLabel("Métamorphose");Pump(80);
 if(Find("Style_ocean") is null||Find("Style_halloween") is not null)throw new Exception("Refreshed catalog not applied.");
 if((Find("Style_ocean")!.Background as Avalonia.Media.ISolidColorBrush)?.Color!=Avalonia.Media.Color.Parse("#E0E7D8"))throw new Exception("Inaccessible server colour did not use the readable sage fallback.");
