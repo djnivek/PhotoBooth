@@ -8,11 +8,11 @@ aucune feuille DNP, aucun lancement sur le Windows 10 cible, aucune édition Ope
 | Solution Release .NET10 | 0 avertissement, 0 erreur sur Mac arm64 |
 | Métier | 23 assertions : quatre parcours, séquences, résultats, PIN, impression explicite |
 | Imaging | 89 assertions : huit EXIF réels, pixels, ordre, montage, DPI, fichiers et SHA |
-| Runtime | 29 assertions : cycle complet, persistance, annulation et erreurs |
-| Préparation Windows | 18 assertions : BGRA, axes DPI distincts, zone imprimable, journal avant effet externe |
+| Runtime | 34 assertions : cycle complet, persistance, annulation et connexion USB tardive sans chevauchement |
+| Préparation Windows | 26 assertions : BGRA, axes DPI distincts, zone imprimable, journal avant effet externe et suivi d’impression après changement de séance |
 | Canon WPD | 25 assertions avec transport fictif : séquence visée/capture, quatre vrais fichiers, RAW+JPEG, timeout, aucun redéclenchement |
 | Client cloud | 37 assertions : quatre éditions ordonnées, originaux envoyés une fois, ZIP 5/9 fichiers, reprise sans facturation supplémentaire, fallback explicite, credentials et 32 séances HTTP fictives concurrentes |
-| UI native rendue headless | Accueil1280/1024, visée fictive, décompte, capture, résultat, export impression, réglages, code erroné puis valide et fermeture protégée |
+| UI native rendue headless | Accueil1280/1024/960, visée fictive, décompte, capture, résultat, export impression, réglages, fermeture et accès aux fichiers protégés par code erroné/annulé/valide |
 | API Deno | 9 tests, typecheck et lint : auth, idempotence, réservation, erreurs ambiguës, originaux requis, hash et expiration |
 | Galerie préparée | 5 tests DOM sans navigateur : 1/4 liens, archive, jeton hors URL de requête, expiration, rejet d’URL étrangère |
 | OpenAPI3.0.3 | Validation formelle réussie avec openapi-spec-validator0.7.2 |

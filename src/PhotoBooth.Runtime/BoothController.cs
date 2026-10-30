@@ -40,11 +40,13 @@ public sealed class BoothController : IAsyncDisposable
     private CancellationTokenSource? liveCancellation;
     private Task? liveTask;
     private bool taking;
+    private bool connecting;
     public Session? Session { get; private set; }
     public StoredAsset? Sheet { get; private set; }
     public IReadOnlyList<StoredAsset> FinalAssets { get; private set; } = [];
     public string Message { get; private set; } = "";
     public bool IsTaking => taking;
+    public bool IsBusy => taking || connecting;
     public event Action? Changed;
     public event Action<byte[]>? Frame;
     public SessionStore Store => store;
@@ -58,25 +60,32 @@ public sealed class BoothController : IAsyncDisposable
 
     public async Task BeginAsync(SessionOptions options)
     {
-        if (taking) throw new InvalidOperationException("Une séance est en cours.");
-        await CloseCameraAsync();
-        sessionCancellation?.Dispose(); sessionCancellation = new();
-        Session = new Session(options); Sheet = null; FinalAssets = [];
-        Message = "Placez-vous dans le cadre."; Notify();
+        if (IsBusy) throw new InvalidOperationException("Une séance est en cours.");
+        connecting = true;
         try
         {
+            await CloseCameraAsync();
+            sessionCancellation?.Dispose(); sessionCancellation = new();
+            Session = new Session(options); Sheet = null; FinalAssets = [];
+            Message = "Connexion à la caméra…"; Notify();
             camera = cameraFactory();
             var status = await camera.ConnectAsync(sessionCancellation.Token);
+            // Some USB drivers finish an in-flight connection even after cancellation.
+            // Do not let that late result start preview or replace the next guest's camera.
+            sessionCancellation.Token.ThrowIfCancellationRequested();
             if (!status.Connected || !status.CanCapture || !status.CanLiveView)
                 throw new InvalidOperationException("La caméra ne propose pas la prise de vue et le retour vidéo.");
-            StartLiveView();
+            Message = "Placez-vous dans le cadre."; StartLiveView();
         }
+        catch (OperationCanceledException) when (sessionCancellation?.IsCancellationRequested == true)
+        { await CloseCameraAsync(); Message = "Séance annulée."; }
         catch (Exception exception) { await FailAsync(exception); }
+        finally { connecting = false; Notify(); }
     }
 
     public async Task TakeAsync()
     {
-        if (taking || Session is not { Stage: SessionStage.Positioning } || camera is null) return;
+        if (IsBusy || Session is not { Stage: SessionStage.Positioning } || camera is null) return;
         taking = true;
         var token = sessionCancellation!.Token;
         try
@@ -136,10 +145,18 @@ public sealed class BoothController : IAsyncDisposable
         finally { taking = false; Notify(); }
     }
 
-    public async Task<byte[]> GetPrintBytesAsync(CancellationToken token = default)
+    public Task<byte[]> GetPrintBytesAsync(CancellationToken token = default)
     {
-        if (Session?.Stage != SessionStage.Ready || Sheet is null) throw new InvalidOperationException("La planche n’est pas prête.");
-        var bytes = await store.ReadVerifiedAsync(Sheet, token);
+        var session=Session;var sheet=Sheet;
+        if (session?.Stage != SessionStage.Ready || sheet is null) throw new InvalidOperationException("La planche n’est pas prête.");
+        return ReadPrintBytesAsync(session, sheet, token);
+    }
+
+    private async Task<byte[]> ReadPrintBytesAsync(Session session, StoredAsset sheet, CancellationToken token)
+    {
+        if (session.Stage != SessionStage.Ready || session.SheetAssetKey != sheet.Key)
+            throw new InvalidOperationException("La planche ne correspond pas à la séance prête.");
+        var bytes = await store.ReadVerifiedAsync(sheet, token);
         using var raster = PhotoProcessor.DecodeUpright(bytes);
         if (raster.Width != 1800 || raster.Height != 1200) throw new InvalidDataException("Format d’impression incorrect.");
         return bytes;
@@ -147,30 +164,33 @@ public sealed class BoothController : IAsyncDisposable
 
     public async Task<PrintSubmission> PrintAsync(IPhotoPrinter printer, CancellationToken token = default)
     {
-        await GetPrintBytesAsync(token);
-        var session = Session!;
+        // A guest can start the next session while Windows is accepting this spool job.
+        // Keep every verification and journal write tied to the original reviewed sheet.
+        var session = Session ?? throw new InvalidOperationException("La séance n’est pas prête.");
+        var sheet = Sheet ?? throw new InvalidOperationException("La planche n’est pas prête.");
+        await ReadPrintBytesAsync(session, sheet, token);
         var journalPath = Path.Combine(store.Root, session.Id.ToString("N"), "print.json");
         if (File.Exists(journalPath)) throw new InvalidOperationException("Une impression a déjà été demandée. Vérifiez la file Windows avant toute nouvelle tentative.");
         var request = session.RequestPrint(); // guards concurrent clicks before the first await
-        await store.WritePrintJournalAsync(session.Id, new(request.Id, Sheet!.Key, Sheet.Sha256, "requested", DateTimeOffset.UtcNow), token);
+        await store.WritePrintJournalAsync(session.Id, new(request.Id, sheet.Key, sheet.Sha256, "requested", DateTimeOffset.UtcNow), token);
         try
         {
             var submission = await printer.SubmitAsync(request, token);
-            await store.WritePrintJournalAsync(session.Id, new(request.Id, Sheet.Key, Sheet.Sha256, "submitted", DateTimeOffset.UtcNow, submission.SpoolJobId));
+            await store.WritePrintJournalAsync(session.Id, new(request.Id, sheet.Key, sheet.Sha256, "submitted", DateTimeOffset.UtcNow, submission.SpoolJobId));
             session.MarkPrintSubmitted(request.Id, submission.SpoolJobId); Notify();
             return submission;
         }
         catch
         {
             session.MarkPrintUncertain(request.Id);
-            await store.WritePrintJournalAsync(session.Id, new(request.Id, Sheet.Key, Sheet.Sha256, "needs_operator", DateTimeOffset.UtcNow));
+            await store.WritePrintJournalAsync(session.Id, new(request.Id, sheet.Key, sheet.Sha256, "needs_operator", DateTimeOffset.UtcNow));
             Notify(); throw;
         }
     }
 
     public async Task UseOriginalsAsync()
     {
-        if (taking || Session is null) return;
+        if (IsBusy || Session is null) return;
         taking = true;
         try
         {

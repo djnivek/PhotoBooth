@@ -40,6 +40,22 @@ try
         Check(!controller.IsTaking, "Controls recover after cancellation");
     }
     {
+        var store=new SessionStore(root);var first=new DelayedConnectionCamera();var factories=0;
+        await using var controller=new BoothController(store,()=>++factories==1?first:new FixtureCamera(store),new RehearsalTransform());
+        var connecting=controller.BeginAsync(new(1,PhotoMode.Original));
+        await first.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        var cancelled=controller.Session!;await controller.CancelAsync();
+        var rejected=false;
+        try {await controller.BeginAsync(new(1,PhotoMode.Original));}catch(InvalidOperationException){rejected=true;}
+        first.Resume.SetResult();await connecting;
+        Check(rejected,"A new session cannot overlap an unresolved camera connection");
+        Check(cancelled.Stage==SessionStage.Cancelled,"Late connection completion cannot revive a cancelled session");
+        Check(first.Disposed,"Cancelled connection is closed after it settles");
+        await controller.BeginAsync(new(1,PhotoMode.Original));
+        Check(controller.Session!.Id!=cancelled.Id&&controller.Session.Stage==SessionStage.Positioning,"Next guest starts after connection cleanup");
+        Check(factories==2,"No camera was opened for the rejected overlapping session");
+    }
+    {
         var gate = KioskExitGate.Create("381629");
         for (var i = 0; i < 5; i++) gate.TryAuthorizeExit("000000");
         var restored = KioskExitGate.Restore(gate.Export());
@@ -60,4 +76,17 @@ sealed class SpyCamera(SessionStore store) : IPhotoCamera
     public Task<CapturedPhoto> CaptureAsync(Guid session, int shot, CancellationToken token)
     { Captures++; return inner.CaptureAsync(session, shot, token); }
     public ValueTask DisposeAsync() => inner.DisposeAsync();
+}
+
+sealed class DelayedConnectionCamera:IPhotoCamera
+{
+    public TaskCompletionSource Entered {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public TaskCompletionSource Resume {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public bool Disposed {get;private set;}
+    public async Task<CameraStatus> ConnectAsync(CancellationToken token)
+    {Entered.SetResult();await Resume.Task;return new(true,"Delayed USB",true,true);}
+    public async IAsyncEnumerable<LiveViewFrame> LiveViewAsync([System.Runtime.CompilerServices.EnumeratorCancellation]CancellationToken token)
+    {await Task.Delay(Timeout.Infinite,token);yield break;}
+    public Task<CapturedPhoto> CaptureAsync(Guid session,int shot,CancellationToken token)=>throw new InvalidOperationException("Unexpected shutter");
+    public ValueTask DisposeAsync(){Disposed=true;return ValueTask.CompletedTask;}
 }
