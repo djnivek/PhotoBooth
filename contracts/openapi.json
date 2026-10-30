@@ -1,0 +1,954 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "PhotoBooth API",
+    "version": "0.1.0",
+    "description": "Target contract. Only GET /health is implemented. No public generation or unrestricted photo access. Original mode calls no image model. Surprise uses xhigh, one persisted server-selected style and one edit per capture. Paid operations require device authorization and transactional budgets. The booth composes and uploads the sheet after individual results, before sharing."
+  },
+  "servers": [
+    {
+      "url": "https://frkckrvsdsiwivdfyjau.supabase.co/functions/v1/photobooth-api",
+      "description": "Only health deployed during preparation; other operations are specified, not live."
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Preparation health only; does not imply readiness",
+        "x-implemented": true,
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; see lifecycle constraints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; no secret or provider response is exposed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions": {
+      "post": {
+        "operationId": "createSession",
+        "summary": "Create or replay a session owned by the authenticated booth",
+        "x-implemented": false,
+        "security": [
+          {
+            "boothJwt": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success; see lifecycle constraints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; no secret or provider response is exposed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Scoped to the authenticated booth and route. Different payload with the same key returns 409."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{id}/uploads": {
+      "post": {
+        "operationId": "prepareUploads",
+        "summary": "Sign original uploads; exact count and unique contiguous indices are required",
+        "x-implemented": false,
+        "security": [
+          {
+            "boothJwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; see lifecycle constraints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Uploads"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; no secret or provider response is exposed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Scoped to the authenticated booth and route. Different payload with the same key returns 409."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{id}/complete": {
+      "post": {
+        "operationId": "completeSession",
+        "summary": "Verify original uploads; enqueue one task per shot, never wait for all edits",
+        "x-implemented": false,
+        "security": [
+          {
+            "boothJwt": []
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Success; see lifecycle constraints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Accepted"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; no secret or provider response is exposed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Scoped to the authenticated booth and route. Different payload with the same key returns 409."
+          }
+        ]
+      }
+    },
+    "/sessions/{id}": {
+      "get": {
+        "operationId": "getSession",
+        "summary": "Poll individual results; awaiting_sheet means photos ready but gallery not published",
+        "x-implemented": false,
+        "security": [
+          {
+            "boothJwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; see lifecycle constraints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; no secret or provider response is exposed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/sessions/{id}/sheet-upload": {
+      "post": {
+        "operationId": "prepareSheetUpload",
+        "summary": "Sign the locally composed 4x6 JPEG after all photos are ready",
+        "x-implemented": false,
+        "security": [
+          {
+            "boothJwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; see lifecycle constraints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SheetTarget"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; no secret or provider response is exposed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Scoped to the authenticated booth and route. Different payload with the same key returns 409."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlobMetadata"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{id}/publish": {
+      "post": {
+        "operationId": "publishSession",
+        "summary": "Verify sheet and all photos; atomically mark session ready for sharing",
+        "x-implemented": false,
+        "security": [
+          {
+            "boothJwt": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success; see lifecycle constraints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; no secret or provider response is exposed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Scoped to the authenticated booth and route. Different payload with the same key returns 409."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{id}/share": {
+      "post": {
+        "operationId": "shareSession",
+        "summary": "Create a revocable capability URL after publication",
+        "x-implemented": false,
+        "security": [
+          {
+            "boothJwt": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success; see lifecycle constraints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Share"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; no secret or provider response is exposed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 128
+            },
+            "description": "Scoped to the authenticated booth and route. Different payload with the same key returns 409."
+          }
+        ]
+      }
+    },
+    "/downloads/resolve": {
+      "post": {
+        "operationId": "resolveDownload",
+        "summary": "Validate share token and expiry, then sign short-lived downloads; rate limited",
+        "x-implemented": false,
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Success; see lifecycle constraints.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Downloads"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured failure; no secret or provider response is exposed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveInput"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "boothJwt": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Supabase Auth access token for a registered active booth; publishable key alone is insufficient. Ownership checked on every session."
+      }
+    },
+    "schemas": {
+      "Health": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "service": {
+            "type": "string",
+            "enum": [
+              "photobooth"
+            ]
+          },
+          "api_version": {
+            "type": "string"
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "preparation"
+            ]
+          },
+          "production_ready": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "session_api_enabled": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "image_generation_enabled": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          }
+        },
+        "required": [
+          "service",
+          "api_version",
+          "stage",
+          "production_ready",
+          "session_api_enabled",
+          "image_generation_enabled"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "retryable": {
+            "type": "boolean"
+          },
+          "request_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "retryable"
+        ]
+      },
+      "SessionInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "photo_count": {
+            "type": "integer",
+            "enum": [
+              1,
+              4
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "original",
+              "surprise"
+            ]
+          },
+          "event_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "client_session_id",
+          "photo_count",
+          "mode",
+          "event_id"
+        ]
+      },
+      "BlobMetadata": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10485760
+          },
+          "content_type": {
+            "type": "string",
+            "enum": [
+              "image/jpeg"
+            ]
+          }
+        },
+        "required": [
+          "sha256",
+          "size_bytes",
+          "content_type"
+        ]
+      },
+      "UploadInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "photos": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 4,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "shot_index": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 3
+                },
+                "metadata": {
+                  "$ref": "#/components/schemas/BlobMetadata"
+                }
+              },
+              "required": [
+                "shot_index",
+                "metadata"
+              ]
+            }
+          }
+        },
+        "required": [
+          "photos"
+        ]
+      },
+      "UploadTarget": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "shot_index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "PUT"
+            ]
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "asset_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "shot_index",
+          "url",
+          "method",
+          "expires_at",
+          "asset_id"
+        ]
+      },
+      "Uploads": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "targets": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 4,
+            "items": {
+              "$ref": "#/components/schemas/UploadTarget"
+            }
+          }
+        },
+        "required": [
+          "targets"
+        ]
+      },
+      "PhotoResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "shot_index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "asset_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "variant": {
+            "type": "string",
+            "enum": [
+              "original",
+              "generated"
+            ]
+          },
+          "download_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "shot_index",
+          "asset_id",
+          "variant",
+          "download_url",
+          "expires_at"
+        ]
+      },
+      "Session": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "photo_count": {
+            "type": "integer",
+            "enum": [
+              1,
+              4
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "original",
+              "surprise"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "awaiting_upload",
+              "queued",
+              "processing",
+              "awaiting_sheet",
+              "ready",
+              "failed",
+              "expired"
+            ]
+          },
+          "completed_photos": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4
+          },
+          "style_id": {
+            "type": "string"
+          },
+          "photos": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 4,
+            "items": {
+              "$ref": "#/components/schemas/PhotoResult"
+            }
+          },
+          "failure": {
+            "$ref": "#/components/schemas/Error"
+          }
+        },
+        "required": [
+          "id",
+          "photo_count",
+          "mode",
+          "status",
+          "completed_photos",
+          "photos"
+        ]
+      },
+      "Accepted": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "processing",
+              "awaiting_sheet"
+            ]
+          }
+        },
+        "required": [
+          "session_id",
+          "status"
+        ]
+      },
+      "SheetTarget": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "PUT"
+            ]
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "asset_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "url",
+          "method",
+          "expires_at",
+          "asset_id"
+        ]
+      },
+      "PublishInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "sheet_asset_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "sheet_asset_id"
+        ]
+      },
+      "Share": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "gallery_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "gallery_url",
+          "expires_at"
+        ]
+      },
+      "ResolveInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 43,
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9_-]+$"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "Downloads": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "photos": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 4,
+            "items": {
+              "$ref": "#/components/schemas/PhotoResult"
+            }
+          },
+          "sheet_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "urls_expire_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "share_expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "photos",
+          "sheet_url",
+          "urls_expire_at",
+          "share_expires_at"
+        ]
+      }
+    }
+  }
+}

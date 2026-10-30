@@ -1,0 +1,33 @@
+# Local development defaults; this file does not change the hosted Auth configuration.
+project_id = "PhotoBooth"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[db.seed]
+enabled = false
+sql_paths = []
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:3000"
+enable_signup = false
+
+[storage]
+enabled = true
+file_size_limit = "10MiB"
+
+# Public metadata only. Business routes must authenticate and authorize internally.
+[functions.photobooth-api]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/photobooth-api/index.ts"

@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+cd "$(dirname "$0")/.."
+dotnet_command="${PHOTOBOOTH_DOTNET:-dotnet}"
+"$dotnet_command" build PhotoBooth.slnx --configuration Release --disable-build-servers -m:1
+"$dotnet_command" run --project tests/PhotoBooth.Core.Tests --configuration Release --no-build
+deno check supabase/functions/photobooth-api/index.ts
+deno lint supabase/functions/photobooth-api
+deno test supabase/functions/photobooth-api/handler_test.ts
