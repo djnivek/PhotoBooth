@@ -10,8 +10,8 @@ commerciale, la flotte de bornes et la maintenance longue durée ne sont pas le 
 | --- | --- | --- |
 | Préparation initiale | Livré sur main, `169c66c` | Documents, 23 tests métier, 3 tests health, projet Supabase |
 | [PR 1](https://github.com/djnivek/PhotoBooth/pull/1) — périmètre et handoff | Fusionnée, `c42162f` | Plan anniversaire, portes de validation claires |
-| PR 2 — traitement image et fichiers | Codé et testé sur Mac | Orientation, grille, JPEG final unique, persistance et tests pixels |
-| PR 3 — interface et simulation | À faire | Parcours tactile animé, mode simulé sans appel payant, aperçu imprimable |
+| [PR 2](https://github.com/djnivek/PhotoBooth/pull/2) — traitement image et fichiers | Fusionnée | Orientation, grille, JPEG final unique, persistance et tests pixels |
+| PR 3 — interface et simulation | Codée, parcours et rendu testés sur Mac | Parcours tactile animé, mode simulé sans appel payant, aperçu imprimable |
 | PR 4 — intégrations et paquet Windows | À faire | Canon, DNP, API réelle sur action explicite, QR, ZIP autonome, handoff |
 
 Chaque livraison passe par une PR, les vérifications applicables, puis un merge.

@@ -1,10 +1,13 @@
 #!/bin/sh
 set -eu
+export AVALONIA_TELEMETRY_OPTOUT=1
 cd "$(dirname "$0")/.."
 dotnet_command="${PHOTOBOOTH_DOTNET:-dotnet}"
 "$dotnet_command" build PhotoBooth.slnx --configuration Release --disable-build-servers -m:1
 "$dotnet_command" run --project tests/PhotoBooth.Core.Tests --configuration Release --no-build
 "$dotnet_command" run --project tests/PhotoBooth.Imaging.Tests --configuration Release --no-build
+"$dotnet_command" run --project tests/PhotoBooth.Runtime.Tests --configuration Release --no-build
+"$dotnet_command" run --project tests/PhotoBooth.App.Tests --configuration Release --no-build
 deno check supabase/functions/photobooth-api/index.ts
 deno lint supabase/functions/photobooth-api
 deno test supabase/functions/photobooth-api/handler_test.ts

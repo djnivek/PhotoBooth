@@ -50,3 +50,11 @@ mais les états « capture », « génération » et « impression » doivent re
 ## Traitement photo disponible
 
 `PhotoBooth.Imaging` produit maintenant le JPEG 1800×1200 à 300 dpi. Les huit orientations EXIF sont appliquées une fois ; les poses restent entières avec des marges si leurs proportions diffèrent. `SessionStore` écrit atomiquement et vérifie le SHA-256 avant impression. Le simulateur caméra accepte un jeu de fichiers locaux. 89 assertions supplémentaires passent sur Mac ; aucun appel payant ni impression physique. Les deux planches de calibration sont régénérées par les tests dans `artifacts/validation/`.
+
+## Interface exécutable — PR 3
+
+`dotnet run --project src/PhotoBooth.App` lance Estell’Art (Avalonia 12.1.4). Mode répétition par défaut : images de calibration distinctes ou fichiers sélectionnés dans Réglages, 1/4 poses, 5 secondes avant chaque capture, effet local explicitement simulé, aperçu JPEG, bouton Tester l’impression qui enregistre les mêmes octets sans spouler. Réglages permet un code 6–12 chiffres puis le plein écran ; F11/Echap/fermeture demandent le code. Le sel, le hash et le verrouillage temporaire sont persistés, jamais le code.
+
+Sur Windows les données iront dans `%LOCALAPPDATA%\EstellArt`; aucune donnée personnelle dans le dépôt. `PHOTOBOOTH_DATA_DIR` permet aux tests d’utiliser un dossier temporaire isolé. Le test UI rend le vrai logiciel à 1280×800 et 1024×768, puis clique jusqu’au résultat et au fichier d’impression. Captures conservées dans `.impeccable/review/`. Pas de validation tactile/Windows ni matérielle impliquée.
+
+Revue Impeccable indépendante : correction du voile de capture résolue, verdict ship limité à la répétition native. Clé OpenAI, partage et matériel restent à raccorder dans la prochaine livraison ; les messages UI le signalent.

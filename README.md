@@ -1,4 +1,11 @@
-# PhotoBooth
+# Estell’Art · PhotoBooth
+
+Application personnelle pour l’anniversaire d’Estelle. Le mode répétition est exécutable sur Mac et Windows ; les validations matérielles restent distinctes.
+
+```sh
+dotnet run --project src/PhotoBooth.App
+```
+
 
 > **Périmètre actualisé : anniversaire d’Estelle demain.** Voir [la progression](docs/PROGRESS.md)
 > et [le handoff actif](docs/HANDOFF.md). Le chiffrage initial décrit une version durable ;
