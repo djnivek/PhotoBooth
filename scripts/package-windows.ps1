@@ -35,6 +35,7 @@ try {
     $executable = Join-Path $unpacked 'EstellArt.exe'
     foreach ($mode in @('--self-test', '--smoke-ui')) {
         $process = Start-Process -FilePath $executable -ArgumentList @($mode, ('"' + $diagnostics + '"')) -PassThru
+        if ($mode -eq '--smoke-ui') { & (Join-Path $PSScriptRoot 'capture-window.ps1') -ApplicationProcess $process -OutputDirectory $diagnostics }
         if (-not $process.WaitForExit(90000)) { $process.Kill(); throw "Packaged executable timed out: $mode" }
         if ($process.ExitCode -ne 0) { throw "Packaged executable failed: $mode, exit $($process.ExitCode). Inspect $diagnostics." }
     }
