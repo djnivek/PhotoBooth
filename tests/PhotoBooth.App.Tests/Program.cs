@@ -26,8 +26,23 @@ Capture("result.png"); Click("PrintPreview");
 Until(() => Directory.GetFiles(root, "print-preview.jpg", SearchOption.AllDirectories).Length == 1, 3000);
 var file = Directory.GetFiles(root, "print-preview.jpg", SearchOption.AllDirectories).Single();
 if (new FileInfo(file).Length < 10000) throw new Exception("Print preview is empty.");
+Click("Settings"); Until(() => window.OwnedWindows.Count > 0, 2000);
+var settings = window.OwnedWindows.Single(); Pump(50);
+using (var settingsFrame = settings.CaptureRenderedFrame()!) settingsFrame.Save(Path.Combine(screenshots, "settings.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+settings.GetVisualDescendants().OfType<TextBox>().Single(t => t.PasswordChar == '●').Text = "381629";
+settings.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "Activer le plein écran"))
+    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+Until(() => window.WindowState == WindowState.FullScreen, 2000);
+window.Close(); Until(() => window.OwnedWindows.Count > 0, 2000);
+var unlock = window.OwnedWindows.Single(); Pump(50);
+using (var unlockFrame = unlock.CaptureRenderedFrame()!) unlockFrame.Save(Path.Combine(screenshots, "unlock.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+unlock.GetVisualDescendants().OfType<TextBox>().Single(t => t.PasswordChar == '●').Text = "381629";
+unlock.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "Déverrouiller"))
+    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+Until(() => window.WindowState == WindowState.Normal, 3000);
+if (File.ReadAllText(Path.Combine(root, "kiosk.json")).Contains("381629")) throw new Exception("Plain PIN stored");
 window.Close(); Pump(100);
-Console.WriteLine("PASS UI: home at two sizes, start, live fixture, animated countdown, four captures, result, exact print export. No paid API or printer.");
+Console.WriteLine("PASS UI: home at two sizes, start, live fixture, countdown, four captures, result, print export, PIN fullscreen and protected close. No paid API or printer.");
 Directory.Delete(root, true);
 
 Button? Find(string name) => window.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == name);

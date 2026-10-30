@@ -58,3 +58,13 @@ mais les états « capture », « génération » et « impression » doivent re
 Sur Windows les données iront dans `%LOCALAPPDATA%\EstellArt`; aucune donnée personnelle dans le dépôt. `PHOTOBOOTH_DATA_DIR` permet aux tests d’utiliser un dossier temporaire isolé. Le test UI rend le vrai logiciel à 1280×800 et 1024×768, puis clique jusqu’au résultat et au fichier d’impression. Captures conservées dans `.impeccable/review/`. Pas de validation tactile/Windows ni matérielle impliquée.
 
 Revue Impeccable indépendante : correction du voile de capture résolue, verdict ship limité à la répétition native. Clé OpenAI, partage et matériel restent à raccorder dans la prochaine livraison ; les messages UI le signalent.
+
+## Adaptateurs Windows — PR 4
+
+`PhotoBooth.Windows` fournit l’adaptateur Canon EDSDK 13.x x64 (thread STA unique, pompe d’événements, live view suspendue avant déclenchement, réception du JPEG complet, délai de 35 s sans redéclenchement) et l’impression GDI native. Le pilote est interrogé pour choisir le 4×6, une seule copie et une seule page. La surface imprimable et les résolutions X/Y sont utilisées séparément, notamment 300×600. Le raster BGRA conserve l’ordre et les couleurs du JPEG.
+
+Avant le premier essai Canon : obtenir légalement le SDK, copier ses DLL x64 et dépendances dans `canon/` à côté de l’exécutable, installer le runtime Visual C++ requis par cette version, régler le boîtier en JPEG haute qualité, fermer DSLR Booth et EOS Utility. Les déclarations ABI doivent être confrontées aux en-têtes du SDK effectivement fourni ; aucune DLL ni aucun Canon disponible ici pour le vérifier. Cette liaison est codée, pas validée sur appareil.
+
+Réglages permet de choisir Canon ou simulation, puis l’imprimante et l’envoi réel indépendamment. L’intention est écrite sur disque avant le premier appel au spouleur. Une erreur laisse `needs_operator` ; pas de second envoi automatique, contrôler la file Windows. Un numéro de travail prouve l’acceptation par la file, pas la sortie papier. L’impression réelle n’a jamais été lancée pendant les tests.
+
+18 vérifications de préparation impression couvrent pixels BGRA, résolution anisotrope, zones imprimables, journal avant effet externe, succès et échec ambigu. Le test UI couvre aussi le verrouillage plein écran, la fermeture interceptée et la sortie par code.

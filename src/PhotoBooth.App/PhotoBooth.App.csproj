@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../PhotoBooth.Runtime/PhotoBooth.Runtime.csproj" />
+    <ProjectReference Include="../PhotoBooth.Windows/PhotoBooth.Windows.csproj" />
     <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
     <PackageReference Include="QRCoder" Version="1.8.1" />
