@@ -3,6 +3,8 @@ const api = origin + "/functions/v1/photobooth-api";
 // The capability remains in the fragment: never sent to the host or in a referrer.
 // It is needed when a guest copies/reopens the URL. No analytics or third-party scripts.
 const token = location.hash.slice(1);
+// A phone may reuse an existing tab for the next QR instead of loading a new page.
+addEventListener("hashchange", () => location.reload());
 const status = document.querySelector("#status");
 const retry = document.querySelector("#retry");
 const photos = document.querySelector("#photos");

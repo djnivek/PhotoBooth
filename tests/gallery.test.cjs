@@ -17,13 +17,13 @@ function payload(count,edited){return {photo_count:count,mode:edited?'surprise':
 ].map(name=>({name,url:`${origin}/storage/v1/object/sign/booth-private/${id}/${name}?token=signed`}))};}
 async function render({count=4,edited=false,status=200,token='a'.repeat(64),modify=x=>x,offline=false}={}){
   const elements=Object.fromEntries(['status','retry','photos','sheet','archive','expiry'].map(name=>['#'+name,new Element(name)]));
-  const requests=[];let currentStatus=status;
-  const context=vm.createContext({URL,Error,Date,AbortSignal,location:{hash:'#'+token},
+  const requests=[];let currentStatus=status;const events={};let reloads=0;
+  const context=vm.createContext({URL,Error,Date,AbortSignal,location:{hash:'#'+token,reload:()=>reloads++},addEventListener:(name,listener)=>events[name]=listener,
     document:{querySelector:name=>elements[name],createElement:tag=>new Element(tag)},
     fetch:async(url,options)=>{requests.push({url,options});if(offline)throw new TypeError('Network error');return {ok:currentStatus===200,status:currentStatus,json:async()=>modify(payload(count,edited))};}});
   vm.runInContext(source,context);
   await new Promise(resolve=>setImmediate(resolve));
-  return {elements,requests,setStatus:value=>currentStatus=value};
+  return {elements,requests,setStatus:value=>currentStatus=value,events,reloads:()=>reloads};
 }
 for(const count of [1,4])for(const edited of [false,true])test(`${count} poses, ${edited?'original/edited pairs':'original only'}, sheet and archive`,async()=>{
   const {elements,requests}=await render({count,edited});
@@ -69,4 +69,7 @@ test('retry clears expired assets and never starts a generation',async()=>{
 test('offline gives a useful retry without credentials',async()=>{
  const {elements,requests}=await render({offline:true});assert.match(elements['#status'].textContent,/connexion/);
  assert.equal(elements['#retry'].hidden,false);assert.equal(requests[0].options.headers.Authorization,undefined);
+});
+test('opening a second QR in an existing tab reloads the capability',async()=>{
+ const {events,reloads}=await render();events.hashchange();assert.equal(reloads(),1);
 });
