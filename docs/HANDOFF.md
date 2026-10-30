@@ -2,9 +2,9 @@
 
 30 octobre 2026. Anniversaire le 31. Lire l’état Git/PR et les reçus avant de poursuivre. Les phases codé, testé localement, CI Windows, fusionné, déployé, publié et testé physiquement sont distinctes.
 
-## Mise à jour 0.3.1 en validation
+## Mise à jour 0.3.1, livraison en cours
 
-Branche `feat/offline-secure-gallery`. Standard hors ligne avec cloud activé, QR vers une galerie originaux/métamorphoses, limites serveur et arrêt administrateur. Migration de protection appliquée ; test transactionnel annulé réussi, compteur resté à zéro, audit sécurité Supabase sans alerte. Suite complète Mac et vérifications natives Windows réussies. Le site est déployé et ses dix fichiers signés ont été vérifiés octet par octet. Tests Chromium/captures et release encore à confirmer dans le reçu final. Aucun appel payant autorisé dans ces tests.
+Branche `feat/offline-secure-gallery`. Standard hors ligne avec cloud activé, QR vers une galerie originaux/métamorphoses, limites serveur et arrêt administrateur. Migration de protection appliquée ; test transactionnel annulé réussi, compteur resté à zéro, audit sécurité Supabase sans alerte. Suite complète Mac et vérifications natives Windows réussies. Le site est déployé et ses dix fichiers signés ont été vérifiés octet par octet. Chromium ordinateur/mobile, paquet Windows extrait/exécuté et revue visuelle réussis dans [la CI41137416834](https://github.com/djnivek/PhotoBooth/actions/runs/41137416834). [Avant/après et reçus](evidence/offline-gallery/README.md). La release sera publiée après fusion et construction sur main. Aucun appel payant autorisé dans ces tests.
 
 La galerie utilise le projet Vercel dédié `colors-party-estelle` dans Kevin's projects. Seuls les fichiers statiques de `web/gallery/` sont publics. Les photos restent privées dans Supabase. Le dépôt GitHub reste privé.
 

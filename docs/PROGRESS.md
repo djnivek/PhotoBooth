@@ -71,3 +71,11 @@ le code lors de la fermeture et l’impression après retour explicite aux origi
 Essai Canon WPD (SDK officiel optionnel absent), clé OpenAI côté serveur, code de sortie choisi par Kevin,
 sélection de l’imprimante sur le photomaton. Les fichiers de simulation ne doivent jamais être
 confondus avec une vraie capture Canon ou une vraie image générée.
+
+## Offline originals and protected gallery, PR14
+
+- Au naturel capture/composition/printing stays local with cloud enabled and network disconnected; one/four UI cases compare exact print bytes.
+- Server-held credentials, private bucket/RLS, atomic event/rate/in-flight caps, kill switch and no automatic paid retries. Real SQL test rolled back, counter unchanged at zero.
+- QR opens a deployed static gallery, originals and edited versions grouped per pose; individual/ZIP downloads. Read-only capabilities cannot authorize mutations.
+- Full local suite and Windows CI41137416834 passed; Chromium desktop/mobile and extracted executable verified. Independent visual review: ship. Durable before/after and live HTTP receipts under docs/evidence/offline-gallery.
+- No paid OpenAI test, storage upgrade or physical-device claim. Release publication pending the main build; then Windows10/Canon/DNP and an intentional OpenAI sample remain Kevin's rehearsal gates.

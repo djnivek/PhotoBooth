@@ -1,0 +1,24 @@
+{
+  "release": "0.3.1",
+  "build": "Release, no warnings/errors",
+  "core_assertions": 26,
+  "imaging_assertions": 89,
+  "runtime_assertions": 50,
+  "print_assertions": 26,
+  "canon_assertions": 28,
+  "cloud_assertions": 47,
+  "backend_tests": 14,
+  "gallery_contract_tests": 14,
+  "offline_ui": [
+    "1 photo with cloud configured and HTTP disconnected",
+    "4 photos with cloud configured and HTTP disconnected",
+    "print bytes equal stored sheet",
+    "no fabricated QR",
+    "no generation request"
+  ],
+  "openai_calls": 0,
+  "hardware_validated": false,
+  "initial_local_restore": "sandbox network blocked NuGet audit; successful full rerun with network access",
+  "initial_ui_test": "synchronous test-only credential setup caused deadlock; replaced with UI event-loop polling and successful rerun",
+  "browser_validation": "separate Windows CI"
+}

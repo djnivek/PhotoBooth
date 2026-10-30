@@ -1,0 +1,87 @@
+{
+  "browser": "Chromium",
+  "api": "mocked",
+  "openai_calls": 0,
+  "cases": [
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "count": 1,
+      "edited": false,
+      "passed": true
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "count": 1,
+      "edited": true,
+      "passed": true
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "count": 4,
+      "edited": false,
+      "passed": true
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "count": 4,
+      "edited": true,
+      "passed": true
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "count": 1,
+      "edited": false,
+      "passed": true
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "count": 1,
+      "edited": true,
+      "passed": true
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "count": 4,
+      "edited": false,
+      "passed": true
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "count": 4,
+      "edited": true,
+      "passed": true
+    }
+  ],
+  "states": [
+    "missing",
+    "expired",
+    "offline",
+    "loading",
+    "recovery"
+  ],
+  "success": true
+}
