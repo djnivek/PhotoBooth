@@ -2,9 +2,9 @@
 
 30 octobre 2026. Anniversaire le 31. Lire l’état Git/PR et les reçus avant de poursuivre. Les phases codé, testé localement, CI Windows, fusionné, déployé, publié et testé physiquement sont distinctes.
 
-## Livraison 0.3.0 en cours
+## Livraison 0.3.0
 
-Branche `feat/colors-party`, basée sur main `cf93936256c20a21510e487341469bb5d8aefe0e` (PR11, v0.2.2). [PR12](https://github.com/djnivek/PhotoBooth/pull/12) ouverte, validation complète Mac réussie, backend déployé, revue visuelle terminée. Vérification Windows en cours. Les reçus finaux seront liés dans [PROGRESS](PROGRESS.md) et [les preuves](evidence/colors-party/README.md).
+[PR12](https://github.com/djnivek/PhotoBooth/pull/12) fusionnée sur `d217c000d0cc6efce73c965d95e311f2d9f4209f`. [Version Windows0.3.0 publiée](https://github.com/djnivek/PhotoBooth/releases/tag/v0.3.0), validation complète Mac et Windows réussie, backend déployé, revue visuelle terminée. [Reçus et captures](evidence/colors-party/README.md). La release contient l’application exacte construite depuis ce commit ; les ajouts de documentation/tests de livraison ne changent pas son code.
 
 - Nouvelle identité explicitement demandée et illustrations approuvées par Kevin.
 - Au naturel ou Métamorphose, une ou quatre poses. Six univers et La Surprise du Chef.

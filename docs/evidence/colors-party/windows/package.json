@@ -1,0 +1,11 @@
+{
+  "version": "0.3.0",
+  "artifact": "ColorsParty-0.3.0-win-x64.zip",
+  "sha256": "05f2fa79062b709f4359d133758508a396e20f9cc814fc384e15f2efc38304e2",
+  "bytes": 81358679,
+  "source_commit": "d217c000d0cc6efce73c965d95e311f2d9f4209f",
+  "windows_self_test": true,
+  "native_window_opened": true,
+  "hardware_validated": false,
+  "openai_called": false
+}

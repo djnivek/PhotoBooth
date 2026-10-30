@@ -8,8 +8,8 @@ Le matériel cible est un Canon EOS 4000D et une DNP DS620 sous Windows 10 Pro 2
 
 ## Commencer
 
-- [Télécharger Colors Party by Estelle pour Windows](https://github.com/djnivek/PhotoBooth/releases) : extraire le ZIP puis lancer `ColorsParty.exe` ; dépôt privé, connexion GitHub requise.
-- [Captures de l’interface](docs/evidence/colors-party/README.md) et [preuves Windows](docs/evidence/windows-0.2.1/README.md).
+- [Télécharger Colors Party by Estelle pour Windows](https://github.com/djnivek/PhotoBooth/releases/tag/v0.3.0) : extraire le ZIP puis lancer `ColorsParty.exe` ; dépôt privé, connexion GitHub requise.
+- [Captures de l’interface](docs/evidence/colors-party/README.md) et [preuves Windows0.3.0](docs/evidence/colors-party/README.md).
 - [Handoff actif](docs/HANDOFF.md) : état exact, reprise sur PC et éléments manquants.
 - [Progression et PR](docs/PROGRESS.md) : lots fusionnés et portes restantes.
 - [Recette Windows](docs/REPRISE_WINDOWS.md) : répétition ce soir, matériel demain.
