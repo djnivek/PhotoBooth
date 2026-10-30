@@ -17,12 +17,13 @@ commerciale, la flotte de bornes et la maintenance longue durée ne sont pas le 
 | [PR 6](https://github.com/djnivek/PhotoBooth/pull/6) — Canon sans SDK | Fusionnée, tests Mac et CI Windows passés ; matériel non testé | WPD/PTP avec pilote Windows existant |
 | [PR 7](https://github.com/djnivek/PhotoBooth/pull/7) — paquet Windows | Fusionnée, `c4ba833` ; [release 0.2.0](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0) publiée | ZIP extrait et exécuté sur Windows, quatre modes simulés, cadrage natif corrigé et revu |
 | [PR 8](https://github.com/djnivek/PhotoBooth/pull/8) — preuves et simulateur HTTP | Fusionnée, `65d40e2` ; CI réussie | Preuves Windows durables et 32 séances fictives concurrentes |
-| [PR 9](https://github.com/djnivek/PhotoBooth/pull/9) — correctifs 0.2.1 | Revue ciblée terminée ; validation finale Windows en cours | Accès fichiers/PIN, impression interséances, annulation USB et deuxième séance : quatre régressions corrigées |
+| [PR 9](https://github.com/djnivek/PhotoBooth/pull/9) — correctifs 0.2.1 | Fusionnée, `2e02633` ; [release0.2.1 publiée](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.1), revue ciblée et CI terminées | Accès fichiers/PIN, impression interséances, annulation USB et deuxième séance : quatre régressions corrigées |
+| [PR 10](https://github.com/djnivek/PhotoBooth/pull/10) — handoff final 0.2.1 | Reçus et captures versionnés ; release publiée | Source exacte, SHA retéléchargé, revue et checklist PC/matériel |
 
 Chaque livraison passe par une PR, les vérifications applicables, puis un merge.
 Le tableau doit évoluer avec les numéros et liens réels, sans appeler « fait » un simple contrat.
-Le [reçu Windows](evidence/windows-0.2.0/README.md) conserve le commit, le SHA et les captures.
-Les PR 3/5/6/7 contiennent désormais des screenshots ; poursuivre cette pratique à chaque modification UI.
+Le [reçu Windows](evidence/windows-0.2.1/README.md) conserve le commit, le SHA et les captures.
+Les PR 3/5/6/7/8/9 contiennent désormais des screenshots ; poursuivre cette pratique à chaque modification UI.
 
 ## Portes de validation
 

@@ -20,14 +20,15 @@ aucune feuille DNP, aucun lancement sur le Windows 10 cible, aucune édition Ope
 | CI Windows cloud | [Run41096255110](https://github.com/djnivek/PhotoBooth/actions/runs/41096255110) réussi sur le commit de PR5 : client, DPAPI, UI et API simulées |
 | CI Windows Canon | [Run41098262975](https://github.com/djnivek/PhotoBooth/actions/runs/41098262975) réussi sur PR6 : adaptateur fictif et application native |
 | EXE Windows extrait | [Run41105339893](https://github.com/djnivek/PhotoBooth/actions/runs/41105339893) réussi sur main `c4ba833` : paquet autonome extrait, quatre parcours, raster, archives2/3/5/9 fichiers, QR, DPAPI |
-| Correctifs 0.2.1 sur Windows | [Run41112773487](https://github.com/djnivek/PhotoBooth/actions/runs/41112773487) réussi sur PR9 `496fff1` : régressions PIN/impression/connexion USB, quatre parcours de l’EXE extrait et fenêtre native ; ZIP téléchargé et SHA vérifié |
+| Correctifs 0.2.1 sur Windows | [Run41116066419](https://github.com/djnivek/PhotoBooth/actions/runs/41116066419) réussi sur PR9 `365ceca` : quatre régressions et compléments de revue, quatre parcours de l’EXE extrait et fenêtre native |
+| Release Windows 0.2.1 | [Run41116597603](https://github.com/djnivek/PhotoBooth/actions/runs/41116597603) réussi sur main `2e02633` ; paquet publié, retéléchargé et SHA vérifié ; [reçus](evidence/windows-0.2.1/README.md) |
 | Fenêtre Windows réelle | Pixels bureau et rendu natif à 992×700, puis 960×700 après resize : Réglages, Démarrer et planche visibles dans leurs panneaux ; revue Impeccable acceptée à échelle 1 |
 | Supabase réel | ZIP 5 fichiers puis ZIP 9 fichiers (4 originaux + 4 effets locaux + planche), octets vérifiés, publication rejouée, 0 génération |
 | Isolation distante | Quatre tables RLS activées, aucun SELECT anon/authenticated ; bucket privé ; budget started=0 relu |
 | Galerie hébergée | Non : API Pages retourne422, forfait incompatible avec dépôt privé ; QR ZIP disponible |
 
 Les rendus headless Avalonia/Skia sont versionnés dans `.impeccable/review/`.
-Les captures du véritable exécutable Windows sont dans [windows-0.2.0](evidence/windows-0.2.0/README.md) :
+Les captures du véritable exécutable Windows sont dans [windows-0.2.1](evidence/windows-0.2.1/README.md) :
 Windows Server 2022 sur runner GitHub, pas le photomaton Windows 10. La revue Impeccable reste limitée
 aux états observés. L’accès navigateur est désactivé dans Work :
 aucune validation visuelle mobile de la galerie n’est revendiquée.

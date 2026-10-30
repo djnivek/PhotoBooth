@@ -2,14 +2,14 @@
 
 Photomaton personnel pour l’anniversaire d’Estelle, le 31 octobre 2026. Dépôt privé.
 
-**Version Windows 0.2.0 disponible pour la répétition.** 1 ou 4 poses, visée, décompte animé de 5 secondes,
+**Version Windows 0.2.1 disponible pour la répétition.** 1 ou 4 poses, visée, décompte animé de 5 secondes,
 original ou style IA surprise, aperçu, une planche 4×6, impression facultative et QR de téléchargement.
 Le matériel cible est un Canon EOS 4000D et une DNP DS620 sous Windows 10 Pro 22H2 x64.
 
 ## Commencer
 
-- [Télécharger Estell’Art pour Windows](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0) : extraire le ZIP puis lancer `EstellArt.exe` ; dépôt privé, connexion GitHub requise.
-- [Captures de l’interface](https://github.com/djnivek/PhotoBooth/pull/7) et [preuves Windows](docs/evidence/windows-0.2.0/README.md).
+- [Télécharger Estell’Art pour Windows](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.1) : extraire le ZIP puis lancer `EstellArt.exe` ; dépôt privé, connexion GitHub requise.
+- [Captures de l’interface](https://github.com/djnivek/PhotoBooth/pull/9) et [preuves Windows](docs/evidence/windows-0.2.1/README.md).
 - [Handoff actif](docs/HANDOFF.md) : état exact, reprise sur PC et éléments manquants.
 - [Progression et PR](docs/PROGRESS.md) : lots fusionnés et portes restantes.
 - [Recette Windows](docs/REPRISE_WINDOWS.md) : répétition ce soir, matériel demain.
@@ -44,6 +44,9 @@ le QR ouvre donc directement le ZIP signé. Aucun abonnement supplémentaire n�
 liaisons caméra/imprimante. La connexion Canon utilise le pilote Windows existant sans SDK
 propriétaire par défaut ; sa compatibilité EOS4000D doit être vérifiée sur l’appareil. Le plein écran demande un code pour
 quitter l’application ; il ne neutralise pas les commandes système Windows.
+
+La [revue finale](docs/reviews/2026-10-30-final-review.md) conserve l’avis ciblé de Claude Opus 5.5,
+les quatre corrections et les tests de régression. Le stockage reste au forfait actuel jusqu’aux essais réussis.
 
 ## Vérifier et comprendre
 

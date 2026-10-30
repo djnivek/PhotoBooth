@@ -1,0 +1,68 @@
+{
+  "native_window_opened": true,
+  "Width": 992,
+  "Height": 700,
+  "scaling": 1,
+  "logical_size": "992, 700",
+  "bounds": "0, 0, 992, 700",
+  "content_bounds": "36, 24, 920, 652",
+  "controls": [
+    {
+      "Name": "Settings",
+      "X": 830,
+      "Y": 24,
+      "Width": 126,
+      "Height": 54,
+      "right": 956,
+      "bottom": 78,
+      "inside_viewport": true
+    },
+    {
+      "Name": "StartSession",
+      "X": 36,
+      "Y": 541,
+      "Width": 464,
+      "Height": 70,
+      "right": 500,
+      "bottom": 611,
+      "inside_viewport": true
+    },
+    {
+      "Name": "HomeSheet",
+      "X": 538,
+      "Y": 178,
+      "Width": 419,
+      "Height": 287,
+      "right": 957,
+      "bottom": 465,
+      "inside_viewport": true
+    }
+  ],
+  "controls_inside_client": true,
+  "layout": [
+    {
+      "Name": "AppLayout",
+      "bounds": "36, 24, 920, 652",
+      "desired": "989, 650"
+    },
+    {
+      "Name": "Header",
+      "bounds": "0, 0, 920, 54",
+      "desired": "260, 78"
+    },
+    {
+      "Name": "SessionBody",
+      "bounds": "0, 78, 920, 534",
+      "desired": "917, 484"
+    },
+    {
+      "Name": "HomeLayout",
+      "bounds": "0, 0, 920, 534",
+      "desired": "917, 484"
+    }
+  ],
+  "os": "Microsoft Windows 10.0.20348",
+  "image_sha256": "743f822da0de6658414b32e1beab8806b23bdc31753bb3a9d45b62851c40322a",
+  "paid_api_calls": 0,
+  "hardware_access": false
+}
