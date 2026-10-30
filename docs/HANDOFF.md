@@ -4,7 +4,7 @@
 
 ## Mise à jour 0.3.1 en validation
 
-Branche `feat/offline-secure-gallery`. Standard hors ligne avec cloud activé, QR vers une galerie originaux/métamorphoses, limites serveur et arrêt administrateur. Migration de protection appliquée ; test transactionnel annulé réussi, compteur resté à zéro, audit sécurité Supabase sans alerte. Tests navigateur/captures, publication et release encore à confirmer dans le reçu final. Aucun appel payant autorisé dans ces tests.
+Branche `feat/offline-secure-gallery`. Standard hors ligne avec cloud activé, QR vers une galerie originaux/métamorphoses, limites serveur et arrêt administrateur. Migration de protection appliquée ; test transactionnel annulé réussi, compteur resté à zéro, audit sécurité Supabase sans alerte. Suite complète Mac et vérifications natives Windows réussies. Le site est déployé et ses dix fichiers signés ont été vérifiés octet par octet. Tests Chromium/captures et release encore à confirmer dans le reçu final. Aucun appel payant autorisé dans ces tests.
 
 La galerie utilise le projet Vercel dédié `colors-party-estelle` dans Kevin's projects. Seuls les fichiers statiques de `web/gallery/` sont publics. Les photos restent privées dans Supabase. Le dépôt GitHub reste privé.
 
@@ -40,7 +40,7 @@ Le dossier `%LOCALAPPDATA%\EstellArt` est conservé intentionnellement pour ne p
 ## Tests restants, dans l’ordre
 
 1. PC sans matériel : extraire ColorsParty.exe, tester une/quatre poses, six styles et Chef, aperçu/Imprimer vers fichier, réglages, code et maintien souris/tactile.
-2. Mettre la clé serveur, connecter la borne. Kevin déclenche volontairement un essai OpenAI payant avec une photo autorisée ; juger identité, délai, puis quatre photos. Vérifier le QR sur téléphone.
+2. Couper Internet avec la connexion cloud configurée : une/quatre photos Au naturel et Imprimer doivent fonctionner, sans QR fictif. Rétablir Internet et Réessayer le partage sur le même résultat. Puis mettre la clé serveur, connecter la borne. Kevin déclenche volontairement un essai OpenAI payant avec une photo autorisée ; juger identité, délai, puis quatre photos. Vérifier le QR sur téléphone.
 3. Photomaton : fermer DSLR Booth/EOS Utility, tester Canon en MF confirmé, quatre photos nettes, annulation et reconnexion. Puis DS620 4×6, une mire et quatre poses sur une seule feuille.
 4. Vérifier réseau, espace, consommables et plusieurs séances successives. Le Windows10 exact et l’ancien i7 restent distincts de la CI Server2022.
 

@@ -16,7 +16,11 @@ COLORS PARTY BY ESTELLE
    Ne jamais mettre cette clé dans la borne. Saisir le code de connexion distinct
    dans Réglages, puis activer la connexion. Le contrôle de connexion est gratuit.
    Une séance Métamorphose en ligne est facturée. Au naturel n’appelle pas OpenAI.
-   Le QR télécharge un ZIP valable 7 jours : photos et planche, plus originaux/.
+   Le QR ouvre votre galerie pendant 7 jours : originaux et métamorphoses côte à côte.
+   Télécharger une photo ou le ZIP complet avec la planche reste possible.
+   Sans Internet, Au naturel prend et imprime normalement. Seul le partage attend
+   la connexion ; Réessayer le partage reste disponible sur l’écran du résultat.
+   Les métamorphoses en ligne ont besoin d’Internet. Leur échec conserve les originaux.
    Réglages > Actualiser les univers récupère les ajouts et retraits du serveur.
 
 4. CANON ET DNP
