@@ -29,6 +29,8 @@ Les PR 3/5/6/7/8/9 contiennent désormais des screenshots ; poursuivre cette pra
 
 [PR12](https://github.com/djnivek/PhotoBooth/pull/12) fusionnée, `d217c00` : identité approuvée, univers serveur, scènes figées, réglages avec code facultatif et maintien de trois secondes, préparation caméra. Validation Release locale complète réussie ; backend déployé et huit contrôles distants réussis sans génération. Revue visuelle terminée. [CI de livraison](https://github.com/djnivek/PhotoBooth/actions/runs/41131796018) réussie, [version0.3.0 publiée](https://github.com/djnivek/PhotoBooth/releases/tag/v0.3.0). Les preuves sont dans [le reçu](evidence/colors-party/README.md). Aucune validation matérielle ou génération payante ajoutée.
 
+[PR13](https://github.com/djnivek/PhotoBooth/pull/13) conserve les reçus Windows0.3.0, le SHA retéléchargé, les captures natives et la régression d’accès aux fichiers protégés. Elle ne modifie pas le code de l’application livrée.
+
 ## Portes de validation
 
 [PR11](https://github.com/djnivek/PhotoBooth/pull/11) : textes invités simplifiés pour la version0.2.2
