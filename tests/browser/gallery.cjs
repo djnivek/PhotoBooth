@@ -35,14 +35,16 @@ const payload=(count,edited)=>({mode:edited?'surprise':'original',photo_count:co
    await page.goto(`${local}/before/#${'a'.repeat(64)}`);await page.locator('#archive').waitFor({state:'visible'});await page.locator("img").evaluateAll(images=>images.forEach(i=>i.loading="eager"));await page.evaluate(()=>Promise.all([document.fonts.ready,...Array.from(document.images).map(i=>i.decode().catch(()=>{}))]));
    await page.screenshot({path:path.join(output,`before-${suffix}.png`),fullPage:true});
    for(const c of [1,4])for(const e of [false,true]){
-    count=c;edited=e;await page.goto(`${local}/#${'a'.repeat(64)}`);await page.locator('#archive').waitFor({state:'visible'});
+    count=c;edited=e;await page.goto(`${local}/?case=${c}-${e}#${'a'.repeat(64)}`);await page.locator('#archive').waitFor({state:'visible'});
     await page.locator("img").evaluateAll(images=>images.forEach(i=>i.loading="eager"));
     await page.evaluate(()=>Promise.all([document.fonts.ready,...Array.from(document.images).map(i=>i.complete?Promise.resolve():new Promise(r=>{i.onload=r;i.onerror=r;}))]));
     assert.equal(await page.locator('#photos .pose').count(),c);
     assert.equal(await page.locator('#photos figure').count(),c*(e?2:1));
     assert.ok(await page.locator('#photos img').evaluateAll(images=>images.every(i=>i.complete&&i.naturalWidth>0)));
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-    const requestBefore=requests;await page.getByRole('button',{name:'Actualiser les liens'}).click();await page.locator('#archive').waitFor({state:'visible'});assert.equal(requests,requestBefore+1);
+    const requestBefore=requests;await Promise.all([page.waitForResponse(r=>r.url().endsWith("/downloads/resolve")),page.getByRole("button",{name:"Actualiser les liens"}).click()]);
+    await page.waitForFunction(()=>!document.querySelector("#retry").disabled);assert.equal(requests,requestBefore+1);
+    await page.locator("img").evaluateAll(images=>images.forEach(i=>i.loading="eager"));await page.evaluate(()=>Promise.all(Array.from(document.images).map(i=>i.decode().catch(()=>{}))));
     if(c===4&&e)await page.screenshot({path:path.join(output,`after-${suffix}.png`),fullPage:true});
     reports.push({viewport,count:c,edited:e,passed:true});
    }

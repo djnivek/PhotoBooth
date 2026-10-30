@@ -1,0 +1,23 @@
+{
+  "utc": "2026-10-30T22:15:12.989618+00:00",
+  "gallery": "https://colors-party-estelle.vercel.app",
+  "deployment_id": "dpl_4TiEd1UiqzkSvBkPMaGmsSaL8TS6",
+  "source_commit": "d1b0e778be5f6a2e14fad03c0d068a720900af72",
+  "checks": [
+    "deployed bytes match: index.html",
+    "deployed bytes match: gallery.js",
+    "deployed bytes match: style.css",
+    "deployed bytes match: assets/wordmark.png",
+    "deployed bytes match: assets/BricolageGrotesque.ttf",
+    "all 10 private signed assets match the local originals, final photos, sheet and archive",
+    "8 unauthorized mutation probes denied, including gallery capability as bearer",
+    "unknown capability denied",
+    "private original not available through public storage path",
+    "individual download returns attachment filename and JPEG bytes"
+  ],
+  "openai_calls": 0,
+  "success": true,
+  "browser_scope": "separate Chromium CI uses mocked API/images",
+  "download_sha256": "88aba01bd46f47022b3a00b1b05e6a3290e80dee1cdf7d7b4a43da4752d68ac6",
+  "cors_origin": "https://colors-party-estelle.vercel.app"
+}
