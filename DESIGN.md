@@ -103,9 +103,9 @@ components:
 
 “Piste de fête chromatique” is the working visual direction: a dark aubergine room, a clear lemon action, and generous photography. Estell’Art is personal and festive without reducing the room available for posing. Large flat areas and direct French labels give the guest a short, readable path.
 
-This system records the implemented Avalonia desktop rehearsal, targeting Windows with the same UI rehearsed on macOS. The name and direction are working choices under the delegated delivery brief; an unanswered preference is not approval. Code-led preparation for this delivery is not a confirmed standing workflow preference. No web, iOS, or Android design is asserted here.
+This system records the implemented Avalonia desktop interface, targeting Windows with native local states rehearsed on macOS. The name and direction are working choices under the delegated delivery brief; an unanswered preference is not approval. Code-led preparation for this delivery is not a confirmed standing workflow preference. No web, iOS, or Android design is asserted here.
 
-Source authority is `src/PhotoBooth.App/App.axaml` and `src/PhotoBooth.App/MainWindow.cs`, with capture timing in `src/PhotoBooth.Core/Session.cs` and `src/PhotoBooth.Runtime/BoothController.cs`. The latest finish review accepted the corrected capture veil within the native rehearsal scope. It does not establish hardware, printing, online sharing, or Windows-device validation.
+Source authority is `src/PhotoBooth.App/App.axaml` and `src/PhotoBooth.App/MainWindow.cs`, with capture timing in `src/PhotoBooth.Core/Session.cs` and `src/PhotoBooth.Runtime/BoothController.cs`. The latest targeted finish review accepted the permanent field labels, accurate cloud-disable confirmation, and native local dialog/result states. The result at 1024 × 768 and the visible unlock error were reviewed. Connected QR sharing, physical printing, Canon/Windows operation, and the prepared but undeployed web gallery are not visually validated journeys.
 
 **Key Characteristics:**
 
@@ -139,7 +139,7 @@ The sidecar’s eight-step color ramps are synthesized documentation aids. The a
 
 ## Typography
 
-**Display Font:** Bricolage Grotesque, bundled as `Assets/BricolageGrotesque.ttf`; regular/upright style, variable weight. No explicit display fallback is set in the text helper.
+**Display Font:** Bricolage Grotesque, bundled as `Assets/BricolageGrotesque.ttf`; regular/upright style, variable weight. No explicit display fallback is set in the text helper. The font-hook alias `Bricolage` was corrected to the documented family `Bricolage Grotesque`; no detection rule was suppressed.
 
 **Body Font:** Segoe UI, with Arial fallback. Native controls inherit this family from the window.
 
@@ -167,7 +167,7 @@ The centered desktop window starts at 1280 × 800 and has a minimum of 960 × 70
 
 The home surface uses proportional columns (6:5), a 38-unit separation on the choice column, and 19-unit vertical gaps in that column. Options are equal-width native buttons with a combined gap of 12. The result uses columns (7:4), a 30-unit separation, and 22/20-unit vertical grouping. The capture screen uses a flexible image stage between its title and action row, with 20-unit vertical stage margins. Photo previews scale uniformly, with maximum heights of 380 on the home surface and 430 on the result.
 
-No breakpoint, compact spacing variant, or automatic single-column layout is implemented. Text wrapping and proportional columns provide the current resizing behavior. The surface brief’s proposed reduced spacing at 1024 × 768 is not a current code token or established responsive rule.
+The result action column now sits in a native ScrollViewer. The reviewed local result at 1024 × 768 retains a readable sheet, print confirmation, sharing-disabled status, and new-session action without clipping. There is still no breakpoint, compact spacing token, or automatic single-column layout: proportional columns, text wrapping, and scrolling supply the resizing behavior.
 
 ## Elevation & Depth
 
@@ -201,15 +201,15 @@ The two option rows use native Buttons, not a separate chip or radio-control imp
 
 The home image has a white paper surround with the photo-frame radius and compact padding. The capture stage is a flat dark rectangle with uniform image scaling. There is no reusable decorative card collection.
 
-Algorithmic calibration images come from `FixtureCamera.CreateFixture`: colored fields and simple geometry for testing framing, composition, and capture order. They are neither personal photographs nor AI-generated image assets. Rehearsal files selected by the operator remain local. UI screenshots are validation evidence, not product photography. No image-generation artwork is shipped by this interface.
+Algorithmic calibration images come from `FixtureCamera.CreateFixture`: colored fields and simple geometry for testing framing, composition, and capture order. They are neither personal photographs nor AI-generated image assets. The local rehearsal can also use operator-selected photos. Online activation changes the session’s sharing and transformation path; local-only behavior must not be implied when cloud mode is enabled. UI screenshots are validation evidence, not product photography. No image-generation artwork is shipped by this interface.
 
 ### Inputs / Fields
 
-PIN fields are native TextBoxes with a minimum height of 50 and body-size text. Password characters are masked and the entry length is capped at 12. Surface, border, selection, pointer, and focus rendering are supplied by the dark Fluent theme; the app does not define custom tokens for them. Error messages use ordinary readable text rather than an invented input-error color.
+Code fields are native TextBoxes with a minimum height of 50 and body-size text. Permanent labels identify “Code de connexion de la borne · pas la clé OpenAI” and “Code de sortie du plein écran · 6 à 12 chiffres”; the unlock dialog uses “Code de sortie”. Redundant placeholders have been removed. All three fields mask their content; only exit PIN fields have the 12-character cap. Surface, border, selection, pointer, and focus rendering remain dark Fluent defaults. The visible unlock error reads “Code incorrect ou verrouillage de 30 secondes.” and uses ordinary text, with both dialog actions remaining available.
 
 ### Navigation
 
-The persistent brand and “Réglages” button sit in the header. Home, capture, result, and error states replace the central content. There is no tab bar, browser navigation, or mobile navigation variant. Settings and unlock use owned desktop dialogs; settings content scrolls. The image picker uses the native storage-provider picker.
+The persistent brand and “Réglages” button sit in the header. Home, capture, result, and error states replace the central content. There is no tab bar, browser navigation, or mobile navigation variant. Settings and unlock use owned desktop dialogs: settings is 690 × 680 with scrolling content; unlock is 480 × 430, leaving room for its permanent label, visible error, and both actions. The image picker uses the native storage-provider picker.
 
 ### Countdown and capture cue
 
@@ -221,17 +221,25 @@ The framing image stays visible during positioning and countdown. Entering Captu
 
 ### Session and recovery states
 
-Positioning exposes “On est prêts !”; countdown and capture replace that action with progress and the badge. Processing changes the instruction to preparation copy. Ready displays the saved composed sheet, with explicit rehearsal print and AI wording. Cancelled returns to home once capture work has stopped. Failed presents a recovery screen and confirms that already saved photos remain local. A generic action error uses an owned dialog.
+Positioning exposes “On est prêts !”; countdown and capture replace that action with progress and the badge. Processing changes the instruction to preparation copy. Ready displays the saved composed sheet, with wording based on actual print/cloud settings and effective photo mode. Cancelled returns to home once capture work has stopped. Failed preserves saved photos and, when all original captures exist after a Surprise failure, offers “Garder les originaux”. A generic action error uses an owned dialog.
 
-The result’s QR message is a placeholder for future sharing activation. “Tester l’impression” records a verified print-preview file and explicitly reports that no physical sheet was sent. These states must not visually imply capabilities that this rehearsal has not activated.
+“Tester l’impression” writes a print-preview file and reports that no sheet was sent. With physical printing enabled, the action becomes “Imprimer” and reports the submitted spool job; that status is not proof of a physical print. The footer independently identifies camera, printing, and cloud modes.
+
+Cloud activation and deactivation are explicit operator actions. Activation checks the connection and distinguishes OpenAI readiness from sharing-only readiness. Deactivation reports exactly “Connexion en ligne désactivée. Aucun appel OpenAI payant.”; it does not announce that the camera or physical printer were disabled.
+
+### Conditional QR sharing
+
+The result displays “Partage en ligne désactivé dans les réglages.” while cloud mode is off. When enabled, publication shows preparation/upload status and a retry action. The QR becomes visible only after successful publication for the still-current session; errors remain in the status text. It is generated at exactly 3 PNG pixels per module and displayed at `ModuleMatrix.Count × 3` logical units per side, avoiding arbitrary rescaling in the source layout. The text supplies the expiry date and identifies ZIP download when no gallery URL is configured.
+
+No connected QR is present in the reviewed local captures, so its appearance and scan flow are implementation facts pending visual/device validation. The web gallery is prepared but undeployed; it is not an established, visually validated extension of this native design system.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** preserve the native Button, TextBox, owned-dialog, file-picker, and keyboard interaction semantics.
+- **Do** preserve native controls, owned dialogs, scrolling, file-picker, and keyboard interaction semantics, with permanent labels for code fields.
 - **Do** use the exact composed image for the result preview and keep photographic content proportionate with uniform scaling.
-- **Do** keep the explicit rehearsal status visible and distinguish local calibration images from real guest photography.
+- **Do** keep camera, printing, and cloud status explicit and distinguish local calibration images from real guest photography.
 - **Do** preserve the brief, single capture cue and the readable badge over the framing image.
 - **Do** check the actual desktop window sizes when changing copy, spacing, or controls; there is no implemented breakpoint system.
 
@@ -241,4 +249,4 @@ The result’s QR message is a placeholder for future sharing activation. “Tes
 - **Don't** turn the capture cue into a repeating strobe or an opaque frame that hides the photograph.
 - **Don't** describe calibration geometry or rehearsal filters as personal photos or generated AI artwork.
 - **Don't** treat the HTML documentation specimens as a web product or as exact reproductions of platform-owned Fluent control states.
-- **Don't** infer an approved permanent workflow, phone layout, compact breakpoint, or reduced-motion variant from this delivery.
+- **Don't** infer a validated connected QR or web-gallery journey, an approved permanent workflow, a phone layout, a compact breakpoint, or a reduced-motion variant from this delivery.

@@ -168,6 +168,27 @@ public sealed class BoothController : IAsyncDisposable
         }
     }
 
+    public async Task UseOriginalsAsync()
+    {
+        if (taking || Session is null) return;
+        taking = true;
+        try
+        {
+            Session.PrepareOriginalFallback(); Message = "On prépare vos originaux…"; Notify();
+            var bytes = new List<byte[]>(); var final = new List<StoredAsset>();
+            foreach (var shot in Session.Captures)
+            {
+                var image = await File.ReadAllBytesAsync(store.Resolve(shot.LocalAssetKey)); bytes.Add(image);
+                final.Add(new(shot.LocalAssetKey, SessionStore.Hash(image), image.Length));
+            }
+            Sheet = await store.SavePhotoAsync(Session.Id, PhotoProcessor.Compose(bytes)); FinalAssets = final;
+            Session.CompleteProcessing(Session.Captures.Select(c => new FinalPhoto(c.Id,c.LocalAssetKey)),Sheet.Key);
+            Message = "Vos originaux sont prêts."; await SaveManifestAsync("ready_original_fallback",CancellationToken.None);
+        }
+        catch (Exception exception) { await FailAsync(exception); }
+        finally { taking = false; Notify(); }
+    }
+
     public async Task CancelAsync()
     {
         sessionCancellation?.Cancel();
@@ -209,8 +230,8 @@ public sealed class BoothController : IAsyncDisposable
     }
     private Task SaveManifestAsync(string state, CancellationToken token) => Session is null ? Task.CompletedTask :
         store.WriteManifestAsync(Session.Id, new { schema = 1, state, Session.Id, Session.Options,
-            Session.StyleId, captures = Session.Captures, final = FinalAssets, sheet = Sheet,
+            Session.StyleId, Session.UsedOriginalFallback, captures = Session.Captures, final = FinalAssets, sheet = Sheet,
             updatedAt = DateTimeOffset.UtcNow }, token);
     private void Notify() => Changed?.Invoke();
-    public async ValueTask DisposeAsync() { await CancelAsync(); await CloseCameraAsync(); sessionCancellation?.Dispose(); }
+    public async ValueTask DisposeAsync() { await CancelAsync(); await CloseCameraAsync(); sessionCancellation?.Dispose(); if (transform is IDisposable disposable) disposable.Dispose(); }
 }

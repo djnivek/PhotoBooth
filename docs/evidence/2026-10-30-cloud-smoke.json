@@ -1,0 +1,12 @@
+{
+  "session_id": "b07dd994-e45c-4057-988e-0b04687b8569",
+  "utc": "2026-10-30T16:36:34.396827+00:00",
+  "mode": "synthetic-originals",
+  "generation_calls": 0,
+  "generation_configured": false,
+  "archive_entries": 5,
+  "archive_sha256": "69bfeebe475af36fe1409e3c084ddb09ed207354cd5db04ec08ee7040080ad16",
+  "sheet_sha256": "5bd7ad82c134cb4ecdbc5e95d087e8cdb580337f26546f1f91f560b8a738ce8d",
+  "ExpiresAt": "2026-11-06T16:36:25.592203+00:00",
+  "publish_retry_succeeded": true
+}

@@ -12,6 +12,7 @@ using PhotoBooth.Core;
 using PhotoBooth.Imaging;
 using PhotoBooth.Runtime;
 using PhotoBooth.Windows;
+using QRCoder;
 
 namespace PhotoBooth.App;
 
@@ -41,6 +42,10 @@ public sealed class MainWindow : Window
     private readonly string settingsPath;
     private readonly string boothSettingsPath;
     private BoothSettings boothSettings = new();
+    private readonly string credentialPath;
+    private string cloudKey = "";
+    private BoothCloudClient? cloud;
+    private CancellationTokenSource? sharingCancellation;
     private readonly DispatcherTimer pulse = new() { Interval = TimeSpan.FromMilliseconds(30) };
     private DateTimeOffset pulseStarted;
     private readonly Func<TimeSpan, CancellationToken, Task>? rehearsalDelay;
@@ -56,7 +61,10 @@ public sealed class MainWindow : Window
         store = new SessionStore(Path.Combine(root, "sessions"));
         settingsPath = Path.Combine(root, "kiosk.json");
         boothSettingsPath = Path.Combine(root, "booth-settings.json");
+        credentialPath = Path.Combine(root, "cloud-credential");
         try { boothSettings = BoothSettings.Load(boothSettingsPath); } catch (Exception) { /* Safe local rehearsal defaults. */ }
+        try { cloudKey = CredentialStore.Load(credentialPath); } catch (Exception) { boothSettings = boothSettings with { CloudEnabled = false }; }
+        if (cloudKey.Length == 0) boothSettings = boothSettings with { CloudEnabled = false };
         if (File.Exists(settingsPath))
         {
             try { exitGate = KioskExitGate.Restore(JsonSerializer.Deserialize<KioskExitGate.Credential>(File.ReadAllText(settingsPath))!); }
@@ -85,7 +93,7 @@ public sealed class MainWindow : Window
         {
             if (kioskLocked) { e.Cancel = true; _ = ShowUnlockAsync(); }
         };
-        Closed += async (_, _) => { pulse.Stop(); flashTimer.Stop(); await controller.DisposeAsync(); currentBitmap?.Dispose(); };
+        Closed += async (_, _) => { pulse.Stop(); flashTimer.Stop(); sharingCancellation?.Cancel(); await controller.DisposeAsync(); currentBitmap?.Dispose(); };
         KeyDown += (_, e) =>
         {
             if (e.Key == Key.F11 || (e.Key == Key.Escape && kioskLocked))
@@ -96,7 +104,9 @@ public sealed class MainWindow : Window
 
     private BoothController CreateController()
     {
-        var result = new BoothController(store, () => boothSettings.CanonCamera ? new CanonCamera(store) : new FixtureCamera(store, fixtureFiles), new RehearsalTransform(), rehearsalDelay);
+        cloud = boothSettings.CloudEnabled ? new BoothCloudClient(boothSettings.ApiBaseUrl, cloudKey, store, boothSettings.GalleryBaseUrl) : null;
+        var result = new BoothController(store, () => boothSettings.CanonCamera ? new CanonCamera(store) : new FixtureCamera(store, fixtureFiles),
+            (IPhotoTransform?)cloud ?? new RehearsalTransform(), rehearsalDelay);
         result.Changed += () => Dispatcher.UIThread.Post(UpdateSession);
         result.Frame += bytes => Dispatcher.UIThread.Post(() =>
         {
@@ -108,6 +118,7 @@ public sealed class MainWindow : Window
 
     private void RenderHome()
     {
+        sharingCancellation?.Cancel(); sharingCancellation?.Dispose(); sharingCancellation = null;
         screen = "home"; liveImage = null; countdown = null; pulse.Stop();
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("6*,5*") };
         var choices = new StackPanel { Spacing = 19, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 38, 0) };
@@ -198,8 +209,10 @@ public sealed class MainWindow : Window
         var image = new Image { Source = new Bitmap(store.Resolve(controller.Sheet!.Key)), Stretch = Stretch.Uniform, MaxHeight = 430 };
         left.Children.Add(image); layout.Children.Add(left);
         var actions = new StackPanel { Spacing = 20, VerticalAlignment = VerticalAlignment.Center };
-        actions.Children.Add(Text(controller.Session!.Options.Mode == PhotoMode.Surprise ? "Essai de transformation" : "Tout simplement vous.", 30, FontWeight.SemiBold));
-        var note = Text(controller.Session.Options.Mode == PhotoMode.Surprise ?
+        actions.Children.Add(Text(controller.Session!.EffectiveMode == PhotoMode.Surprise ?
+            (cloud is null ? "Essai de transformation" : "Votre surprise est prête.") : "Tout simplement vous.", 30, FontWeight.SemiBold));
+        var note = Text(controller.Session.UsedOriginalFallback ? "Vous avez choisi de garder les photos originales." :
+            controller.Session.EffectiveMode == PhotoMode.Surprise && cloud is null ?
             "En répétition, un filtre local simule le traitement. Aucune image n’a été envoyée à l’IA." : "Votre planche est enregistrée sur cet ordinateur.", 19);
         note.Foreground = Muted; actions.Children.Add(note);
         var printState = Text("", 18);
@@ -217,18 +230,27 @@ public sealed class MainWindow : Window
             printState.Text = "Planche vérifiée et enregistrée. Aucune feuille envoyée : mode répétition.";
         }, primary: true); print.Name = "PrintPreview"; actions.Children.Add(print); actions.Children.Add(printState);
         actions.Children.Add(Button("Voir les fichiers", () => { OpenFolder(Path.GetDirectoryName(store.Resolve(controller.Sheet.Key))!); return Task.CompletedTask; }));
-        actions.Children.Add(Text("Le QR apparaîtra ici après activation du partage en ligne.", 17));
+        var shareStatus = Text(cloud is null ? "Partage en ligne désactivé dans les réglages." : "Préparation de votre lien…", 17);
+        var qr = new Image { Width = 230, Height = 230, IsVisible = false, HorizontalAlignment = HorizontalAlignment.Left };
+        var retry = Button("Réessayer le partage", () => ShareAsync(qr, shareStatus)); retry.IsVisible = cloud is not null;
+        actions.Children.Add(qr); actions.Children.Add(shareStatus); actions.Children.Add(retry);
         actions.Children.Add(Button("Une nouvelle séance", () => { RenderHome(); return Task.CompletedTask; }));
-        Grid.SetColumn(actions, 1); layout.Children.Add(actions); body.Content = layout;
+        var scrollingActions = new ScrollViewer { Content = actions };
+        Grid.SetColumn(scrollingActions, 1); layout.Children.Add(scrollingActions); body.Content = layout;
+        if (cloud is not null) _ = ShareAsync(qr, shareStatus);
     }
 
     private void RenderError(string message)
     {
         screen = "error";
-        body.Content = new StackPanel { Spacing = 24, MaxWidth = 720, VerticalAlignment = VerticalAlignment.Center,
+        var panel = new StackPanel { Spacing = 24, MaxWidth = 720, VerticalAlignment = VerticalAlignment.Center,
             Children = { Text("Une petite pause.", 48, FontWeight.SemiBold), Text(message, 23),
                 Text("Les photos déjà enregistrées restent sur cet ordinateur.", 19),
                 Button("Revenir à l’accueil", () => { RenderHome(); return Task.CompletedTask; }, true) } };
+        if (controller.Session is { Stage: SessionStage.Failed, Options.Mode: PhotoMode.Surprise } session &&
+            session.Captures.Count == session.Options.PhotoCount)
+            panel.Children.Insert(3,Button("Garder les originaux",()=>controller.UseOriginalsAsync(),true));
+        body.Content = panel;
     }
 
     private async Task ShowSettingsAsync()
@@ -236,8 +258,9 @@ public sealed class MainWindow : Window
         if (kioskLocked) { await ShowUnlockAsync(); return; }
         if (controller.IsTaking) return;
         var settings = Dialog("Réglages de la borne", 690, 680);
-        var pin = new TextBox { PlaceholderText = "Nouveau code de sortie (6 à 12 chiffres)", PasswordChar = '●', MaxLength = 12 };
-        var info = Text("Mode répétition actif. Les images restent locales et aucune génération n’est facturée.", 19);
+        var pin = new TextBox { PasswordChar = '●', MaxLength = 12 };
+        var info = Text(boothSettings.CloudEnabled ? "Connexion en ligne active. Le mode Surprise lance des appels OpenAI payants." :
+            "Connexion en ligne désactivée. Aucun appel OpenAI ne sera facturé.", 19);
         var content = new StackPanel { Spacing = 18, Margin = new Thickness(30) };
         content.Children.Add(Text("Prêts pour la fête ?", 34, FontWeight.SemiBold));
         content.Children.Add(info);
@@ -252,7 +275,7 @@ public sealed class MainWindow : Window
                 throw new InvalidOperationException("Ces deux connexions demandent le PC Windows. La répétition fonctionne sur ce Mac.");
             var name = printers.SelectedItem as string ?? "";
             if (printing.IsChecked == true && name.Length == 0) throw new InvalidOperationException("Choisissez l’imprimante avant d’activer l’envoi réel.");
-            await controller.DisposeAsync();
+            sharingCancellation?.Cancel(); await controller.DisposeAsync();
             boothSettings = boothSettings with { CanonCamera = canon.IsChecked == true, PhysicalPrinting = printing.IsChecked == true, PrinterName = name };
             await boothSettings.SaveAsync(boothSettingsPath); controller = CreateController(); UpdateFooter(); RenderHome();
             info.Text = "Réglages enregistrés. Lancez une séance pour vérifier la connexion.";
@@ -270,6 +293,29 @@ public sealed class MainWindow : Window
             }
             fixtureFiles = paths; info.Text = $"{paths.Length} photo(s) locale(s) sélectionnée(s). Elles seront utilisées dans l’ordre.";
         }));
+        var connection = new TextBox { PasswordChar = '●', Name = "CloudAccessKey" };
+        content.Children.Add(Text("Code de connexion de la borne · pas la clé OpenAI",20,FontWeight.SemiBold));
+        content.Children.Add(connection);
+        content.Children.Add(Button("Activer OpenAI et le partage", async () =>
+        {
+            var candidate = string.IsNullOrWhiteSpace(connection.Text) ? cloudKey : connection.Text.Trim();
+            using var check = new BoothCloudClient(boothSettings.ApiBaseUrl,candidate,store);
+            var imageReady = await check.CheckAsync();
+            await CredentialStore.SaveAsync(credentialPath,candidate); cloudKey=candidate;
+            sharingCancellation?.Cancel(); await controller.DisposeAsync();
+            boothSettings=boothSettings with {CloudEnabled=true}; await boothSettings.SaveAsync(boothSettingsPath);
+            controller=CreateController(); UpdateFooter(); RenderHome(); connection.Text="";
+            info.Text=imageReady ? "Connexion vérifiée. Une séance Surprise utilisera OpenAI en qualité xhigh et sera facturée." :
+                "Partage connecté. Ajoutez la clé OpenAI dans Supabase avant d’utiliser Surprise IA.";
+        }));
+        content.Children.Add(Button("Désactiver la connexion en ligne",async()=>
+        {
+            sharingCancellation?.Cancel(); await controller.DisposeAsync(); boothSettings=boothSettings with {CloudEnabled=false};
+            await boothSettings.SaveAsync(boothSettingsPath);controller=CreateController();UpdateFooter();RenderHome();info.Text="Connexion en ligne désactivée. Aucun appel OpenAI payant.";
+        }));
+        content.Children.Add(Text("Le mode en ligne envoie les photos vers Supabase, et vers OpenAI uniquement en mode Surprise. Les liens expirent après 7 jours.",15));
+        pin.Name = "ExitPin";
+        content.Children.Add(Text("Code de sortie du plein écran · 6 à 12 chiffres",20,FontWeight.SemiBold));
         content.Children.Add(pin);
         content.Children.Add(Button("Activer le plein écran", async () =>
         {
@@ -289,12 +335,12 @@ public sealed class MainWindow : Window
         unlockOpen = true;
         try
         {
-            var dialog = Dialog("Code de sortie", 480, 360);
-            var pin = new TextBox { PasswordChar = '●', MaxLength = 12, PlaceholderText = "Votre code" };
+            var dialog = Dialog("Code de sortie", 480, 430);
+            var pin = new TextBox { PasswordChar = '●', MaxLength = 12 };
             var error = Text("", 17);
             dialog.Content = new StackPanel { Spacing = 20, Margin = new Thickness(30), Children =
             {
-                Text("Retour aux réglages", 28, FontWeight.SemiBold), pin, error,
+                Text("Retour aux réglages", 28, FontWeight.SemiBold), Text("Code de sortie",18,FontWeight.SemiBold), pin, error,
                 Button("Déverrouiller", async () =>
                 {
                     var authorized = exitGate.TryAuthorizeExit(pin.Text ?? ""); await SaveKioskAsync();
@@ -308,7 +354,28 @@ public sealed class MainWindow : Window
         finally { unlockOpen = false; }
     }
     private Task SaveKioskAsync() => SessionStore.WriteAtomicAsync(settingsPath, JsonSerializer.SerializeToUtf8Bytes(exitGate!.Export()));
-    private void UpdateFooter() => footer.Text = $"{(boothSettings.CanonCamera ? "Canon USB" : "Caméra simulée")} · {(boothSettings.PhysicalPrinting ? "Impression réelle" : "Impression simulée")} · IA simulée, aucun appel payant";
+    private void UpdateFooter() => footer.Text = $"{(boothSettings.CanonCamera ? "Canon USB" : "Caméra simulée")} · {(boothSettings.PhysicalPrinting ? "Impression réelle" : "Impression simulée")} · {(boothSettings.CloudEnabled ? "Partage en ligne · Surprise IA payante" : "IA simulée, aucun appel payant")}";
+
+    private bool sharing;
+    private async Task ShareAsync(Image qr, TextBlock label)
+    {
+        if (sharing || cloud is null || controller.Session is null || controller.Sheet is null) return;
+        sharing=true; sharingCancellation?.Dispose(); sharingCancellation=new();
+        var token=sharingCancellation.Token;var session=controller.Session;var client=cloud;
+        try
+        {
+            label.Text="Envoi de vos souvenirs…";
+            var result=await client.PublishAsync(session,controller.FinalAssets,controller.Sheet,token);
+            if (token.IsCancellationRequested || screen!="result" || controller.Session?.Id!=session.Id) return;
+            using var generator=new QRCodeGenerator();using var data=generator.CreateQrCode(result.Url,QRCodeGenerator.ECCLevel.M);
+            using var code=new PngByteQRCode(data);qr.Source=Bitmap(code.GetGraphic(3));
+            qr.Width=qr.Height=data.ModuleMatrix.Count*3;qr.IsVisible=true;
+            label.Text=$"Scannez pour télécharger vos photos{(boothSettings.GalleryBaseUrl.Length==0?" (ZIP)":"")}. Lien valable jusqu’au {result.ExpiresAt.LocalDateTime:dd/MM}.";
+        }
+        catch (OperationCanceledException) when(token.IsCancellationRequested) { }
+        catch (Exception exception) { label.Text=exception.Message; }
+        finally { sharing=false; }
+    }
 
     private Window Dialog(string title, double width, double height) => new()
     { Title = title, Width = width, Height = height, CanResize = false, WindowStartupLocation = WindowStartupLocation.CenterOwner };

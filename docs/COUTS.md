@@ -10,24 +10,36 @@ d’inactivité. Deux projets actifs gratuits sont autorisés selon les conditio
 Créer une nouvelle organisation ne contourne pas cette limite. Pro est affiché à partir
 de 25 USD/mois. [Tarifs Supabase](https://supabase.com/pricing).
 
-Free est adapté au développement et aux petits essais. La photo remplit le stockage
-avant les lignes de base de données. Exemple de dimensionnement, **hypothèse et non mesure** :
+Free convient à la répétition, mais ne doit pas être considéré comme suffisant pour 600 photos.
+Kevin demande maintenant la conservation cloud des originaux **et** des versions IA.
+Dans l’implémentation actuelle, les fichiers individuels, la planche et le ZIP coexistent ;
+le résultat fournisseur intermédiaire est également conservé. Le ZIP n’est pas compressé
+une seconde fois : les JPEG sont déjà compressés, et ses octets restent stables en reprise.
 
-| Séance IA de 4 prises | Taille estimée |
+Hypothèse de dimensionnement, **pas une mesure de vraies photos** : original 2 Mo, résultat
+2 Mo, résultat fournisseur 2 Mo et planche 1 Mo. Pour une séance IA de quatre poses :
+8 Mo originaux + 8 Mo résultats + 8 Mo intermédiaires + 1 Mo planche + 17 Mo ZIP = **42 Mo**.
+
+| Volume | Estimation selon cette hypothèse |
 | --- | --- |
-| 4 copies JPEG originales à 2 Mo | 8 Mo |
-| 4 résultats à 2 Mo | 8 Mo |
-| Planche à 2 Mo | 2 Mo |
-| Total sans ZIP ni miniatures | 18 Mo |
+| 600 poses, regroupées en 150 séances de 4 | 6,3 Go |
+| 600 tirages de 4 poses, donc 2400 poses | 25,2 Go |
+| Originaux + résultats seuls pour 600 poses | 2,4 Go, avant copies/ZIP/planches |
 
-1 000 / 18 ≈ **55 séances** stockées avant la limite théorique ; viser moins pour garder
-une marge. Un événement de 200 séances représente environ **3,6 Go**, donc dépasse cette
-hypothèse Free sans compression ou purge. Garder les originaux haute résolution sur la borne
-et n’envoyer que les copies nécessaires peut réduire le volume. Les téléchargements du worker,
-de la borne et des invités contribuent aussi au trafic.
+Le poids réel dépend fortement du cadrage, des détails et des résultats IA. La normalisation
+JPEG de travail à 2560 pixels limite le volume, sans garantir 1 Go. Les images individuelles
+sont limitées à 10 Mio ; le ZIP à 50 Mio, plafond maximal des fichiers Free.
+Les téléchargements par OpenAI, par la borne et par les invités comptent aussi dans l’egress.
 
-Revoir le plan lorsque stockage/egress atteignent 70 % du quota, avant un événement important,
-ou si l’absence de pause/les sauvegardes deviennent nécessaires. Ne pas activer Pro automatiquement.
+**Recommandation pour 600 photos : Pro, à partir de 25 USD/mois avec 100 Go Storage et un
+premier projet Micro couvert par les crédits compute, selon le tarif vérifié.** Ne pas upgrader
+sans décision de Kevin ; aucune souscription n’a été faite. Ajouter une marge et mesurer
+une vraie séance ce soir. [Stockage Supabase](https://supabase.com/docs/guides/storage/pricing).
+
+Les liens expirent après 7 jours mais les fichiers restent stockés : décider du nettoyage
+après l’événement. Une optimisation future pourra enlever les résultats intermédiaires après
+publication vérifiée ou remplacer le ZIP permanent par une galerie ; elle ne doit pas effacer
+un original ni supprimer la possibilité de télécharger les quatre fichiers.
 
 ## OpenAI
 
@@ -63,8 +75,8 @@ Exemples de budget de sensibilité, **pas des tarifs par image garantis** :
 | 0,10 USD | 0,10 USD | 0,40 USD | 80 USD |
 | 0,20 USD | 0,20 USD | 0,80 USD | 160 USD |
 
-Pas d’appel réel effectué pendant la préparation. Il faut un benchmark contrôlé de 20–40
-photos autorisées pour mesurer coût, fidélité et latence. Conserver l’usage retourné par le
+Pas d’appel réel effectué pendant la préparation. Ce soir : un premier essai volontaire sur
+une photo, puis une série de quatre si le résultat convient, pour mesurer coût, fidélité et latence. Conserver l’usage retourné par le
 fournisseur, la version du modèle et le prompt utilisé, sans journaliser les images ou secrets.
 
 ## Débit et attente

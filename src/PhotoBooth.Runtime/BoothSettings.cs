@@ -9,6 +9,7 @@ public sealed record BoothSettings
     public bool PhysicalPrinting { get; init; }
     public string PrinterName { get; init; } = "";
     public bool CloudEnabled { get; init; }
+    public string GalleryBaseUrl { get; init; } = "";
     public string ApiBaseUrl { get; init; } = "https://frkckrvsdsiwivdfyjau.supabase.co/functions/v1/photobooth-api";
     public static BoothSettings Load(string path) => File.Exists(path)
         ? JsonSerializer.Deserialize<BoothSettings>(File.ReadAllText(path)) ?? new() : new();

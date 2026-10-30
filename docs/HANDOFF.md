@@ -1,70 +1,84 @@
-# Handoff actif — Estelle / PhotoBooth
+# Handoff actif — Estell’Art
 
-Lire d’abord `PROGRESS.md`. Ne pas repartir de l’ancien chiffrage de 3–6 semaines : Kevin a
-précisé qu’il s’agit d’un anniversaire demain et demande une livraison personnelle ciblée.
+Mise à jour : 30 octobre 2026. Anniversaire demain. Lire [PROGRESS](PROGRESS.md) et
+[VALIDATION](VALIDATION.md), puis regarder l’état Git/PR avant de reprendre.
 
-## Machine et dépôts
+## État concret
 
-- Sources : dépôt privé `djnivek/PhotoBooth` ; dossier Mac `/Users/kevinmachado/PhotoBooth`.
-- Backend : projet Supabase PhotoBooth `frkckrvsdsiwivdfyjau`, organisation dédiée.
-- Le CLI Supabase a accès ; le MCP de la session initiale n’avait pas accès à la nouvelle organisation.
-- Aucun secret dans Git. Mot de passe DB initial conservé dans `.local/`, pas à recopier dans une archive publique.
+- Application native Avalonia, quatre parcours 1/4 × original/IA, répétition sans matériel.
+- JPEG final réel 1800×1200 à 300 dpi, huit orientations EXIF, contrôle SHA, grille sans recadrage.
+- Adaptateurs Windows EDSDK/GDI codés ; ni Canon ni vraie DS620 testés.
+- API Supabase métier déployée : réservations de génération, originaux privés, ZIP et QR.
+- Vérification cloud réelle avec mires seulement, zéro génération. Clé OpenAI à ajouter côté serveur.
+- Plein écran/code testé dans le rendu natif headless ; commandes système Windows non bloquées.
+- GitHub Pages refusé pour ce dépôt privé : QR vers ZIP, galerie web préparée mais non hébergée.
+- Paquet Windows et alternative Canon sans SDK : travaux suivants, pas encore livrés dans ce lot.
 
-## Architecture en cours
+## Secrets et machines
 
-Le cœur .NET existe. Le nouvel hôte prévu est **Avalonia natif** pour tester le même parcours
-sur Mac puis livrer Windows x64 autonome. Cette décision remplace le WPF proposé dans le cadrage.
-Windows 10 reste la cible matérielle ; distinguer fonctionnement testé et support éditeur.
+Sources Mac : `/Users/kevinmachado/PhotoBooth`. Dépôt privé : `djnivek/PhotoBooth`.
+Projet Supabase : `frkckrvsdsiwivdfyjau`, Paris, organisation dédiée. CLI autorisé ; MCP ancien
+scope. Aucun autre projet touché. Aucun upgrade payant effectué.
 
-Le mode de test doit fonctionner sans périphérique et sans OpenAI : fixtures identifiables,
-compteur, aperçu individuel, planche réelle, demande d’impression simulée. Un test réel API
-sera possible par action explicite séparée, jamais depuis la suite automatique.
+Ajouter `OPENAI_API_KEY` dans [Secrets du projet](https://supabase.com/dashboard/project/frkckrvsdsiwivdfyjau/functions/secrets).
+Ne pas mettre cette clé dans la borne. Le code borne distinct est dans `.local/booth-access-key`
+et `.local/booth-provisioning.json` sur ce Mac, mode0600. Transfert séparé à l’opérateur ; jamais
+Git, release ou conversation. La borne le protège avec DPAPI pour l’utilisateur Windows courant.
+Si renouvelé sur le PC, mettre à jour aussi `BOOTH_ACCESS_KEY_HASH` côté serveur ; cela change
+le propriétaire des nouvelles séances et ne donne pas accès aux anciennes avec le nouveau code.
 
-## Reprise de travail
+Données Windows : `%LOCALAPPDATA%\EstellArt` ; sous-dossiers séances, manifestes, originaux,
+résultats, planche, journal d’impression et de génération. Pas de purge automatique. Ne pas copier
+un credential chiffré DPAPI d’un PC vers l’autre : saisir le code sur chaque machine.
 
-1. `git status`, lire PR ouvertes et `PROGRESS.md` ; conserver tout travail en cours.
-2. Lire `PRODUCT.md` et `DESIGN.md` lorsqu’ils existent ; interface Impeccable dédiée à Estelle.
-3. Continuer le lot actif ; PR cohérente, validation, merge autorisé, retour sur main propre.
-4. Mettre à jour ce document avec commandes, artefacts, hash et limites réelles.
+## Commandes de vérification
 
-## Passage au PC
+```sh
+sh scripts/verify.sh
+# Windows : ./scripts/verify.ps1
+# Outil réseau volontaire, mires synthétiques seulement, aucun appel OpenAI :
+dotnet run --project tools/PhotoBooth.CloudSmoke -- --share-synthetic-originals
+dotnet run --project tools/PhotoBooth.CloudSmoke -- --share-synthetic-edits
+```
 
-À compléter lors du packaging avec le chemin exact du ZIP et la version. Il faudra extraire
-tout le dossier puis lancer l’exécutable, sans installer .NET. Une archive n’est validée sur
-Windows qu’après exécution réelle. Une build croisée sur Mac reste un candidat Windows.
+Sur ce Mac temporairement : SDK `/tmp/photobooth-dotnet/dotnet`,
+`DOTNET_CLI_HOME=/tmp/photobooth-dotnet-home`, `AVALONIA_TELEMETRY_OPTOUT=1`.
+Le script shell accepte `PHOTOBOOTH_DOTNET`. Deno 2.9.2, Node 22. Tests HTTP entièrement simulés.
 
-## Passage au photomaton
+## Essai ce soir
 
-Installer les dépendances et vérifier le matériel avec l’opérateur. Ne pas désinstaller
-DSLR Booth. Fermer les applications qui possèdent la caméra avant ouverture par PhotoBooth.
-Ne pas copier les DLL Canon depuis DSLR Booth ; utiliser un SDK acquis légalement.
-Renseigner la DS620 exacte et confirmer une mire puis une planche 2×2 sur 4×6.
+1. Télécharger/extracter le paquet autonome une fois publié et lancer `EstellArt.exe`.
+2. Garder caméra/impression simulées. Tester 1 puis 4, original puis effet local, compte à rebours,
+   aperçu et fichier d’impression. Vérifier les photos locales sélectionnées et le code plein écran.
+3. Provisionner la connexion borne. Contrôle de connexion sans frais. Clé OpenAI uniquement sur Supabase.
+4. Kevin lance volontairement une séance IA avec une photo autorisée : rendu, attente, usage/coût,
+   QR téléchargé sur téléphone. Puis quatre si le premier résultat convient.
+5. Noter le build exact, les erreurs et les limites sans prétendre avoir testé les périphériques.
 
-## Autorisations
+## Matériel demain
 
-Créer, ouvrir et merger les PRs ; préparer l’application et le paquet. Pas de génération
-OpenAI pendant les tests automatiques. Kevin testera l’appel réel ce soir. Aucun achat ou
-changement payant de Supabase sans chiffrage préalable. Le compte à rebours peut être animé,
-mais les états « capture », « génération » et « impression » doivent refléter les vrais événements.
+EDSDK officiel absent ; Canon réclame l’accès développeur. Ne pas supposer que la présence de
+DSLR Booth fournit une licence de redistribution de ses DLL. Ne pas modifier son installation.
+Une voie WPD/PTP ouverte a été identifiée pour évaluation séparée : ne pas la déclarer compatible
+EOS4000D avant l’essai réel. Si EDSDK retenu, comparer l’ABI aux en-têtes de la version reçue,
+placer les DLL x64 dans `canon/`, fermer les autres logiciels caméra et vérifier les dépendances VC++.
 
-## Traitement photo disponible
+Installer/sélectionner la DS620 dans Windows, papier 4×6 sans coupe 2×6, une copie. Tester d’abord
+une mire, puis quatre poses distinctes. Vérifier feuille réelle, marges, sens et couleurs.
+Après une soumission incertaine, regarder le spooler : pas de renvoi automatique.
 
-`PhotoBooth.Imaging` produit maintenant le JPEG 1800×1200 à 300 dpi. Les huit orientations EXIF sont appliquées une fois ; les poses restent entières avec des marges si leurs proportions diffèrent. `SessionStore` écrit atomiquement et vérifie le SHA-256 avant impression. Le simulateur caméra accepte un jeu de fichiers locaux. 89 assertions supplémentaires passent sur Mac ; aucun appel payant ni impression physique. Les deux planches de calibration sont régénérées par les tests dans `artifacts/validation/`.
+## Limites et décisions à reprendre
 
-## Interface exécutable — PR 3
+- 600 photos avec originaux + IA + ZIP : Free 1 Go probablement insuffisant ; scénario détaillé
+  dans COUTS. Pro recommandé à partir de 25 USD/mois, sans activation tant que Kevin ne décide pas.
+- Les originaux du photomaton sont non retouchés mais normalisés en JPEG 2560px, pas RAW capteur.
+- Expiration 7 jours des liens, pas suppression des objets. Décider du nettoyage après la fête.
+- Pas de réouverture d’ancienne séance par UI, malgré les fichiers/journaux conservés.
+- Windows 10 Pro 22H2 à tester ; succès CI Windows Server2022 distinct.
+- Revue Claude demandée : contrôle automatique a refusé la transmission du brief privé. Question
+  explicite d’autorisation déjà envoyée, encore sans réponse. Aucun brief transmis.
+- Nom de travail Estell’Art, choisi pour avancer ; pas d’approbation de nom inventée.
 
-`dotnet run --project src/PhotoBooth.App` lance Estell’Art (Avalonia 12.1.4). Mode répétition par défaut : images de calibration distinctes ou fichiers sélectionnés dans Réglages, 1/4 poses, 5 secondes avant chaque capture, effet local explicitement simulé, aperçu JPEG, bouton Tester l’impression qui enregistre les mêmes octets sans spouler. Réglages permet un code 6–12 chiffres puis le plein écran ; F11/Echap/fermeture demandent le code. Le sel, le hash et le verrouillage temporaire sont persistés, jamais le code.
-
-Sur Windows les données iront dans `%LOCALAPPDATA%\EstellArt`; aucune donnée personnelle dans le dépôt. `PHOTOBOOTH_DATA_DIR` permet aux tests d’utiliser un dossier temporaire isolé. Le test UI rend le vrai logiciel à 1280×800 et 1024×768, puis clique jusqu’au résultat et au fichier d’impression. Captures conservées dans `.impeccable/review/`. Pas de validation tactile/Windows ni matérielle impliquée.
-
-Revue Impeccable indépendante : correction du voile de capture résolue, verdict ship limité à la répétition native. Clé OpenAI, partage et matériel restent à raccorder dans la prochaine livraison ; les messages UI le signalent.
-
-## Adaptateurs Windows — PR 4
-
-`PhotoBooth.Windows` fournit l’adaptateur Canon EDSDK 13.x x64 (thread STA unique, pompe d’événements, live view suspendue avant déclenchement, réception du JPEG complet, délai de 35 s sans redéclenchement) et l’impression GDI native. Le pilote est interrogé pour choisir le 4×6, une seule copie et une seule page. La surface imprimable et les résolutions X/Y sont utilisées séparément, notamment 300×600. Le raster BGRA conserve l’ordre et les couleurs du JPEG.
-
-Avant le premier essai Canon : obtenir légalement le SDK, copier ses DLL x64 et dépendances dans `canon/` à côté de l’exécutable, installer le runtime Visual C++ requis par cette version, régler le boîtier en JPEG haute qualité, fermer DSLR Booth et EOS Utility. Les déclarations ABI doivent être confrontées aux en-têtes du SDK effectivement fourni ; aucune DLL ni aucun Canon disponible ici pour le vérifier. Cette liaison est codée, pas validée sur appareil.
-
-Réglages permet de choisir Canon ou simulation, puis l’imprimante et l’envoi réel indépendamment. L’intention est écrite sur disque avant le premier appel au spouleur. Une erreur laisse `needs_operator` ; pas de second envoi automatique, contrôler la file Windows. Un numéro de travail prouve l’acceptation par la file, pas la sortie papier. L’impression réelle n’a jamais été lancée pendant les tests.
-
-18 vérifications de préparation impression couvrent pixels BGRA, résolution anisotrope, zones imprimables, journal avant effet externe, succès et échec ambigu. Le test UI couvre aussi le verrouillage plein écran, la fermeture interceptée et la sortie par code.
+PRs autorisées à être ouvertes puis mergées après validation. Commits/PR en anglais, sans co-auteur
+assistant. Garder les preuves UI dans Git, les fichiers privés et builds hors Git. Revenir sur main
+à jour et propre après chaque livraison. Aucun test automatisé ne doit devenir payant.

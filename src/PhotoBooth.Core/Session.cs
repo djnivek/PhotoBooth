@@ -44,6 +44,8 @@ public sealed class Session
     public string? StyleId { get; private set; }
     public string? SheetAssetKey { get; private set; }
     public string? FailureCode { get; private set; }
+    public bool UsedOriginalFallback { get; private set; }
+    public PhotoMode EffectiveMode => UsedOriginalFallback ? PhotoMode.Original : Options.Mode;
     public PrintRequest? PrintRequest { get; private set; }
     public string? SpoolJobId { get; private set; }
     public ReadOnlyCollection<CapturedPhoto> Captures => captures.AsReadOnly();
@@ -103,15 +105,24 @@ public sealed class Session
             throw new ArgumentException("Each capture must have exactly one corresponding result.", nameof(photos));
         if (incoming.Select(x => x.AssetKey).Distinct().Count() != incoming.Length)
             throw new ArgumentException("Each result must reference a distinct image.", nameof(photos));
-        if (Options.Mode == PhotoMode.Surprise && StyleId is null)
+        if (EffectiveMode == PhotoMode.Surprise && StyleId is null)
             throw new InvalidOperationException("Select and persist a style before completing the AI session.");
-        if (Options.Mode == PhotoMode.Original && incoming.Any(x => captures.Single(c => c.Id == x.CaptureId).LocalAssetKey != x.AssetKey))
+        if (EffectiveMode == PhotoMode.Original && incoming.Any(x => captures.Single(c => c.Id == x.CaptureId).LocalAssetKey != x.AssetKey))
             throw new ArgumentException("Original mode must preserve the captured images.", nameof(photos));
-        if (Options.Mode == PhotoMode.Surprise && incoming.Any(x => captures.Any(c => c.LocalAssetKey == x.AssetKey)))
+        if (EffectiveMode == PhotoMode.Surprise && incoming.Any(x => captures.Any(c => c.LocalAssetKey == x.AssetKey)))
             throw new ArgumentException("Unmodified originals cannot be reported as generated results.", nameof(photos));
         results.AddRange(captures.Select(c => incoming.Single(x => x.CaptureId == c.Id)));
         SheetAssetKey = sheetAssetKey;
         Stage = SessionStage.Ready;
+    }
+
+    // Explicit visitor recovery only; never silently substitute originals for AI.
+    public void PrepareOriginalFallback()
+    {
+        Require(SessionStage.Failed);
+        if (Options.Mode != PhotoMode.Surprise || captures.Count != Options.PhotoCount)
+            throw new InvalidOperationException("A complete set of originals is required.");
+        UsedOriginalFallback = true; FailureCode = null; StyleId = null; Stage = SessionStage.Processing;
     }
 
     // Called only for an explicit visitor action. The host must journal before spooling.

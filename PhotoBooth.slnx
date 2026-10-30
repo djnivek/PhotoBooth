@@ -12,6 +12,7 @@
     <Project Path="tests/PhotoBooth.Imaging.Tests/PhotoBooth.Imaging.Tests.csproj" />
     <Project Path="tests/PhotoBooth.Runtime.Tests/PhotoBooth.Runtime.Tests.csproj" />
     <Project Path="tests/PhotoBooth.Windows.Tests/PhotoBooth.Windows.Tests.csproj" />
+    <Project Path="tests/PhotoBooth.Cloud.Tests/PhotoBooth.Cloud.Tests.csproj" />
     <Project Path="tests/PhotoBooth.App.Tests/PhotoBooth.App.Tests.csproj" />
   </Folder>
 </Solution>

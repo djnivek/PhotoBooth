@@ -24,9 +24,9 @@ enable_signup = false
 
 [storage]
 enabled = true
-file_size_limit = "10MiB"
+file_size_limit = "50MiB"
 
-# Public metadata only. Business routes must authenticate and authorize internally.
+# Health/share resolution are public. All booth routes authenticate internally.
 [functions.photobooth-api]
 enabled = true
 verify_jwt = false
