@@ -29,6 +29,7 @@ public sealed class MainWindow : Window
     private PhotoMode mode = PhotoMode.Original;
     private string[] fixtureFiles = [];
     private string screen = "home";
+    private bool compactHome;
     private Image? liveImage;
     private TextBlock? countdown;
     private Border? countdownBadge;
@@ -62,6 +63,7 @@ public sealed class MainWindow : Window
             Width = Math.Max(MinWidth, Math.Min(Width, display.WorkingArea.Width / display.Scaling - 32));
             Height = Math.Max(MinHeight, Math.Min(Height, display.WorkingArea.Height / display.Scaling - 48));
         }
+        compactHome = Width < 1100 || Height < 760;
         WindowStartupLocation = WindowStartupLocation.CenterScreen;
         var root = Environment.GetEnvironmentVariable("PHOTOBOOTH_DATA_DIR") ??
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "EstellArt");
@@ -93,6 +95,12 @@ public sealed class MainWindow : Window
         {
             layout.MaxWidth = Math.Max(0, ClientSize.Width - layout.Margin.Left - layout.Margin.Right);
             layout.MaxHeight = Math.Max(0, ClientSize.Height - layout.Margin.Top - layout.Margin.Bottom);
+            var compact = ClientSize.Width < 1100 || ClientSize.Height < 760;
+            if (compactHome != compact)
+            {
+                compactHome = compact;
+                if (screen == "home") RenderHome();
+            }
         }
         Opened += (_, _) => ConstrainLayout();
         Resized += (_, _) => ConstrainLayout();
@@ -140,9 +148,9 @@ public sealed class MainWindow : Window
         sharingCancellation?.Cancel(); sharingCancellation?.Dispose(); sharingCancellation = null;
         screen = "home"; liveImage = null; countdown = null; pulse.Stop();
         var grid = new Grid { Name = "HomeLayout", ColumnDefinitions = new ColumnDefinitions("6*,5*") };
-        var choices = new StackPanel { Spacing = 19, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 38, 0) };
-        choices.Children.Add(Text("Des souvenirs\nplein la fête.", 57, FontWeight.SemiBold));
-        var subtitle = Text("L’anniversaire d’Estelle, avec votre plus beau sourire.", 22); subtitle.Foreground = Muted;
+        var choices = new StackPanel { Spacing = compactHome ? 12 : 19, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 38, 0) };
+        choices.Children.Add(Text("Des souvenirs\nplein la fête.", compactHome ? 49 : 57, FontWeight.SemiBold));
+        var subtitle = Text("L’anniversaire d’Estelle, avec votre plus beau sourire.", compactHome ? 20 : 22); subtitle.Foreground = Muted;
         choices.Children.Add(subtitle);
         choices.Children.Add(Text("Combien de poses ?", 20, FontWeight.SemiBold));
         choices.Children.Add(ChoiceRow(("Une photo", photoCount == 1, () => { photoCount = 1; RenderHome(); }),

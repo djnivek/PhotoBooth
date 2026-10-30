@@ -41,7 +41,9 @@ try {
     }
     $selfTest = Get-Content (Join-Path $diagnostics 'self-test.json') -Raw | ConvertFrom-Json
     $ui = Get-Content (Join-Path $diagnostics 'native-ui.json') -Raw | ConvertFrom-Json
-    if (-not $selfTest.success -or $selfTest.cases.Count -ne 4 -or -not $ui.native_window_opened) { throw 'Missing executable validation evidence' }
+    $minimumUi = Get-Content (Join-Path $diagnostics 'native-minimum-ui.json') -Raw | ConvertFrom-Json
+    if (-not $selfTest.success -or $selfTest.cases.Count -ne 4 -or -not $ui.native_window_opened -or
+        -not $ui.controls_inside_client -or -not $minimumUi.controls_inside_client) { throw 'Missing executable validation evidence' }
     $digest = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
     Set-Content -LiteralPath "$zip.sha256" -Encoding ascii -Value ($digest + '  ' + [IO.Path]::GetFileName($zip))
     [ordered]@{version=$Version; artifact=[IO.Path]::GetFileName($zip); sha256=$digest; bytes=(Get-Item $zip).Length;

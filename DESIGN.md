@@ -16,6 +16,10 @@ typography:
     fontFamily: "Bricolage Grotesque"
     fontSize: "57px"
     fontWeight: 600
+  display-compact:
+    fontFamily: "Bricolage Grotesque"
+    fontSize: "49px"
+    fontWeight: 600
   headline:
     fontFamily: "Bricolage Grotesque"
     fontSize: "38px"
@@ -51,6 +55,7 @@ rounded:
 spacing:
   compact: "12px"
   control-group: "18px"
+  home-standard: "19px"
   section: "20px"
   content: "22px"
   window-vertical: "24px"
@@ -105,7 +110,7 @@ components:
 
 This system records the implemented Avalonia desktop interface, targeting Windows with native local states rehearsed on macOS. The name and direction are working choices under the delegated delivery brief; an unanswered preference is not approval. Code-led preparation for this delivery is not a confirmed standing workflow preference. No web, iOS, or Android design is asserted here.
 
-Source authority is `src/PhotoBooth.App/App.axaml` and `src/PhotoBooth.App/MainWindow.cs`, with capture timing in `src/PhotoBooth.Core/Session.cs` and `src/PhotoBooth.Runtime/BoothController.cs`. The latest targeted finish review accepted the permanent field labels, accurate cloud-disable confirmation, and native local dialog/result states. The result at 1024 × 768 and the visible unlock error were reviewed. Connected QR sharing, physical printing, Canon/Windows operation, and the prepared but undeployed web gallery are not visually validated journeys.
+Source authority is `src/PhotoBooth.App/App.axaml` and `src/PhotoBooth.App/MainWindow.cs`, with capture timing in `src/PhotoBooth.Core/Session.cs` and `src/PhotoBooth.Runtime/BoothController.cs`. The latest targeted finish review accepted the permanent field labels, accurate cloud-disable confirmation, and native local dialog/result states. The result at 1024 × 768 and the visible unlock error were reviewed. Connected QR sharing, physical printing, Canon/Windows operation, and the prepared but undeployed web gallery are not visually validated journeys. A Windows native rehearsal subsequently exposed window overflow missed by headless checks. The startup/work-area, compact-home, and client/panel-bound corrections are implemented; final Windows native validation remains pending. Estell’Art’s name and palette are unchanged.
 
 **Key Characteristics:**
 
@@ -147,7 +152,7 @@ The sidecar’s eight-step color ramps are synthesized documentation aids. The a
 
 ### Hierarchy
 
-- **Display:** the home headline uses the `display` token.
+- **Display:** the home headline uses `display`, switching to `display-compact` under the home-only compact condition described in Layout. The subtitle changes from 22 to 20 logical units.
 - **Headline:** the result title uses `headline`; the error heading is a larger local variation (48 logical units).
 - **Title:** capture and result instructions use `title`; dialog headings vary locally (28 or 34 logical units).
 - **Brand:** the persistent wordmark uses `brand`.
@@ -163,11 +168,13 @@ The recorded weights are the `FontWeight` requests in the application. The bundl
 
 All source measurements are Avalonia logical units. The frontmatter uses `px` for portable token notation, not a claim about physical display pixels.
 
-The centered desktop window starts at 1280 × 800 and has a minimum of 960 × 700. The application frame has horizontal and vertical margins given by `window-horizontal` and `window-vertical`. A header, flexible main region, and wrapped footer form three rows; header separation is 24 and the footer’s top margin is 20.
+The centered desktop window requests up to 1280 × 800, with a minimum of 960 × 700. When a primary display is available, startup width and height are capped to its working area divided by display scaling, less 32 horizontal and 48 vertical logical units, while retaining that minimum. The application frame has horizontal and vertical margins given by `window-horizontal` and `window-vertical`. A header, flexible main region, and wrapped footer form three rows; header separation is 24 and the footer’s top margin is 20.
 
-The home surface uses proportional columns (6:5), a 38-unit separation on the choice column, and 19-unit vertical gaps in that column. Options are equal-width native buttons with a combined gap of 12. The result uses columns (7:4), a 30-unit separation, and 22/20-unit vertical grouping. The capture screen uses a flexible image stage between its title and action row, with 20-unit vertical stage margins. Photo previews scale uniformly, with maximum heights of 380 on the home surface and 430 on the result.
+On opening and resizing, the root layout’s maximum width and height are recomputed from the actual client size minus those margins. Bounds checks require `Settings`, `StartSession`, and `HomeSheet` to remain inside both the client area and their containing `Header` or `SessionBody` panel. A first native capture showed “Démarrer” clipped by its panel even though a window-only check was insufficient. The native smoke also resizes to 960 × 700. Final Windows validation of these corrections remains pending.
 
-The result action column now sits in a native ScrollViewer. The reviewed local result at 1024 × 768 retains a readable sheet, print confirmation, sharing-disabled status, and new-session action without clipping. There is still no breakpoint, compact spacing token, or automatic single-column layout: proportional columns, text wrapping, and scrolling supply the resizing behavior.
+The home surface uses proportional columns (6:5), a 38-unit separation on the choice column, and `home-standard` vertical gaps in that column. Compact home is active when client width is strictly below 1100 OR client height is strictly below 760 logical units, reevaluated on opening and resizing. It uses the 49-unit headline instead of 57, a 20-unit subtitle instead of 22, and `compact` gaps of 12 instead of 19. Secondary and primary button minimum heights stay 54 and 70. Options remain equal-width native buttons with a combined gap of 12. The result uses columns (7:4), a 30-unit separation, and 22/20-unit vertical grouping. The capture screen uses a flexible image stage between its title and action row, with 20-unit vertical stage margins. Photo previews scale uniformly, with maximum heights of 380 on the home surface and 430 on the result.
+
+The result action column now sits in a native ScrollViewer. The reviewed local result at 1024 × 768 retains a readable sheet, print confirmation, sharing-disabled status, and new-session action without clipping. The compact adjustment applies only to the home surface. Other surfaces retain proportional columns, text wrapping, and scrolling; no automatic single-column layout is implemented.
 
 ## Elevation & Depth
 
@@ -243,7 +250,7 @@ No connected QR is present in the reviewed local captures, so its appearance and
 - **Do** use the exact composed image for the result preview and keep photographic content proportionate with uniform scaling.
 - **Do** keep camera, printing, and cloud status explicit and distinguish local calibration images from real guest photography.
 - **Do** preserve the brief, single capture cue and the readable badge over the framing image.
-- **Do** check the actual desktop window sizes when changing copy, spacing, or controls; there is no implemented breakpoint system.
+- **Do** check actual desktop sizes and containing-panel bounds when changing copy, spacing, or controls, including both sides of the home compact thresholds and 960 × 700.
 
 ### Don't:
 
@@ -251,4 +258,4 @@ No connected QR is present in the reviewed local captures, so its appearance and
 - **Don't** turn the capture cue into a repeating strobe or an opaque frame that hides the photograph.
 - **Don't** describe calibration geometry or rehearsal filters as personal photos or generated AI artwork.
 - **Don't** treat the HTML documentation specimens as a web product or as exact reproductions of platform-owned Fluent control states.
-- **Don't** infer a validated connected QR or web-gallery journey, an approved permanent workflow, a phone layout, a compact breakpoint, or a reduced-motion variant from this delivery.
+- **Don't** infer a validated connected QR or web-gallery journey, an approved permanent workflow, a phone layout, compact rules beyond the documented home condition, or a reduced-motion variant from this delivery.
