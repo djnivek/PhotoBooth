@@ -93,7 +93,7 @@ interroge l’état toutes les deux secondes, avec deux générations simultané
 Ce montage évite d’attendre tout le calcul dans les 150 secondes d’une fonction Free.
 
 Une réservation Postgres transactionnelle bloque les démarrages répétés et limite l’événement
-à 2400 images. C’est un plafond de nombre, pas une garantie de coût en dollars. Une réponse
+à 2400 images, huit départs par minute et quatre travaux non résolus simultanés. Un interrupteur en base arrête les nouvelles générations. C’est un plafond de nombre, pas une garantie de coût en dollars. Une réponse
 perdue après lancement laisse un travail incertain : aucune génération automatique supplémentaire.
 Les originaux peuvent être récupérés explicitement si l’IA échoue. Aucun résultat IA n’est
 remplacé silencieusement par un original.
@@ -106,9 +106,7 @@ UI permettant de rouvrir une ancienne séance après redémarrage. Ne pas recré
 IA pour « réessayer » sans contrôler le travail déjà lancé.
 
 Storage conserve originaux, résultats, planche et archive ; le ZIP des séances IA contient
-un sous-dossier `originaux/`. Le QR par défaut est un lien signé vers le ZIP, valable 7 jours.
-La page mobile préparée utilise un jeton aléatoire dans le fragment de l’URL, dont seul le hash
-est enregistré en base. Son hébergement n’est pas actif (GitHub Pages privé refusé).
+un sous-dossier `originaux/`. Le QR ouvre la galerie statique Vercel, valable sept jours, avec originaux et métamorphoses associés par pose. Le jeton aléatoire reste dans le fragment de l’URL ; seul son hash est enregistré en base. Le navigateur utilise uniquement le résolveur de lecture, jamais le secret de borne. Chaque fichier peut être téléchargé individuellement, ainsi que le ZIP complet.
 
 **Expiration de lien n’est pas suppression des fichiers.** Aucune purge automatique cloud
 ou locale n’est activée pour cet anniversaire. Revoir conservation/nettoyage avec Kevin après
@@ -125,7 +123,6 @@ l’événement, via l’API Storage avant suppression des métadonnées. Vérif
 | Modèle, temps d’attente et budget réels | Premier appel OpenAI manuel autorisé ce soir |
 | Offre Supabase / stockage externe | Volume mesuré par séance et nombre attendu de photos |
 | Purge cloud / rétention locale | Après récupération des souvenirs de l’anniversaire |
-| Galerie web | Hébergement compatible choisi sans upgrade implicite |
 
 ## Catalogue et préparation caméra (0.3.0)
 

@@ -2,13 +2,15 @@
 
 30 octobre 2026. Anniversaire le 31. Lire l’état Git/PR et les reçus avant de poursuivre. Les phases codé, testé localement, CI Windows, fusionné, déployé, publié et testé physiquement sont distinctes.
 
-## Mise à jour 0.3.1, livraison en cours
+## Livraison active 0.3.1
 
-Branche `feat/offline-secure-gallery`. Standard hors ligne avec cloud activé, QR vers une galerie originaux/métamorphoses, limites serveur et arrêt administrateur. Migration de protection appliquée ; test transactionnel annulé réussi, compteur resté à zéro, audit sécurité Supabase sans alerte. Suite complète Mac et vérifications natives Windows réussies. Le site est déployé et ses dix fichiers signés ont été vérifiés octet par octet. Chromium ordinateur/mobile, paquet Windows extrait/exécuté et revue visuelle réussis dans [la CI41137416834](https://github.com/djnivek/PhotoBooth/actions/runs/41137416834). [Avant/après et reçus](evidence/offline-gallery/README.md). La release sera publiée après fusion et construction sur main. Aucun appel payant autorisé dans ces tests.
+[PR14](https://github.com/djnivek/PhotoBooth/pull/14) fusionnée sur `82766b02b86ba4fcbe903ffea0ceaadfe99fe491`. [Version Windows 0.3.1 publiée](https://github.com/djnivek/PhotoBooth/releases/tag/v0.3.1) depuis ce commit exact, après la [CI Windows sur main](https://github.com/djnivek/PhotoBooth/actions/runs/41139279362). Le ZIP publié a été retéléchargé : 81 359 112 octets, SHA256 `a7d2f00aafafbe9043c1fa67e0ab8e46a7f8103680aa97c31b87fa4bacd1c72a`, identique au paquet extrait et exécuté en CI. [Reçu de livraison](evidence/offline-gallery/delivery.json).
+
+Standard hors ligne avec cloud activé, QR vers une galerie originaux/métamorphoses, limites serveur et arrêt administrateur. Migration de protection appliquée ; test transactionnel annulé réussi, compteur resté à zéro, audit sécurité Supabase sans alerte. Suite complète Mac et Windows réussie, Chromium ordinateur/mobile, paquet Windows extrait/exécuté et revue visuelle terminés. Le site est déployé et ses dix fichiers signés ont été vérifiés octet par octet. [Avant/après et reçus](evidence/offline-gallery/README.md). Aucun appel OpenAI payant effectué.
 
 La galerie utilise le projet Vercel dédié `colors-party-estelle` dans Kevin's projects. Seuls les fichiers statiques de `web/gallery/` sont publics. Les photos restent privées dans Supabase. Le dépôt GitHub reste privé.
 
-## Livraison 0.3.0
+## Livraison précédente 0.3.0
 
 [PR12](https://github.com/djnivek/PhotoBooth/pull/12) fusionnée sur `d217c000d0cc6efce73c965d95e311f2d9f4209f`. [Version Windows0.3.0 publiée](https://github.com/djnivek/PhotoBooth/releases/tag/v0.3.0), validation complète Mac et Windows réussie, backend déployé, revue visuelle terminée. [Reçus et captures](evidence/colors-party/README.md). La release contient l’application exacte construite depuis ce commit ; les ajouts de documentation/tests de livraison ne changent pas son code.
 
@@ -23,7 +25,7 @@ La galerie utilise le projet Vercel dédié `colors-party-estelle` dans Kevin's 
 
 ## État des liaisons
 
-API Supabase existante avec originaux et résultats privés, ZIP et QR signé, déjà vérifiée avec des mires sans génération. Le nouvel endpoint et sa migration sont déployés. Huit vérifications distantes ont confirmé catalogue public, auth, choix explicite et conflits ; aucun upload ou appel de génération. [Reçu](evidence/colors-party/backend.json). La clé OpenAI est encore absente. État historique 0.3.0 : Pages était refusé pour le dépôt privé et le QR pointait vers le ZIP. Le nouveau parcours 0.3.1 est décrit ci-dessus.
+API Supabase 0.3.1 et migration de protection déployées. Une séance de quatre mires avec effets locaux a vérifié originaux, résultats, planche, ZIP et publication répétée sans génération. Dix fichiers signés ont été téléchargés et comparés, les accès non authentifiés refusés, y compris un jeton QR présenté comme secret de borne. [Reçus distants](evidence/offline-gallery/README.md). La clé OpenAI était absente à la dernière vérification, le 30 octobre à 22:08 UTC ; aucun rendu du fournisseur n’a donc été validé.
 
 **Canon : point matériel prioritaire.** FC.SDK3.2.1021 via le pilote WPD existant n’atteste pas de l’autofocus sur le 4000D. L’accusé de commande n’est pas une netteté confirmée. L’app ne le transforme pas en succès. Pour demain : objectif MF, netteté réglée à la distance des invités, case « Mise au point manuelle vérifiée sur le Canon », puis Enregistrer le matériel. Vérifier vrai JPEG et retour de visée entre les quatre poses. L’autre voie EDSDK exige un SDK légalement obtenu, absent de ce dépôt. Ne pas copier les DLL de DSLR Booth ni remplacer son pilote.
 

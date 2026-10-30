@@ -9,7 +9,7 @@
 | Postgres | Quatre migrations appliquées ; sessions/jobs/assets/budget, RLS activée, accès anon/authenticated refusé |
 | Storage | Bucket booth-private privé, uploads et téléchargements signés vérifiés |
 | Edge Function | photobooth-api déployée, API métier active et authentifiée |
-| OpenAI | Aucun appel payé ; clé absente à la dernière vérification à 17:03 UTC |
+| OpenAI | Aucun appel payé ; clé absente à la dernière vérification à 22:08 UTC |
 | Galerie web | Vercel colors-party-estelle déployé ; HTTP200 sans compte, code et fichiers signés vérifiés |
 | QR | API 0.3.1 : galerie dans gallery_url, ZIP dans download_url |
 
@@ -27,9 +27,9 @@ Secrets déjà configurés : `BOOTH_ACCESS_KEY_HASH`, `OPENAI_IMAGE_MODEL`, `OPE
 sur le Mac, mode0600, ignorés par Git. Les transférer séparément et seulement à l’opérateur.
 Le mot de passe DB initial est également local ; il n’est pas requis pour utiliser l’application.
 
-`CloudSmoke` envoie uniquement des mires synthétiques en mode Original. Son reçu versionné
-est dans [evidence](evidence/2026-10-30-cloud-smoke.json). Il a téléchargé le vrai ZIP,
-comparé les octets des quatre images et de la planche puis rejoué le partage sans conflit.
+`CloudSmoke` envoie uniquement des mires synthétiques, avec éventuellement des effets locaux. Son dernier reçu versionné
+est dans [evidence](evidence/offline-gallery/supabase-share.json). Il a téléchargé le vrai ZIP,
+comparé les octets des quatre originaux, quatre résultats et de la planche puis rejoué le partage sans conflit.
 Le compteur SQL était exactement 0 génération. Ne pas lancer de génération dans CI.
 
 ## Déployer depuis les sources
