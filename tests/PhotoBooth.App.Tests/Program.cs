@@ -15,7 +15,10 @@ var window = new MainWindow((_, token) => Task.Delay(90, token)); window.Show();
 Pump(150);
 Capture("desktop-1280x800.png");
 window.Width = 1024; window.Height = 768; Pump(80); Capture("desktop-1024x768.png");
+AssertHomeFits();
+window.Width = 960; window.Height = 700; Pump(80); AssertHomeFits();
 window.Width = 1280; window.Height = 800; Pump(80);
+AssertHomeFits();
 Click("StartSession"); Until(() => Find("TakePhotos") is not null, 3000);
 Pump(300); Capture("positioning.png");
 Click("TakePhotos"); Pump(45); Capture("countdown.png");
@@ -76,4 +79,14 @@ void Capture(string name)
 {
     using var frame = window.CaptureRenderedFrame() ?? throw new Exception("No rendered pixels.");
     frame.Save(Path.Combine(screenshots, name), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+}
+void AssertHomeFits()
+{
+    foreach(var name in new[]{"Settings","StartSession","HomeSheet"})
+    {
+        var control=window.GetVisualDescendants().OfType<Control>().Single(c=>c.Name==name);
+        var point=control.TranslatePoint(new Point(0,0),window)??throw new Exception("Detached control "+name);
+        if(point.X<0||point.Y<0||point.X+control.Bounds.Width>window.ClientSize.Width+1||point.Y+control.Bounds.Height>window.ClientSize.Height+1)
+            throw new Exception($"{name} exceeds {window.ClientSize}: {point}, {control.Bounds.Size}");
+    }
 }
