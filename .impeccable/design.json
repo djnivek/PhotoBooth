@@ -1,110 +1,264 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-30T18:17:13.947396Z",
-  "title": "Design System: Estell’Art",
+  "generatedAt": "2026-10-30T21:25:30.019842Z",
+  "title": "Design System: Colors Party by Estelle",
   "extensions": {
     "colorMeta": {
-      "lemon": {
+      "velvet-burgundy": {
         "role": "primary",
-        "displayName": "Party Lemon",
+        "displayName": "Velvet Burgundy",
         "tonalRamp": [
-          "oklch(15.00% 0.15090 103.23)",
-          "oklch(26.43% 0.15090 103.23)",
-          "oklch(37.86% 0.15090 103.23)",
-          "oklch(49.29% 0.15090 103.23)",
-          "oklch(60.71% 0.15090 103.23)",
-          "oklch(72.14% 0.15090 103.23)",
-          "oklch(83.57% 0.15090 103.23)",
-          "oklch(95.00% 0.15090 103.23)"
+          "oklch(15.00% 0.10275 6.57)",
+          "oklch(26.43% 0.10275 6.57)",
+          "oklch(37.86% 0.10275 6.57)",
+          "oklch(49.29% 0.10275 6.57)",
+          "oklch(60.71% 0.10275 6.57)",
+          "oklch(72.14% 0.10275 6.57)",
+          "oklch(83.57% 0.10275 6.57)",
+          "oklch(95.00% 0.10275 6.57)"
         ]
       },
-      "lemon-hover": {
+      "velvet-hover": {
         "role": "primary",
-        "displayName": "Light Lemon",
+        "displayName": "Velvet Hover",
         "tonalRamp": [
-          "oklch(15.00% 0.10940 101.49)",
-          "oklch(26.43% 0.10940 101.49)",
-          "oklch(37.86% 0.10940 101.49)",
-          "oklch(49.29% 0.10940 101.49)",
-          "oklch(60.71% 0.10940 101.49)",
-          "oklch(72.14% 0.10940 101.49)",
-          "oklch(83.57% 0.10940 101.49)",
-          "oklch(95.00% 0.10940 101.49)"
+          "oklch(15.00% 0.11266 8.08)",
+          "oklch(26.43% 0.11266 8.08)",
+          "oklch(37.86% 0.11266 8.08)",
+          "oklch(49.29% 0.11266 8.08)",
+          "oklch(60.71% 0.11266 8.08)",
+          "oklch(72.14% 0.11266 8.08)",
+          "oklch(83.57% 0.11266 8.08)",
+          "oklch(95.00% 0.11266 8.08)"
         ]
       },
-      "aubergine": {
-        "role": "neutral",
-        "displayName": "Deep Aubergine",
+      "warm-white": {
+        "role": "primary",
+        "displayName": "Warm White",
         "tonalRamp": [
-          "oklch(15.00% 0.04687 304.20)",
-          "oklch(26.43% 0.04687 304.20)",
-          "oklch(37.86% 0.04687 304.20)",
-          "oklch(49.29% 0.04687 304.20)",
-          "oklch(60.71% 0.04687 304.20)",
-          "oklch(72.14% 0.04687 304.20)",
-          "oklch(83.57% 0.04687 304.20)",
-          "oklch(95.00% 0.04687 304.20)"
+          "oklch(15.00% 0.01751 81.33)",
+          "oklch(26.43% 0.01751 81.33)",
+          "oklch(37.86% 0.01751 81.33)",
+          "oklch(49.29% 0.01751 81.33)",
+          "oklch(60.71% 0.01751 81.33)",
+          "oklch(72.14% 0.01751 81.33)",
+          "oklch(83.57% 0.01751 81.33)",
+          "oklch(95.00% 0.01751 81.33)"
         ]
       },
-      "plum-surface": {
-        "role": "neutral",
-        "displayName": "Plum Surface",
+      "selected-sage": {
+        "role": "secondary",
+        "displayName": "Selected Sage",
         "tonalRamp": [
-          "oklch(15.00% 0.05245 309.87)",
-          "oklch(26.43% 0.05245 309.87)",
-          "oklch(37.86% 0.05245 309.87)",
-          "oklch(49.29% 0.05245 309.87)",
-          "oklch(60.71% 0.05245 309.87)",
-          "oklch(72.14% 0.05245 309.87)",
-          "oklch(83.57% 0.05245 309.87)",
-          "oklch(95.00% 0.05245 309.87)"
+          "oklch(15.00% 0.03199 122.69)",
+          "oklch(26.43% 0.03199 122.69)",
+          "oklch(37.86% 0.03199 122.69)",
+          "oklch(49.29% 0.03199 122.69)",
+          "oklch(60.71% 0.03199 122.69)",
+          "oklch(72.14% 0.03199 122.69)",
+          "oklch(83.57% 0.03199 122.69)",
+          "oklch(95.00% 0.03199 122.69)"
         ]
       },
-      "plum-hover": {
-        "role": "neutral",
-        "displayName": "Lifted Plum",
+      "sage-ink": {
+        "role": "secondary",
+        "displayName": "Sage Ink",
         "tonalRamp": [
-          "oklch(15.00% 0.08310 314.52)",
-          "oklch(26.43% 0.08310 314.52)",
-          "oklch(37.86% 0.08310 314.52)",
-          "oklch(49.29% 0.08310 314.52)",
-          "oklch(60.71% 0.08310 314.52)",
-          "oklch(72.14% 0.08310 314.52)",
-          "oklch(83.57% 0.08310 314.52)",
-          "oklch(95.00% 0.08310 314.52)"
+          "oklch(15.00% 0.04992 135.60)",
+          "oklch(26.43% 0.04992 135.60)",
+          "oklch(37.86% 0.04992 135.60)",
+          "oklch(49.29% 0.04992 135.60)",
+          "oklch(60.71% 0.04992 135.60)",
+          "oklch(72.14% 0.04992 135.60)",
+          "oklch(83.57% 0.04992 135.60)",
+          "oklch(95.00% 0.04992 135.60)"
         ]
       },
-      "lavender-white": {
-        "role": "neutral",
-        "displayName": "Lavender White",
+      "sage-border": {
+        "role": "secondary",
+        "displayName": "Sage Border",
         "tonalRamp": [
-          "oklch(15.00% 0.01637 322.70)",
-          "oklch(26.43% 0.01637 322.70)",
-          "oklch(37.86% 0.01637 322.70)",
-          "oklch(49.29% 0.01637 322.70)",
-          "oklch(60.71% 0.01637 322.70)",
-          "oklch(72.14% 0.01637 322.70)",
-          "oklch(83.57% 0.01637 322.70)",
-          "oklch(95.00% 0.01637 322.70)"
+          "oklch(15.00% 0.04509 130.23)",
+          "oklch(26.43% 0.04509 130.23)",
+          "oklch(37.86% 0.04509 130.23)",
+          "oklch(49.29% 0.04509 130.23)",
+          "oklch(60.71% 0.04509 130.23)",
+          "oklch(72.14% 0.04509 130.23)",
+          "oklch(83.57% 0.04509 130.23)",
+          "oklch(95.00% 0.04509 130.23)"
         ]
       },
-      "lavender-muted": {
-        "role": "neutral",
-        "displayName": "Muted Lavender",
+      "party-sage": {
+        "role": "secondary",
+        "displayName": "Party Sage",
         "tonalRamp": [
-          "oklch(15.00% 0.03700 317.29)",
-          "oklch(26.43% 0.03700 317.29)",
-          "oklch(37.86% 0.03700 317.29)",
-          "oklch(49.29% 0.03700 317.29)",
-          "oklch(60.71% 0.03700 317.29)",
-          "oklch(72.14% 0.03700 317.29)",
-          "oklch(83.57% 0.03700 317.29)",
-          "oklch(95.00% 0.03700 317.29)"
+          "oklch(15.00% 0.02137 127.40)",
+          "oklch(26.43% 0.02137 127.40)",
+          "oklch(37.86% 0.02137 127.40)",
+          "oklch(49.29% 0.02137 127.40)",
+          "oklch(60.71% 0.02137 127.40)",
+          "oklch(72.14% 0.02137 127.40)",
+          "oklch(83.57% 0.02137 127.40)",
+          "oklch(95.00% 0.02137 127.40)"
         ]
       },
-      "stage-dark": {
+      "halloween-coral": {
+        "role": "tertiary",
+        "displayName": "Halloween Coral",
+        "tonalRamp": [
+          "oklch(15.00% 0.04150 52.93)",
+          "oklch(26.43% 0.04150 52.93)",
+          "oklch(37.86% 0.04150 52.93)",
+          "oklch(49.29% 0.04150 52.93)",
+          "oklch(60.71% 0.04150 52.93)",
+          "oklch(72.14% 0.04150 52.93)",
+          "oklch(83.57% 0.04150 52.93)",
+          "oklch(95.00% 0.04150 52.93)"
+        ]
+      },
+      "space-lilac": {
+        "role": "tertiary",
+        "displayName": "Space Lilac",
+        "tonalRamp": [
+          "oklch(15.00% 0.02436 306.95)",
+          "oklch(26.43% 0.02436 306.95)",
+          "oklch(37.86% 0.02436 306.95)",
+          "oklch(49.29% 0.02436 306.95)",
+          "oklch(60.71% 0.02436 306.95)",
+          "oklch(72.14% 0.02436 306.95)",
+          "oklch(83.57% 0.02436 306.95)",
+          "oklch(95.00% 0.02436 306.95)"
+        ]
+      },
+      "fantasy-butter": {
+        "role": "tertiary",
+        "displayName": "Fantasy Butter",
+        "tonalRamp": [
+          "oklch(15.00% 0.06281 93.44)",
+          "oklch(26.43% 0.06281 93.44)",
+          "oklch(37.86% 0.06281 93.44)",
+          "oklch(49.29% 0.06281 93.44)",
+          "oklch(60.71% 0.06281 93.44)",
+          "oklch(72.14% 0.06281 93.44)",
+          "oklch(83.57% 0.06281 93.44)",
+          "oklch(95.00% 0.06281 93.44)"
+        ]
+      },
+      "elves-leaf": {
+        "role": "tertiary",
+        "displayName": "Elves Leaf",
+        "tonalRamp": [
+          "oklch(15.00% 0.02274 134.95)",
+          "oklch(26.43% 0.02274 134.95)",
+          "oklch(37.86% 0.02274 134.95)",
+          "oklch(49.29% 0.02274 134.95)",
+          "oklch(60.71% 0.02274 134.95)",
+          "oklch(72.14% 0.02274 134.95)",
+          "oklch(83.57% 0.02274 134.95)",
+          "oklch(95.00% 0.02274 134.95)"
+        ]
+      },
+      "disco-rose": {
+        "role": "tertiary",
+        "displayName": "Disco Rose",
+        "tonalRamp": [
+          "oklch(15.00% 0.03144 22.64)",
+          "oklch(26.43% 0.03144 22.64)",
+          "oklch(37.86% 0.03144 22.64)",
+          "oklch(49.29% 0.03144 22.64)",
+          "oklch(60.71% 0.03144 22.64)",
+          "oklch(72.14% 0.03144 22.64)",
+          "oklch(83.57% 0.03144 22.64)",
+          "oklch(95.00% 0.03144 22.64)"
+        ]
+      },
+      "chef-butter": {
+        "role": "tertiary",
+        "displayName": "Chef Butter",
+        "tonalRamp": [
+          "oklch(15.00% 0.05416 92.16)",
+          "oklch(26.43% 0.05416 92.16)",
+          "oklch(37.86% 0.05416 92.16)",
+          "oklch(49.29% 0.05416 92.16)",
+          "oklch(60.71% 0.05416 92.16)",
+          "oklch(72.14% 0.05416 92.16)",
+          "oklch(83.57% 0.05416 92.16)",
+          "oklch(95.00% 0.05416 92.16)"
+        ]
+      },
+      "cream-paper": {
         "role": "neutral",
-        "displayName": "Dark Stage",
+        "displayName": "Cream Paper",
+        "tonalRamp": [
+          "oklch(15.00% 0.01832 86.15)",
+          "oklch(26.43% 0.01832 86.15)",
+          "oklch(37.86% 0.01832 86.15)",
+          "oklch(49.29% 0.01832 86.15)",
+          "oklch(60.71% 0.01832 86.15)",
+          "oklch(72.14% 0.01832 86.15)",
+          "oklch(83.57% 0.01832 86.15)",
+          "oklch(95.00% 0.01832 86.15)"
+        ]
+      },
+      "burgundy-ink": {
+        "role": "neutral",
+        "displayName": "Burgundy Ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.06185 6.98)",
+          "oklch(26.43% 0.06185 6.98)",
+          "oklch(37.86% 0.06185 6.98)",
+          "oklch(49.29% 0.06185 6.98)",
+          "oklch(60.71% 0.06185 6.98)",
+          "oklch(72.14% 0.06185 6.98)",
+          "oklch(83.57% 0.06185 6.98)",
+          "oklch(95.00% 0.06185 6.98)"
+        ]
+      },
+      "muted-cocoa": {
+        "role": "neutral",
+        "displayName": "Muted Cocoa",
+        "tonalRamp": [
+          "oklch(15.00% 0.03247 37.59)",
+          "oklch(26.43% 0.03247 37.59)",
+          "oklch(37.86% 0.03247 37.59)",
+          "oklch(49.29% 0.03247 37.59)",
+          "oklch(60.71% 0.03247 37.59)",
+          "oklch(72.14% 0.03247 37.59)",
+          "oklch(83.57% 0.03247 37.59)",
+          "oklch(95.00% 0.03247 37.59)"
+        ]
+      },
+      "sand-control": {
+        "role": "neutral",
+        "displayName": "Sand Control",
+        "tonalRamp": [
+          "oklch(15.00% 0.02175 76.52)",
+          "oklch(26.43% 0.02175 76.52)",
+          "oklch(37.86% 0.02175 76.52)",
+          "oklch(49.29% 0.02175 76.52)",
+          "oklch(60.71% 0.02175 76.52)",
+          "oklch(72.14% 0.02175 76.52)",
+          "oklch(83.57% 0.02175 76.52)",
+          "oklch(95.00% 0.02175 76.52)"
+        ]
+      },
+      "sand-hover": {
+        "role": "neutral",
+        "displayName": "Sand Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.03064 73.86)",
+          "oklch(26.43% 0.03064 73.86)",
+          "oklch(37.86% 0.03064 73.86)",
+          "oklch(49.29% 0.03064 73.86)",
+          "oklch(60.71% 0.03064 73.86)",
+          "oklch(72.14% 0.03064 73.86)",
+          "oklch(83.57% 0.03064 73.86)",
+          "oklch(95.00% 0.03064 73.86)"
+        ]
+      },
+      "capture-stage": {
+        "role": "neutral",
+        "displayName": "Capture Stage",
         "tonalRamp": [
           "oklch(15.00% 0.02747 305.00)",
           "oklch(26.43% 0.02747 305.00)",
@@ -116,218 +270,307 @@
           "oklch(95.00% 0.02747 305.00)"
         ]
       },
-      "paper-white": {
+      "white": {
         "role": "neutral",
-        "displayName": "Paper White",
+        "displayName": "White",
         "tonalRamp": [
-          "oklch(15.00% 0.00000 0.00)",
-          "oklch(26.43% 0.00000 0.00)",
-          "oklch(37.86% 0.00000 0.00)",
-          "oklch(49.29% 0.00000 0.00)",
-          "oklch(60.71% 0.00000 0.00)",
-          "oklch(72.14% 0.00000 0.00)",
-          "oklch(83.57% 0.00000 0.00)",
-          "oklch(95.00% 0.00000 0.00)"
+          "oklch(15.00% 0.00000 89.88)",
+          "oklch(26.43% 0.00000 89.88)",
+          "oklch(37.86% 0.00000 89.88)",
+          "oklch(49.29% 0.00000 89.88)",
+          "oklch(60.71% 0.00000 89.88)",
+          "oklch(72.14% 0.00000 89.88)",
+          "oklch(83.57% 0.00000 89.88)",
+          "oklch(95.00% 0.00000 89.88)"
         ]
       }
     },
     "typographyMeta": {
       "display": {
         "displayName": "Display",
-        "purpose": "Home headline; bundled regular/upright variable Bricolage Grotesque face, with SemiBold requested by native code. The font-hook alias was corrected to this full family name without suppressing the check."
+        "purpose": "Native desktop text role; see DESIGN.md hierarchy."
+      },
+      "display-compact": {
+        "displayName": "Display Compact",
+        "purpose": "Native desktop text role; see DESIGN.md hierarchy."
       },
       "headline": {
         "displayName": "Headline",
-        "purpose": "Result heading."
+        "purpose": "Native desktop text role; see DESIGN.md hierarchy."
+      },
+      "picker-title": {
+        "displayName": "Picker Title",
+        "purpose": "Native desktop text role; see DESIGN.md hierarchy."
+      },
+      "picker-title-compact": {
+        "displayName": "Picker Title Compact",
+        "purpose": "Native desktop text role; see DESIGN.md hierarchy."
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Capture and result instructions."
+        "purpose": "Native desktop text role; see DESIGN.md hierarchy."
       },
       "brand": {
         "displayName": "Brand",
-        "purpose": "Persistent Estell’Art wordmark."
+        "purpose": "Native desktop text role; see DESIGN.md hierarchy."
       },
       "countdown": {
         "displayName": "Countdown",
-        "purpose": "Large countdown number and Clic badge."
+        "purpose": "Native desktop text role; see DESIGN.md hierarchy."
+      },
+      "capture-message": {
+        "displayName": "Capture Message",
+        "purpose": "Native desktop text role; see DESIGN.md hierarchy."
       },
       "body": {
-        "displayName": "Desktop body",
-        "purpose": "Native control family and baseline body text; Segoe UI with Arial fallback."
+        "displayName": "Body",
+        "purpose": "Native desktop text role; see DESIGN.md hierarchy."
       },
       "label": {
-        "displayName": "Choice label",
-        "purpose": "Choice-section headings."
+        "displayName": "Label",
+        "purpose": "Native desktop text role; see DESIGN.md hierarchy."
+      },
+      "tile-label": {
+        "displayName": "Tile Label",
+        "purpose": "Native desktop text role; see DESIGN.md hierarchy."
       },
       "button-primary": {
-        "displayName": "Primary action label",
-        "purpose": "Large native primary-button label."
-      },
-      "display-compact": {
-        "displayName": "Compact home display",
-        "purpose": "Home headline when client width < 1100 OR client height < 760 logical units. Subtitle becomes 20 rather than 22; choice-stack gaps become 12 rather than 19. Button minimum heights stay 54/70."
+        "displayName": "Button Primary",
+        "purpose": "Native button label."
       }
     },
     "shadows": [],
     "motion": [
       {
-        "name": "countdown-duration",
-        "value": "5s",
-        "purpose": "Default SessionOptions countdown before each capture."
+        "name": "countdown-pulse",
+        "value": "1 + 0.12 * exp(-elapsedMilliseconds / 110); sample 30ms; stop after 550ms",
+        "purpose": "Changed countdown or capture-message text; disabled by ReducedMotion."
       },
       {
-        "name": "countdown-step",
-        "value": "1s",
-        "purpose": "Core countdown tick interval."
+        "name": "received-photo-veil",
+        "value": "white opacity 0.18 for 170ms",
+        "purpose": "Only after capture count increases; disabled by ReducedMotion."
       },
       {
-        "name": "badge-pulse",
-        "value": "scale = 1 + 0.12 * exp(-elapsedMilliseconds / 110)",
-        "purpose": "Restarts when the countdown text changes, including Clic !; no explicit reduced-motion branch."
+        "name": "processing-float",
+        "value": "translateY(sin(elapsedSeconds * 2pi / 2.5) * 5); sample 80ms",
+        "purpose": "Chosen emblem while processing, not completion progress."
       },
       {
-        "name": "badge-pulse-sampling",
-        "value": "30ms",
-        "purpose": "Native DispatcherTimer sampling interval."
+        "name": "processing-phrases",
+        "value": "5s per phrase",
+        "purpose": "Cycles the frozen session phrases independently from controller status."
       },
       {
-        "name": "badge-pulse-stop",
-        "value": "550ms",
-        "purpose": "Stops sampling after the pulse age exceeds this duration."
+        "name": "reduced-motion",
+        "value": "no badge pulse; no capture veil; float Y=0; processing timer 1000ms",
+        "purpose": "Saved operator preference; rotating phrases remain."
       },
       {
-        "name": "capture-veil-duration",
-        "value": "170ms",
-        "purpose": "One white capture veil per transition into Capturing."
-      },
-      {
-        "name": "capture-veil-opacity",
-        "value": "0.22",
-        "purpose": "Translucent white cue preserves framing visibility beneath the badge."
-      },
-      {
-        "name": "between-poses",
-        "value": "1500ms",
-        "purpose": "Rehearsal pause with positioning live view before the next countdown."
+        "name": "processing-lifecycle",
+        "value": "stop on screen exit, deactivation, close; resume on activation if processing",
+        "purpose": "No hidden processing animation timer."
       }
     ],
     "breakpoints": [
       {
-        "name": "home-compact",
-        "value": "ClientSize.Width < 1100 || ClientSize.Height < 760 (Avalonia logical units)"
+        "name": "desktop-minimum",
+        "value": "960 × 700 Avalonia logical units"
+      },
+      {
+        "name": "compact-home-and-picker",
+        "value": "client width < 1100 OR client height < 760 logical units"
+      },
+      {
+        "name": "desktop-requested",
+        "value": "1280 × 800 logical units; capped to scaled working area less 32 × 48, subject to minimum"
       }
-    ]
+    ],
+    "native": {
+      "platform": "Windows desktop",
+      "framework": "Avalonia",
+      "previewPolicy": "HTML snippets are documentation translations only. Native source and current native screenshots are authoritative. Platform-owned Fluent details and raster identity are not re-created by these snippets.",
+      "sources": [
+        "src/PhotoBooth.App/App.axaml",
+        "src/PhotoBooth.App/MainWindow.cs",
+        "src/PhotoBooth.App/PartyScreens.cs",
+        "src/PhotoBooth.App/OperatorAccess.cs",
+        "src/PhotoBooth.Core/styles.json",
+        "src/PhotoBooth.Core/StyleCatalog.cs",
+        "src/PhotoBooth.Core/Session.cs",
+        "src/PhotoBooth.Core/CornerHold.cs",
+        "src/PhotoBooth.Core/KioskExitGate.cs",
+        "src/PhotoBooth.Runtime/BoothController.cs"
+      ]
+    },
+    "interaction": {
+      "primaryMinHeight": 70,
+      "secondaryMinHeight": 54,
+      "fieldMinHeight": 50,
+      "disabledOpacity": 0.45,
+      "focusBorder": {
+        "width": 3,
+        "colorRef": "colors.velvet-burgundy"
+      },
+      "selectedChoiceBorder": {
+        "width": 2,
+        "colorRef": "colors.sage-border"
+      },
+      "selectedUniverseBorder": {
+        "width": 3,
+        "colorRef": "colors.burgundy-ink"
+      },
+      "remoteColorContrast": {
+        "minimumRatio": 4.5,
+        "foregroundRef": "colors.burgundy-ink",
+        "fallbackRef": "colors.party-sage",
+        "method": "sRGB relative luminance"
+      },
+      "countdownSeconds": 3,
+      "cornerHoldSeconds": 3,
+      "cornerRegionLogicalUnits": [
+        64,
+        64
+      ],
+      "operatorCode": "Optional four non-whitespace, non-control characters; restored legacy 6–12 digit codes remain valid."
+    },
+    "artwork": {
+      "directory": "src/PhotoBooth.App/Assets/Party",
+      "names": [
+        "wordmark",
+        "colors_party",
+        "halloween",
+        "space",
+        "fantasy",
+        "elves",
+        "disco",
+        "chef"
+      ],
+      "provenance": "Exact sibling .prompt.txt plus embedded prompt/provenance metadata; delivery scan 8 of 8 clean.",
+      "rampPolicy": "Synthesized OKLCH tonal ramps are documentation aids only, not implemented tokens.",
+      "cacheDecodeWidths": {
+        "wordmark": 800,
+        "emblems": 288
+      },
+      "unknownAssetFallback": "Deterministic identifier hash selects colors_party, disco or chef; local assets only."
+    }
   },
   "components": [
     {
       "name": "Primary action",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "Documentation rendering of the application overrides; native Avalonia Fluent pressed and platform behavior remain authoritative. In capture positioning, On est prêts ! starts disabled with the existing opacity and becomes available after the first live-view frame is displayed.",
+      "description": "Documentation proxy of the native Avalonia control. Native rendering is authoritative; no additional pressed animation is defined.",
       "html": "<button class=\"ds-primary\">Démarrer</button>",
-      "css": ".ds-primary{padding:12px 22px;border-radius:12px;border:0;font-family:\"Segoe UI\",Arial,sans-serif;text-align:center;cursor:pointer;background:#F5E764;color:#241931;font-size:25px;min-height:70px;font-weight:600}.ds-primary:hover:enabled{background:#FFF39B;color:#241931}.ds-primary:focus-visible{border:3px solid #F5E764;outline:0}.ds-primary:disabled{opacity:0.45;cursor:default}"
+      "css": ".ds-primary{font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;font-weight:400;min-height:54px;padding:12px 22px;border:0 solid transparent;border-radius:12px;background:#E9DFD1;color:#512831;background:#742C3F;color:#FFF8EC;min-height:70px;font-size:25px;font-weight:600;}.ds-primary:hover{background:#8D3B4E;color:#FFF8EC;}.ds-primary:focus-visible{outline:3px solid #742C3F;outline-offset:0;}.ds-primary:disabled{opacity:.45;}"
     },
     {
       "name": "Secondary action",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Documentation rendering of the application overrides; native Avalonia Fluent pressed and platform behavior remain authoritative.",
-      "html": "<button class=\"ds-secondary\">Réglages</button>",
-      "css": ".ds-secondary{padding:12px 22px;border-radius:12px;border:0;font-family:\"Segoe UI\",Arial,sans-serif;text-align:center;cursor:pointer;background:#3D2D49;color:#F3EAF4;font-size:20px;min-height:54px;font-weight:400}.ds-secondary:hover:enabled{background:#6A4A79;color:#FFFFFF}.ds-secondary:focus-visible{border:3px solid #F5E764;outline:0}.ds-secondary:disabled{opacity:0.45;cursor:default}"
+      "description": "Documentation proxy of the native Avalonia control. Native rendering is authoritative; no additional pressed animation is defined.",
+      "html": "<button class=\"ds-secondary\">Retour</button>",
+      "css": ".ds-secondary{font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;font-weight:400;min-height:54px;padding:12px 22px;border:0 solid transparent;border-radius:12px;background:#E9DFD1;color:#512831;}.ds-secondary:hover{background:#DFD0BD;color:#512831;}.ds-secondary:focus-visible{outline:3px solid #742C3F;outline-offset:0;}.ds-secondary:disabled{opacity:.45;}"
     },
     {
-      "name": "Selected option",
+      "name": "Selected choice",
       "kind": "button",
       "refersTo": "choice-selected",
-      "description": "Documentation rendering of the application overrides; native Avalonia Fluent pressed and platform behavior remain authoritative.",
+      "description": "Documentation proxy of the native Avalonia control. Native rendering is authoritative; no additional pressed animation is defined.",
       "html": "<button class=\"ds-selected\" aria-pressed=\"true\">Quatre photos</button>",
-      "css": ".ds-selected{padding:12px 22px;border-radius:12px;border:0;font-family:\"Segoe UI\",Arial,sans-serif;text-align:center;cursor:pointer;background:#F3EAF4;color:#241931;font-size:20px;min-height:54px;font-weight:400}.ds-selected:hover:enabled{background:#6A4A79;color:#FFFFFF}.ds-selected:focus-visible{border:3px solid #F5E764;outline:0}.ds-selected:disabled{opacity:0.45;cursor:default}"
+      "css": ".ds-selected{font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;font-weight:400;min-height:54px;padding:12px 22px;border:0 solid transparent;border-radius:12px;background:#E9DFD1;color:#512831;background:#D8E0C9;color:#35472C;border:2px solid #57654A;}.ds-selected:hover{background:#DFD0BD;color:#512831;}.ds-selected:focus-visible{outline:3px solid #742C3F;outline-offset:0;}.ds-selected:disabled{opacity:.45;}"
     },
     {
-      "name": "PIN field",
+      "name": "Masked operator field",
       "kind": "input",
       "refersTo": "text-field",
-      "description": "Permanent unlock label and masked native TextBox; no placeholder. The owned dialog is 480 × 430 and keeps its visible error and both actions in view. Browser chrome here is illustrative; actual Fluent states remain authoritative.",
-      "html": "<label class=\"ds-pin-group\"><span class=\"ds-pin-label\">Code de sortie</span><input class=\"ds-pin\" type=\"password\" maxlength=\"12\" aria-label=\"Code de sortie\"></label>",
-      "css": ".ds-pin-group{display:flex;flex-direction:column;gap:20px;font-family:\"Segoe UI\",Arial,sans-serif}.ds-pin-label{font-size:18px;font-weight:600}.ds-pin{font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;min-height:50px;color-scheme:dark}.ds-pin:focus-visible{outline:revert}"
+      "description": "Only explicit font and minimum height are mapped. Field surfaces and interaction states remain platform-owned Fluent behavior; the browser preview is illustrative.",
+      "html": "<label class=\"ds-field-label\" for=\"ds-code\">Code des réglages · quatre caractères</label><input class=\"ds-field\" id=\"ds-code\" type=\"password\" maxlength=\"4\" autocomplete=\"off\">",
+      "css": ".ds-field-label{display:block;font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;font-weight:600;color:#512831;margin-bottom:12px}.ds-field{font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;min-height:50px}.ds-field:focus-visible{outline:auto} "
     },
     {
-      "name": "Paper photo frame",
+      "name": "Universe tile",
       "kind": "card",
-      "refersTo": "photo-frame",
-      "description": "White surround from the home preview. The specimen uses simplified calibration geometry, never a fabricated personal photograph.",
-      "html": "<div class=\"ds-paper\"><svg class=\"ds-calibration\" viewBox=\"0 0 1200 800\" role=\"img\" aria-label=\"Calibration geometry\"><rect width=\"1200\" height=\"800\" fill=\"#D6A6E8\"/><g fill=\"#302342\"><rect x=\"40\" y=\"40\" width=\"80\" height=\"80\"/><circle cx=\"1100\" cy=\"100\" r=\"40\"/><circle cx=\"450\" cy=\"400\" r=\"30\"/><rect x=\"40\" y=\"660\" width=\"200\" height=\"100\"/></g></svg></div>",
-      "css": ".ds-paper{background:#FFFFFF;padding:12px;border-radius:4px;max-width:360px}.ds-calibration{display:block;width:100%;height:auto}"
+      "refersTo": "universe-tile",
+      "description": "Native illustrated button with 78-unit emblem (66 compact), 22-unit label and 16-unit description. This text-only preview does not replace or approximate the approved raster; use Assets/Party/colors_party.png in the application.",
+      "html": "<button class=\"ds-universe\"><span class=\"ds-universe-title\">Colors Party</span><span class=\"ds-universe-copy\">Du velours, des couleurs et vous.</span></button>",
+      "css": ".ds-universe{font-family:\"Segoe UI\",Arial,sans-serif;min-height:170px;padding:10px 14px;border:0 solid transparent;border-radius:12px;background:#E0E7D8;color:#512831;text-align:center}.ds-universe-title{display:block;font-size:22px;font-weight:600}.ds-universe-copy{display:block;font-size:16px;margin-top:2px}.ds-universe:hover{background:#DFD0BD;color:#512831}.ds-universe:focus-visible{outline:3px solid #742C3F}.ds-universe[aria-pressed=\"true\"]{border:3px solid #512831}.ds-universe:disabled{opacity:.45}"
+    },
+    {
+      "name": "Chef choice",
+      "kind": "button",
+      "refersTo": "chef-choice",
+      "description": "Documentation proxy of the native Avalonia control. Native rendering is authoritative; no additional pressed animation is defined.",
+      "html": "<button class=\"ds-chef\" aria-pressed=\"true\">La Surprise du Chef</button>",
+      "css": ".ds-chef{font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;font-weight:400;min-height:54px;padding:12px 22px;border:0 solid transparent;border-radius:12px;background:#E9DFD1;color:#512831;background:#F1E4BC;color:#512831;font-size:21px;font-weight:600;border:3px solid #512831;}.ds-chef:hover{background:#DFD0BD;color:#512831;}.ds-chef:focus-visible{outline:3px solid #742C3F;outline-offset:0;}.ds-chef:disabled{opacity:.45;}"
+    },
+    {
+      "name": "Desktop header",
+      "kind": "nav",
+      "refersTo": "header",
+      "description": "Native header with product name and windowed settings action. Settings is hidden during fullscreen. Browser spacing is a documentation translation of the native two-column grid.",
+      "html": "<nav class=\"ds-header\" aria-label=\"Application\"><span>Colors Party by Estelle</span><button class=\"ds-settings\">Réglages</button></nav>",
+      "css": ".ds-header{display:flex;justify-content:space-between;align-items:center;font-family:\"Segoe UI\",Arial,sans-serif;font-size:26px;font-weight:600;color:#512831;margin-bottom:24px}.ds-settings{font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;font-weight:400;min-height:54px;padding:12px 22px;border:0 solid transparent;border-radius:12px;background:#E9DFD1;color:#512831;}.ds-settings:hover{background:#DFD0BD}.ds-settings:focus-visible{outline:3px solid #742C3F}.ds-settings:disabled{opacity:.45}"
     },
     {
       "name": "Countdown badge",
       "kind": "custom",
       "refersTo": "countdown-badge",
-      "description": "Static specimen of the native badge. The actual app uses the bundled Bricolage font and pulse equation documented in motion metadata; a panel without that font will use its local sans-serif fallback.",
-      "html": "<div class=\"ds-stage\"><div class=\"ds-countdown\" aria-label=\"Trois secondes\">3</div></div>",
-      "css": ".ds-stage{display:flex;align-items:center;justify-content:center;min-height:230px;background:#150F1C}.ds-countdown{background:#241931;color:#FFFFFF;border-radius:16px;padding:0 26px;font-family:\"Bricolage Grotesque\",sans-serif;font-size:152px;font-weight:700}"
-    },
-    {
-      "name": "Cloud connection field",
-      "kind": "input",
-      "refersTo": "text-field",
-      "description": "Persistent label and masked field from the scrolling native settings dialog (690 × 680). No placeholder or PIN-length cap. This specimen documents the local control, not a validated connected cloud journey.",
-      "html": "<label class=\"ds-cloud-group\"><span class=\"ds-cloud-label\">Code de connexion de la borne · pas la clé OpenAI</span><input class=\"ds-cloud-code\" type=\"password\" aria-label=\"Code de connexion de la borne · pas la clé OpenAI\"></label>",
-      "css": ".ds-cloud-group{display:flex;flex-direction:column;gap:18px;font-family:\"Segoe UI\",Arial,sans-serif}.ds-cloud-label{font-size:20px;font-weight:600}.ds-cloud-code{font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;min-height:50px;color-scheme:dark}.ds-cloud-code:focus-visible{outline:revert}"
-    },
-    {
-      "name": "Canon connection settings",
-      "kind": "custom",
-      "description": "Native settings checkboxes select Canon USB and the optional installed official SDK route. The default Windows-driver route requires no SDK installation; compatibility remains to be checked on the actual camera. Browser checkbox chrome in this specimen is illustrative.",
-      "html": "<div class=\"ds-canon-settings\"><label class=\"ds-canon-option\"><input type=\"checkbox\">Utiliser le Canon USB (Windows)</label><label class=\"ds-canon-option\"><input type=\"checkbox\">Connexion avancée : SDK Canon officiel installé</label><p class=\"ds-canon-help\">Par défaut, connexion par le pilote Windows existant, sans SDK à installer. Compatibilité à vérifier sur le boîtier.</p></div>",
-      "css": ".ds-canon-settings{display:flex;flex-direction:column;gap:18px;font-family:\"Segoe UI\",Arial,sans-serif;font-size:20px;color:#F3EAF4;color-scheme:dark}.ds-canon-option{display:flex;align-items:center}.ds-canon-help{font-size:15px;margin:0}.ds-canon-option input:focus-visible{outline:revert}"
+      "description": "Static badge proxy. The native app uses the bundled display font and a three-second countdown over visible framing; this HTML does not load a substitute font or simulate capture.",
+      "html": "<span class=\"ds-countdown\" role=\"status\">3</span>",
+      "css": ".ds-countdown{display:inline-block;font-family:\"Bricolage Grotesque\",sans-serif;font-size:152px;font-weight:700;padding:0 26px;border-radius:16px;background:#512831;color:#FFFFFF}"
     }
   ],
   "narrative": {
-    "northStar": "Piste de fête chromatique",
-    "overview": "“Piste de fête chromatique” is the working visual direction: a dark aubergine room, a clear lemon action, and generous photography. Estell’Art is personal and festive without reducing the room available for posing. Large flat areas and direct French labels give the guest a short, readable path.\n\nThis system records the implemented Avalonia desktop interface, targeting Windows with native local states rehearsed on macOS. The name and direction are working choices under the delegated delivery brief; an unanswered preference is not approval. Code-led preparation for this delivery is not a confirmed standing workflow preference. No web, iOS, or Android design is asserted here.\n\nSource authority is `src/PhotoBooth.App/App.axaml` and `src/PhotoBooth.App/MainWindow.cs`, with capture timing in `src/PhotoBooth.Core/Session.cs` and `src/PhotoBooth.Runtime/BoothController.cs`. The latest targeted finish review accepted the permanent field labels, accurate cloud-disable confirmation, and native local dialog/result states. The result at 1024 × 768 and the visible unlock error were reviewed. Connected QR sharing, physical printing, Canon hardware operation, real AI generation, and the prepared but undeployed web gallery remain outside the validated journeys. A Windows native rehearsal subsequently exposed window overflow missed by headless checks. The final review accepted the startup/work-area, compact-home, and client/panel-bound corrections with disposition `ship`, limited to the native home screen on Windows Server 2022 at scale 1: 992 × 700 initially and 960 × 700 after resizing. Estell’Art’s name and palette are unchanged.",
+    "northStar": "Colors Party, gouache et velours",
+    "overview": "Colors Party by Estelle is a warm celebration on cream paper. Approved matte gouache emblems and the sage and wine wordmark carry the personality; broad native controls keep the guest journey clear. Butter, coral and soft botanical shades support the imagery without competing with photographs.\n\nThis is the implemented replacement visual world approved by Kevin. Preserve its generated artwork, tactile illustration and restrained retro lettering. The system describes native Avalonia desktop components for Windows, rehearsed on macOS; no browser or mobile interface is defined here. The surface mode and first-viewport composition belong in the surface brief.",
     "keyCharacteristics": [
-      "Aubergine surfaces, pale lavender text, and a lemon primary action.",
-      "Expressive Bricolage Grotesque display text with familiar desktop body text.",
-      "Large native controls, visible framing during countdown, and one brief capture cue.",
-      "Flat composition and a literal preview of the composed photo sheet."
+      "Cream paper, burgundy actions, sage selection and soft universe colors.",
+      "An approved raster wordmark and seven transparent gouache emblems.",
+      "Bundled Bricolage Grotesque headings with familiar desktop control text.",
+      "Large touch controls, visible framing and truthful processing states."
     ],
     "rules": [
       {
-        "name": "The Primary Action Rule",
-        "body": "Lemon identifies primary buttons and keyboard focus. Selected choices use the pale lavender fill instead.",
+        "name": "The Readable Universe Rule",
+        "body": "Keep burgundy ink on catalog tiles only when the supplied background reaches 4.5:1 contrast against that ink. Otherwise use party-sage. Apply the same ink to the selected outline.",
         "section": "colors"
       },
       {
         "name": "The Display Threshold Rule",
-        "body": "The text helper uses Bricolage Grotesque at 28 logical units and above, and Segoe UI with Arial fallback below that threshold. Buttons retain the desktop body family.",
+        "body": "The shared text helper uses Bricolage Grotesque at 28 logical units and above, and Segoe UI with Arial fallback below. Buttons keep the desktop body family.",
         "section": "typography"
       },
       {
-        "name": "The Flat Surface Rule",
-        "body": "Application content has no custom shadows. Tonal separation and the white photo frame supply depth; native window decoration remains platform-owned.",
+        "name": "The Matte Surface Rule",
+        "body": "Let the gouache artwork supply material character. App surfaces use flat fills and no custom shadows or gradients; platform-owned Fluent controls and window decoration retain their native behavior.",
         "section": "elevation"
       },
       {
         "name": "The Live Frame Rule",
-        "body": "Keep the framing image visible beneath the countdown. A capture produces one restrained veil, guarded against repeated updates in the same Capturing state.",
+        "body": "Keep the framing image visible through the countdown. Show a capture cue only after a captured photo has been received, never as proof that an unconfirmed shutter succeeded.",
+        "section": "components"
+      },
+      {
+        "name": "The Honest Wait Rule",
+        "body": "Rotating phrases and floating artwork communicate waiting, not measured completion. Show controller status separately; never invent a percentage, completion estimate or automatic retry.",
         "section": "components"
       }
     ],
     "dos": [
-      "**Do** preserve native controls, owned dialogs, scrolling, file-picker, and keyboard interaction semantics, with permanent labels for code fields.",
-      "**Do** use the exact composed image for the result preview and keep photographic content proportionate with uniform scaling.",
-      "**Do** keep camera, printing, and cloud status explicit and distinguish local calibration images from real guest photography.",
-      "**Do** preserve the brief, single capture cue and the readable badge over the framing image.",
-      "**Do** check actual desktop sizes and containing-panel bounds when changing copy, spacing, or controls, including both sides of the home compact thresholds and 960 × 700."
+      "Do preserve the approved Colors Party wordmark and matte gouache emblems with their transparency and provenance.",
+      "Do use cream paper, burgundy actions and sage selection with the established contrast fallback.",
+      "Do keep guest labels concise French, without AI jargon, simulation labels or dash punctuation; technical operator settings may name OpenAI.",
+      "Do retain native controls, permanent field labels, visible focus and scrolling where content requires it.",
+      "Do honor the saved reduced-motion setting and show the real photo sheet before printing.",
+      "Do check actual client and containing-panel bounds at each supported desktop size."
     ],
     "donts": [
-      "**Don't** replace the result preview with an unrelated decorative image.",
-      "**Don't** turn the capture cue into a repeating strobe or an opaque frame that hides the photograph.",
-      "**Don't** describe calibration geometry or rehearsal filters as personal photos or generated AI artwork.",
-      "**Don't** treat the HTML documentation specimens as a web product or as exact reproductions of platform-owned Fluent control states.",
-      "**Don't** infer a validated connected QR or web-gallery journey, an approved permanent workflow, a phone layout, compact rules beyond the documented home condition, or a reduced-motion variant from this delivery."
+      "Don't restore the discarded aubergine and lemon identity or present EstellArt as the product name.",
+      "Don't substitute emoji, glyph icons, glossy 3D art or procedural drawings for the approved emblems.",
+      "Don't infer progress, successful capture, completed printing or connected sharing from a decorative animation.",
+      "Don't turn fixture screenshots, passing mocked tests or old Windows captures into current hardware validation.",
+      "Don't infer a permanent code-led workflow preference from this delivery's explicit execution choice."
     ]
   }
 }
