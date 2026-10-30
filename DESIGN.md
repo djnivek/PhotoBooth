@@ -1,40 +1,63 @@
 ---
-name: "Estell’Art"
-description: "A festive native photo-booth rehearsal for Estelle’s birthday."
+name: "Colors Party by Estelle"
+description: "A matte gouache and velvet celebration for a native photo booth."
 colors:
-  lemon: "#F5E764"
-  lemon-hover: "#FFF39B"
-  aubergine: "#241931"
-  plum-surface: "#3D2D49"
-  plum-hover: "#6A4A79"
-  lavender-white: "#F3EAF4"
-  lavender-muted: "#C7B6CD"
-  stage-dark: "#150F1C"
-  paper-white: "#FFFFFF"
+  velvet-burgundy: "#742C3F"
+  velvet-hover: "#8D3B4E"
+  warm-white: "#FFF8EC"
+  selected-sage: "#D8E0C9"
+  sage-ink: "#35472C"
+  sage-border: "#57654A"
+  party-sage: "#E0E7D8"
+  halloween-coral: "#F3D5C3"
+  space-lilac: "#E7DFF0"
+  fantasy-butter: "#F4E6B7"
+  elves-leaf: "#DCE6D7"
+  disco-rose: "#F1D5D3"
+  chef-butter: "#F1E4BC"
+  cream-paper: "#FBF5E8"
+  burgundy-ink: "#512831"
+  muted-cocoa: "#705952"
+  sand-control: "#E9DFD1"
+  sand-hover: "#DFD0BD"
+  capture-stage: "#150F1C"
+  white: "#FFFFFF"
 typography:
   display:
     fontFamily: "Bricolage Grotesque"
-    fontSize: "57px"
+    fontSize: "44px"
     fontWeight: 600
   display-compact:
     fontFamily: "Bricolage Grotesque"
-    fontSize: "49px"
+    fontSize: "38px"
     fontWeight: 600
   headline:
     fontFamily: "Bricolage Grotesque"
     fontSize: "38px"
+    fontWeight: 600
+  picker-title:
+    fontFamily: "Bricolage Grotesque"
+    fontSize: "40px"
+    fontWeight: 600
+  picker-title-compact:
+    fontFamily: "Bricolage Grotesque"
+    fontSize: "32px"
     fontWeight: 600
   title:
     fontFamily: "Bricolage Grotesque"
     fontSize: "30px"
     fontWeight: 600
   brand:
-    fontFamily: "Bricolage Grotesque"
-    fontSize: "32px"
-    fontWeight: 700
+    fontFamily: "Segoe UI, Arial"
+    fontSize: "26px"
+    fontWeight: 600
   countdown:
     fontFamily: "Bricolage Grotesque"
     fontSize: "152px"
+    fontWeight: 700
+  capture-message:
+    fontFamily: "Bricolage Grotesque"
+    fontSize: "40px"
     fontWeight: 700
   body:
     fontFamily: "Segoe UI, Arial"
@@ -44,218 +67,214 @@ typography:
     fontFamily: "Segoe UI, Arial"
     fontSize: "20px"
     fontWeight: 600
+  tile-label:
+    fontFamily: "Segoe UI, Arial"
+    fontSize: "22px"
+    fontWeight: 600
   button-primary:
     fontFamily: "Segoe UI, Arial"
     fontSize: "25px"
     fontWeight: 600
 rounded:
-  photo-frame: "4px"
-  button: "12px"
+  control: "12px"
   countdown-badge: "16px"
 spacing:
-  compact: "12px"
-  control-group: "18px"
-  home-standard: "19px"
+  tile-content: "2px"
+  choice-gap: "12px"
+  compact-section: "14px"
+  settings-group: "18px"
   section: "20px"
-  content: "22px"
+  result-content: "22px"
   window-vertical: "24px"
   dialog: "30px"
   window-horizontal: "36px"
 components:
   button-primary:
-    backgroundColor: "{colors.lemon}"
-    textColor: "{colors.aubergine}"
+    backgroundColor: "{colors.velvet-burgundy}"
+    textColor: "{colors.warm-white}"
     typography: "{typography.button-primary}"
-    rounded: "{rounded.button}"
+    rounded: "{rounded.control}"
     padding: "12px 22px"
   button-primary-hover:
-    backgroundColor: "{colors.lemon-hover}"
-    textColor: "{colors.aubergine}"
+    backgroundColor: "{colors.velvet-hover}"
+    textColor: "{colors.warm-white}"
   button-secondary:
-    backgroundColor: "{colors.plum-surface}"
-    textColor: "{colors.lavender-white}"
+    backgroundColor: "{colors.sand-control}"
+    textColor: "{colors.burgundy-ink}"
     typography: "{typography.body}"
-    rounded: "{rounded.button}"
+    rounded: "{rounded.control}"
     padding: "12px 22px"
   button-secondary-hover:
-    backgroundColor: "{colors.plum-hover}"
-    textColor: "{colors.paper-white}"
+    backgroundColor: "{colors.sand-hover}"
+    textColor: "{colors.burgundy-ink}"
   choice-selected:
-    backgroundColor: "{colors.lavender-white}"
-    textColor: "{colors.aubergine}"
+    backgroundColor: "{colors.selected-sage}"
+    textColor: "{colors.sage-ink}"
     typography: "{typography.body}"
-    rounded: "{rounded.button}"
+    rounded: "{rounded.control}"
+    padding: "12px 22px"
+  universe-tile:
+    backgroundColor: "{colors.party-sage}"
+    textColor: "{colors.burgundy-ink}"
+    rounded: "{rounded.control}"
+    padding: "10px 14px"
+  chef-choice:
+    backgroundColor: "{colors.chef-butter}"
+    textColor: "{colors.burgundy-ink}"
+    rounded: "{rounded.control}"
     padding: "12px 22px"
   text-field:
     typography: "{typography.body}"
-  photo-frame:
-    backgroundColor: "{colors.paper-white}"
-    rounded: "{rounded.photo-frame}"
-    padding: "12px"
   countdown-badge:
-    backgroundColor: "{colors.aubergine}"
-    textColor: "{colors.paper-white}"
+    backgroundColor: "{colors.burgundy-ink}"
+    textColor: "{colors.white}"
     typography: "{typography.countdown}"
     rounded: "{rounded.countdown-badge}"
     padding: "0px 26px"
+  header:
+    textColor: "{colors.burgundy-ink}"
+    typography: "{typography.brand}"
 ---
 
-# Design System: Estell’Art
+# Design System: Colors Party by Estelle
 
 ## Overview
 
-**Creative North Star: "Piste de fête chromatique"**
+**Creative North Star: "Colors Party, gouache et velours"**
 
-“Piste de fête chromatique” is the working visual direction: a dark aubergine room, a clear lemon action, and generous photography. Estell’Art is personal and festive without reducing the room available for posing. Large flat areas and direct French labels give the guest a short, readable path.
+Colors Party by Estelle is a warm celebration on cream paper. Approved matte gouache emblems and the sage and wine wordmark carry the personality; broad native controls keep the guest journey clear. Butter, coral and soft botanical shades support the imagery without competing with photographs.
 
-This system records the implemented Avalonia desktop interface, targeting Windows with native local states rehearsed on macOS. The name and direction are working choices under the delegated delivery brief; an unanswered preference is not approval. Code-led preparation for this delivery is not a confirmed standing workflow preference. No web, iOS, or Android design is asserted here.
+This is the implemented replacement visual world approved by Kevin. Preserve its generated artwork, tactile illustration and restrained retro lettering. The system describes native Avalonia desktop components for Windows, rehearsed on macOS; no browser or mobile interface is defined here. The surface mode and first-viewport composition belong in the surface brief.
 
-Source authority is `src/PhotoBooth.App/App.axaml` and `src/PhotoBooth.App/MainWindow.cs`, with capture timing in `src/PhotoBooth.Core/Session.cs` and `src/PhotoBooth.Runtime/BoothController.cs`. The latest targeted finish review accepted the permanent field labels, accurate cloud-disable confirmation, and native local dialog/result states. The result at 1024 × 768 and the visible unlock error were reviewed. Connected QR sharing, physical printing, Canon hardware operation, real AI generation, and the prepared but undeployed web gallery remain outside the validated journeys. A Windows native rehearsal subsequently exposed window overflow missed by headless checks. The final review accepted the startup/work-area, compact-home, and client/panel-bound corrections with disposition `ship`, limited to the native home screen on Windows Server 2022 at scale 1: 992 × 700 initially and 960 × 700 after resizing. Estell’Art’s name and palette are unchanged.
+Source authority: `src/PhotoBooth.App/App.axaml`, `MainWindow.cs`, `PartyScreens.cs` and `OperatorAccess.cs`; catalog colors and labels in `src/PhotoBooth.Core/styles.json` and `StyleCatalog.cs`; timing in `Session.cs`, `CornerHold.cs` and `src/PhotoBooth.Runtime/BoothController.cs`. Tokens describe the current code, not sampled illustration pixels. Current evidence and validation limits are recorded in `.impeccable/surfaces/src-photobooth-app-mainwindow-cs.md`.
 
 **Key Characteristics:**
 
-- Aubergine surfaces, pale lavender text, and a lemon primary action.
-- Expressive Bricolage Grotesque display text with familiar desktop body text.
-- Large native controls, visible framing during countdown, and one brief capture cue.
-- Flat composition and a literal preview of the composed photo sheet.
+- Cream paper, burgundy actions, sage selection and soft universe colors.
+- An approved raster wordmark and seven transparent gouache emblems.
+- Bundled Bricolage Grotesque headings with familiar desktop control text.
+- Large touch controls, visible framing and truthful processing states.
 
 ## Colors
 
-A warm dark stage holds pale text and a single vivid action family. Frontmatter is the normative color inventory; calibration-image colors are test data, not interface tokens.
+The cream, sage, butter, coral and velvet family is the approved identity. Frontmatter is normative; illustration pigments are baked into the approved PNGs and are not additional UI tokens.
 
 ### Primary
 
-- **Party Lemon** (`lemon`): primary action fills and the visible keyboard-focus border.
-- **Light Lemon** (`lemon-hover`): primary-button pointer feedback.
+- **Velvet Burgundy** (`velvet-burgundy`) is the primary action and keyboard-focus color; `velvet-hover` provides pointer feedback. Warm White (`warm-white`) keeps action text clear.
+
+### Secondary
+
+- **Selected Sage** (`selected-sage`), Sage Ink (`sage-ink`) and Sage Border (`sage-border`) distinguish selected count and mode choices.
+- **Party Sage** (`party-sage`) is both the Colors Party tile and the safe background for an unreadable remote color.
+
+### Tertiary
+
+- **Halloween Coral**, **Space Lilac**, **Fantasy Butter**, **Elves Leaf** and **Disco Rose** identify the six bundled universe tiles alongside Party Sage. They are catalog values, not a guarantee that every future remote universe uses the same palette.
+- **Chef Butter** (`chef-butter`) separates La Surprise du Chef from named universes. The approved artwork carries richer butter, sage, coral and burgundy accents.
 
 ### Neutral
 
-- **Deep Aubergine** (`aubergine`): window background, dark text on light controls, and the countdown badge.
-- **Plum Surface** (`plum-surface`): secondary buttons and unselected options.
-- **Lifted Plum** (`plum-hover`): pointer feedback for secondary and selected-option buttons, with white text.
-- **Lavender White** (`lavender-white`): default text and selected-option fill.
-- **Muted Lavender** (`lavender-muted`): supporting explanations.
-- **Dark Stage** (`stage-dark`): the capture image’s surrounding area.
-- **Paper White** (`paper-white`): the home photo frame, countdown lettering, and translucent capture veil.
+- **Cream Paper** (`cream-paper`) is the window surface; Burgundy Ink (`burgundy-ink`) is default text and the countdown badge.
+- **Muted Cocoa** (`muted-cocoa`) supports helper text. Sand Control and Sand Hover (`sand-control`, `sand-hover`) cover secondary buttons and pointer feedback.
+- **Capture Stage** (`capture-stage`) frames the live image; White (`white`) supplies countdown lettering and the brief received-photo veil.
 
-**The Primary Action Rule.** Lemon identifies primary buttons and keyboard focus. Selected choices use the pale lavender fill instead.
+**The Readable Universe Rule.** Keep burgundy ink on catalog tiles only when the supplied background reaches 4.5:1 contrast against that ink. Otherwise use party-sage. Apply the same ink to the selected outline.
 
-The sidecar’s eight-step color ramps are synthesized documentation aids. The application uses the frontmatter hex values; the ramps are not an implemented theme scale.
+The sidecar's eight-step OKLCH ramps are synthesized documentation aids, not implemented application colors. Remote color validation uses sRGB relative luminance against the actual burgundy ink. Catalog format validation alone does not prove contrast.
 
 ## Typography
 
-**Display Font:** Bricolage Grotesque, bundled as `Assets/BricolageGrotesque.ttf`; regular/upright style, variable weight. No explicit display fallback is set in the text helper. The font-hook alias `Bricolage` was corrected to the documented family `Bricolage Grotesque`; no detection rule was suppressed.
+**Display Font:** Bricolage Grotesque, bundled at `Assets/BricolageGrotesque.ttf` with `Assets/OFL-BricolageGrotesque.txt`. The text helper names the bundled family explicitly; no display fallback is declared.
 
-**Body Font:** Segoe UI, with Arial fallback. Native controls inherit this family from the window.
+**Body Font:** Segoe UI, Arial fallback. The window and native buttons use this family. The illustrated Colors Party lettering is a raster wordmark, not a reusable font.
 
-**Character:** Broad, lively display forms give the birthday identity its voice. Familiar desktop text keeps instructions and control labels direct.
+**Character:** Broad display forms pair with the approved retro wordmark. Familiar body text keeps settings, instructions and choices readable.
 
 ### Hierarchy
 
-- **Display:** the home headline uses `display`, switching to `display-compact` under the home-only compact condition described in Layout. The subtitle changes from 22 to 20 logical units.
-- **Headline:** the result title uses `headline`; the error heading is a larger local variation (48 logical units).
-- **Title:** capture and result instructions use `title`; dialog headings vary locally (28 or 34 logical units).
-- **Brand:** the persistent wordmark uses `brand`.
-- **Countdown:** the central countdown and “Clic !” use `countdown`.
-- **Body:** `body` is the desktop baseline. Supporting text ranges from 15 to 27 logical units; the helper wraps text and does not set a custom line height or letter spacing.
-- **Label:** choice-section labels use `label`; primary controls use `button-primary`.
+- **Display:** `display` on the home invitation, `display-compact` under the compact condition.
+- **Headline:** `headline` for processing and results. The universe picker uses `picker-title` or its compact variant.
+- **Title:** `title` for pose and result instructions and “by Estelle”. The compact home tagline becomes 26 units and consequently uses the body family.
+- **Brand:** `brand` for the header's plain-text product name.
+- **Countdown:** `countdown` for 3, 2, 1; `capture-message` for “Gardez la pose”.
+- **Body and labels:** `body`, `label`, `tile-label` and `button-primary` are the recurring control roles. Supporting descriptions use 15–19 units; processing phrases use 25 regular; settings and unlock headings use 34 and 28 semibold; the recovery heading uses 48 semibold.
 
-The recorded weights are the `FontWeight` requests in the application. The bundled variable font exposes weight 200–800, optical size 12–96, and width 75–100; its metadata defaults are 800, 96, and 100. No variation settings are explicitly applied by the app. Do not treat the “Regular” style label as proof that every heading renders at weight 400. The font ships with `Assets/OFL-BricolageGrotesque.txt` under the SIL Open Font License.
+**The Display Threshold Rule.** The shared text helper uses Bricolage Grotesque at 28 logical units and above, and Segoe UI with Arial fallback below. Buttons keep the desktop body family.
 
-**The Display Threshold Rule.** The text helper uses Bricolage Grotesque at 28 logical units and above, and Segoe UI with Arial fallback below that threshold. Buttons retain the desktop body family.
+Source values are requested sizes and weights, not claims about physical pixels or variable-font axis positions. No custom line height, letter spacing or variation settings are applied. Text wraps. The bundled display font's presence does not establish a browser font-loading strategy.
 
 ## Layout
 
-All source measurements are Avalonia logical units. The frontmatter uses `px` for portable token notation, not a claim about physical display pixels.
+Measurements are Avalonia logical units; the frontmatter uses `px` for portable notation. The centered window requests 1280 × 800 and has a 960 × 700 minimum. Startup is capped to the primary display's scaled working area less 32 horizontal and 48 vertical units, subject to that minimum. The shell has 36 horizontal and 24 vertical margins, an automatic header row, a flexible content row and a 24-unit header gap. Root maximum bounds follow actual client dimensions after opening and resizing.
 
-The centered desktop window requests up to 1280 × 800, with a minimum of 960 × 700. When a primary display is available, startup width and height are capped to its working area divided by display scaling, less 32 horizontal and 48 vertical logical units, while retaining that minimum. The application frame has horizontal and vertical margins given by `window-horizontal` and `window-vertical`. A header and flexible main region form two rows; header separation is 24. The diagnostic footer is removed at Kevin’s explicit request.
-
-On opening and resizing, the root layout’s maximum width and height are recomputed from the actual client size minus those margins. Bounds checks require `Settings`, `StartSession`, and `HomeSheet` to remain inside both the client area and their containing `Header` or `SessionBody` panel. A first native capture showed “Démarrer” clipped by its panel even though a window-only check was insufficient. The native smoke resizes from 992 × 700 to 960 × 700 at scale 1. Final review of the actual Windows pixels confirmed “Démarrer”, “Réglages”, and the photo sheet fully visible at both sizes, with parent/client bounds checks passing. This closes the home-layout validation on Windows Server 2022 only; it does not validate hardware, connected QR sharing, or real AI generation.
-
-The home surface uses proportional columns (6:5), a 38-unit separation on the choice column, and `home-standard` vertical gaps in that column. Compact home is active when client width is strictly below 1100 OR client height is strictly below 760 logical units, reevaluated on opening and resizing. It uses the 49-unit headline instead of 57, a 20-unit subtitle instead of 22, and `compact` gaps of 12 instead of 19. Secondary and primary button minimum heights stay 54 and 70. Options remain equal-width native buttons with a combined gap of 12. The result uses columns (7:4), a 30-unit separation, and 22/20-unit vertical grouping. The capture screen uses a flexible image stage between its title and action row, with 20-unit vertical stage margins. Photo previews scale uniformly, with maximum heights of 380 on the home surface and 430 on the result.
-
-The result action column now sits in a native ScrollViewer. The reviewed local result at 1024 × 768 retains a readable sheet, print confirmation, sharing-disabled status, and new-session action without clipping. The compact adjustment applies only to the home surface. Other surfaces retain proportional columns, text wrapping, and scrolling; no automatic single-column layout is implemented.
+Compact treatment is active at width below 1100 **or** height below 760. It changes the home and universe-picker typography, artwork sizes and spacing. It is not a mobile breakpoint or a general single-column mode. Detailed home, picker, result and dialog composition is in the surface brief. Dynamic catalogs, operator settings and result actions use native scrolling. Controls must remain inside both client and containing-panel bounds.
 
 ## Elevation & Depth
 
-Flat fills and contrast carry hierarchy. The paper frame separates the composed image from the aubergine background; the darker capture stage contains the live view. App code defines no custom shadows or gradients. Desktop-owned windows and Fluent controls retain their framework behavior.
+Flat cream and pastel surfaces establish hierarchy around tactile raster artwork. The live-image stage is dark; photographic content stays rectangular and uses uniform scaling. There is no app-defined shadow or gradient vocabulary. Native windows and Fluent control rendering remain platform-owned.
 
-**The Flat Surface Rule.** Application content has no custom shadows. Tonal separation and the white photo frame supply depth; native window decoration remains platform-owned.
+**The Matte Surface Rule.** Let the gouache artwork supply material character. App surfaces use flat fills and no custom shadows or gradients; platform-owned Fluent controls and window decoration retain their native behavior.
 
 ## Shapes
 
-Controls have gently rounded rectangular corners using `button`. The countdown uses the larger `countdown-badge` radius; the home paper frame uses the shallow `photo-frame` radius. Photograph content remains rectangular and proportionate. There is no general pill, circle-card, or decorative clipping system.
+Native buttons and universe tiles share the control corner radius. Selected count/mode buttons have a two-unit sage border; selected universe and Chef buttons have a three-unit burgundy-ink border. Keyboard focus uses a three-unit primary-burgundy border. The countdown badge uses its larger radius. No reusable decorative card, circular clipping or pill system is defined.
 
 ## Components
 
-### Buttons
+### Buttons and choices
 
-Large, direct native Avalonia controls with a clear primary action.
+Primary controls use the burgundy family, primary type and a minimum height of 70. Secondary controls use sand, body type and a minimum height of 54. Shared padding is 22 horizontally and 12 vertically, with centered text. Pointer feedback uses each hover token; other buttons, including selected choices, use sand hover with burgundy ink. Focus remains visible; disabled controls use opacity 0.45. The shared asynchronous click handler disables the invoked button for its action and restores it afterward. No custom pressed animation is defined.
 
-- **Primary:** lemon fill, aubergine text, the primary type token, and a minimum height of 70.
-- **Secondary:** plum fill, lavender-white text, body type, and a minimum height of 54.
-- **Shared:** horizontal padding 22 and vertical padding 12; centered content and the button radius.
-- **Hover:** primary buttons use light lemon; all other buttons, including selected options, use lifted plum with white text.
-- **Focus:** a visible lemon border (3 units).
-- **Disabled/busy:** opacity 0.45. The shared click handler disables the invoked button during its asynchronous action and re-enables it afterward.
-- **Pressed:** no application-specific pressed token is defined; Fluent behavior remains authoritative.
+Count and mode choices are equal-width native buttons with a total 12-unit gap, not separate radio/chip components. Selected state is the sage fill and border. Illustrated universe buttons stretch their content and use 14 horizontal/10 vertical padding, a label at 22 semibold and a description at 16. A selected tile uses the ink outline; the Chef choice has its own butter fill. The same background-contrast safeguard applies to remotely supplied universes.
 
-### Choice controls
+### Artwork and containers
 
-The two option rows use native Buttons, not a separate chip or radio-control implementation. Selection is indicated by pale fill and aubergine text. Each row has two equal columns and reconstructs the home content when the selection changes.
+The product ships eight transparent PNGs under `Assets/Party`: `wordmark`, `colors_party`, `halloween`, `space`, `fantasy`, `elves`, `disco` and `chef`. The wordmark is 1448 × 1086; each emblem is 1254 × 1254. Every raster has its exact sibling `.prompt.txt` and embedded prompt/provenance metadata; the delivery's asset scan reports 8 of 8 clean. These are approved generated assets, not guest photographs. Preserve the files and provenance when packaging or replacing an asset.
 
-### Cards / Containers
+Artwork is decoded once and cached at width 800 for the wordmark, 288 for emblems; views use `Stretch.Uniform`. Unknown asset identifiers choose a deterministic local fallback from Colors Party, Disco or Chef, using the identifier hash. They do not trigger remote image loads or invent a new illustration. The wordmark and theme illustrations are the identity; the photos and QR are functional output. Calibration fixtures in UI captures are test material, not proof of generated photo quality.
 
-The home image has a white paper surround with the photo-frame radius and compact padding. The capture stage is a flat dark rectangle with uniform image scaling. There is no reusable decorative card collection.
+### Inputs and operator dialogs
 
-Algorithmic calibration images come from `FixtureCamera.CreateFixture`: colored fields and simple geometry for testing framing, composition, and capture order. They are neither personal photographs nor AI-generated image assets. The local rehearsal can also use operator-selected photos. Online activation changes the session’s sharing and transformation path; local-only behavior must not be implied when cloud mode is enabled. UI screenshots are validation evidence, not product photography. No image-generation artwork is shipped by this interface.
+Native TextBoxes have a minimum height of 50 and body-size text. Light Fluent owns field surfaces, borders, pointer, selection and focus rendering. Permanent labels accompany masked connection and settings-code fields. The new optional settings code is exactly four characters without whitespace/control characters; an existing six-to-twelve-digit credential remains readable for compatibility. Five unsuccessful attempts lock authorization for 30 seconds. The unlock error remains visible with both actions available.
 
-### Inputs / Fields
+Settings use native CheckBox and ComboBox controls, a scrolling owned dialog, and a native file picker for local photos. Technical settings can identify OpenAI, cost and the camera connection honestly. The manual-focus checkbox is an operator assertion after physically checking focus; it is not evidence that WPD autofocus succeeded.
 
-Canon setup uses native checkboxes: “Utiliser le Canon USB (Windows)” and “Connexion avancée : SDK Canon officiel installé”. The default route uses the existing Windows driver; the visible helper says “Par défaut, connexion par le pilote Windows existant, sans SDK à installer. Compatibilité à vérifier sur le boîtier.” The advanced checkbox selects the installed official SDK route. This documents the settings and their explicit compatibility limit, not successful camera operation.
+### Navigation and protected access
 
-Code fields are native TextBoxes with a minimum height of 50 and body-size text. Permanent labels identify “Code de connexion de la borne · pas la clé OpenAI” and “Code de sortie du plein écran · 6 à 12 chiffres”; the unlock dialog uses “Code de sortie”. Redundant placeholders have been removed. All three fields mask their content; only exit PIN fields have the 12-character cap. Surface, border, selection, pointer, and focus rendering remain dark Fluent defaults. The visible unlock error reads “Code incorrect ou verrouillage de 30 secondes.” and uses ordinary text, with both dialog actions remaining available.
+A plain-text brand and Réglages action form the desktop header. Central content changes among home, universes, capture, processing, result and recovery; there is no tab bar or browser/mobile navigation. Réglages is visible in windowed mode. Entering fullscreen keeps settings open, then hides the header action. After dismissal, a genuine three-second lower-left hold reopens settings, requesting the optional code when configured. See the surface brief for the 64-unit gesture region and cancellation behavior. This is application access control, not an operating-system kiosk boundary.
 
-### Navigation
+### Countdown and received-photo cue
 
-The persistent brand and “Réglages” button sit in the header. Home, capture, result, and error states replace the central content. There is no tab bar, browser navigation, or mobile navigation variant. Settings and unlock use owned desktop dialogs: settings is 690 × 680 with scrolling content; unlock is 480 × 430, leaving room for its permanent label, visible error, and both actions. The image picker uses the native storage-provider picker.
+Default countdown is three seconds. A fresh preview and successful preparation precede each countdown, the framing remains visible, and transfer completes before the next pose. The preview stream is released before the actual shutter request, so continuous video during exposure is not promised. Four-photo sessions allow 1500 ms for the next pose after a received capture.
 
-### Countdown and capture cue
+A changed badge value pulses with scale `1 + 0.12 × exp(-elapsedMilliseconds / 110)`, sampled every 30 ms and stopped after 550 ms. The capture message uses the same changed-text pulse. A received photo triggers a non-interactive white veil at opacity 0.18 for 170 ms; a received-count guard prevents repeats. The saved reduced-motion setting disables the pulse and veil.
 
-The central badge carries a five-second countdown by default. A new number starts a small scale pulse: `1 + 0.12 × exp(-elapsedMilliseconds / 110)`, sampled every 30 ms and stopped after 550 ms. The same pulse is triggered when the badge text changes to “Clic !”. No explicit reduced-motion branch is implemented.
+**The Live Frame Rule.** Keep the framing image visible through the countdown. Show a capture cue only after a captured photo has been received, never as proof that an unconfirmed shutter succeeded.
 
-The framing image stays visible during positioning and countdown. Entering Capturing raises a white veil to opacity 0.22 for 170 ms; a state-transition guard prevents another flash while the same capture state continues. The badge is above the veil and the veil is not hit-testable. Between captures, the rehearsal sequence allows 1500 ms for the next pose. The actual camera stream is stopped before shutter capture, so this does not promise live video during the exposure itself.
+### Processing and recovery
 
-**The Live Frame Rule.** Keep the framing image visible beneath the countdown. A capture produces one restrained veil, guarded against repeated updates in the same Capturing state.
+Processing centers the session's chosen emblem above a real state label, rotating universe phrases and controller status. The seven bundled choices each have three phrases; remote metadata may contain one to twenty. Phrases rotate every five seconds. The emblem floats vertically by `sin(elapsedSeconds × 2π / 2.5) × 5`, sampled every 80 ms. Reduced motion fixes displacement to zero and changes the timer to 1000 ms; the phrases still rotate. The processing timer stops when leaving that screen, on deactivation or at window close, and resumes on activation while processing.
 
-### Session and recovery states
+**The Honest Wait Rule.** Rotating phrases and floating artwork communicate waiting, not measured completion. Show controller status separately; never invent a percentage, completion estimate or automatic retry.
 
-Positioning exposes “On est prêts !”, initially disabled until the first live-view frame has been displayed. The existing disabled opacity applies while waiting. Countdown and capture replace that action with progress and the badge. Processing changes the instruction to preparation copy. Ready displays the saved composed sheet, with wording based on actual print/cloud settings and effective photo mode. Cancelled returns to home once capture work has stopped. Failed preserves saved photos and, when all original captures exist after a Surprise failure, offers “Garder les originaux”. A generic action error uses an owned dialog.
-
-The guest choice reads “Surprise”. No simulation or rehearsal banner appears in the interface. “Imprimer” is the action label in both configurations: with physical printing disabled it writes the print-preview file and confirms “Votre planche est enregistrée.”; with physical printing enabled it reports the submitted spool job. Neither message claims that paper has physically emerged. Hardware and cloud settings remain operator choices.
-
-Cloud activation and deactivation are explicit operator actions. Activation checks the connection and distinguishes OpenAI readiness from sharing-only readiness. Deactivation reports exactly “Connexion en ligne désactivée. Aucun appel OpenAI payant.”; it does not announce that the camera or physical printer were disabled.
-
-### Conditional QR sharing
-
-The result displays “Partage en ligne désactivé dans les réglages.” while cloud mode is off. When enabled, publication shows preparation/upload status and a retry action. The QR becomes visible only after successful publication for the still-current session; errors remain in the status text. It is generated at exactly 3 PNG pixels per module and displayed at `ModuleMatrix.Count × 3` logical units per side, avoiding arbitrary rescaling in the source layout. The text supplies the expiry date and identifies ZIP download when no gallery URL is configured.
-
-No connected QR is present in the reviewed local captures, so its appearance and scan flow are implementation facts pending visual/device validation. The web gallery is prepared but undeployed; it is not an established, visually validated extension of this native design system.
+The result uses the actual composed sheet with uniform scaling, print/share feedback and a new-session action. A submitted print job is reported as submitted, not physically completed. Recovery preserves captured originals when available and offers an explicit original-photo fallback; ambiguous shutters, paid generation and print submission are not automatically retried.
 
 ## Do's and Don'ts
 
 ### Do:
 
-- **Do** preserve native controls, owned dialogs, scrolling, file-picker, and keyboard interaction semantics, with permanent labels for code fields.
-- **Do** use the exact composed image for the result preview and keep photographic content proportionate with uniform scaling.
-- **Do** keep hardware and cloud configuration explicit in operator settings; keep simulation labels out of the guest interface as requested.
-- **Do** preserve the brief, single capture cue and the readable badge over the framing image.
-- **Do** check actual desktop sizes and containing-panel bounds when changing copy, spacing, or controls, including both sides of the home compact thresholds and 960 × 700.
+- **Do** preserve the approved Colors Party wordmark and matte gouache emblems with their transparency and provenance.
+- **Do** use cream paper, burgundy actions and sage selection with the established contrast fallback.
+- **Do** keep guest labels concise French, without AI jargon, simulation labels or dash punctuation; technical operator settings may name OpenAI.
+- **Do** retain native controls, permanent field labels, visible focus and scrolling where content requires it.
+- **Do** honor the saved reduced-motion setting and show the real photo sheet before printing.
+- **Do** check actual client and containing-panel bounds at each supported desktop size.
 
 ### Don't:
 
-- **Don't** replace the result preview with an unrelated decorative image.
-- **Don't** turn the capture cue into a repeating strobe or an opaque frame that hides the photograph.
-- **Don't** describe calibration geometry or rehearsal filters as personal photos or generated AI artwork.
-- **Don't** treat the HTML documentation specimens as a web product or as exact reproductions of platform-owned Fluent control states.
-- **Don't** infer a validated connected QR or web-gallery journey, an approved permanent workflow, a phone layout, compact rules beyond the documented home condition, or a reduced-motion variant from this delivery.
+- **Don't** restore the discarded aubergine and lemon identity or present EstellArt as the product name.
+- **Don't** substitute emoji, glyph icons, glossy 3D art or procedural drawings for the approved emblems.
+- **Don't** infer progress, successful capture, completed printing or connected sharing from a decorative animation.
+- **Don't** turn fixture screenshots, passing mocked tests or old Windows captures into current hardware validation.
+- **Don't** infer a permanent code-led workflow preference from this delivery's explicit execution choice.

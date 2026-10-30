@@ -4,7 +4,7 @@
 
 ## Livraison 0.3.0 en cours
 
-Branche `feat/colors-party`, basée sur main `cf93936256c20a21510e487341469bb5d8aefe0e` (PR11, v0.2.2). La PR et les reçus finaux seront liés dans [PROGRESS](PROGRESS.md) et [les preuves](evidence/colors-party/README.md).
+Branche `feat/colors-party`, basée sur main `cf93936256c20a21510e487341469bb5d8aefe0e` (PR11, v0.2.2). [PR12](https://github.com/djnivek/PhotoBooth/pull/12) ouverte, validation complète Mac réussie, backend déployé, revue visuelle terminée. Vérification Windows en cours. Les reçus finaux seront liés dans [PROGRESS](PROGRESS.md) et [les preuves](evidence/colors-party/README.md).
 
 - Nouvelle identité explicitement demandée et illustrations approuvées par Kevin.
 - Au naturel ou Métamorphose, une ou quatre poses. Six univers et La Surprise du Chef.
