@@ -11,7 +11,8 @@ Environment.SetEnvironmentVariable("PHOTOBOOTH_DATA_DIR", root);
 AppBuilder.Configure<App>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).SetupWithoutStarting();
 var screenshots = Path.Combine(Environment.CurrentDirectory, ".impeccable", "review");
 Directory.CreateDirectory(screenshots);
-var window = new MainWindow((_, token) => Task.Delay(90, token)); window.Show();
+var openedFolders = new List<string>();
+var window = new MainWindow((_, token) => Task.Delay(90, token), openedFolders.Add); window.Show();
 Pump(150);
 Capture("desktop-1280x800.png");
 window.Width = 1024; window.Height = 768; Pump(80); Capture("desktop-1024x768.png");
@@ -40,7 +41,9 @@ settings.GetVisualDescendants().OfType<TextBox>().Single(t => t.Name == "ExitPin
 settings.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "Activer le plein écran"))
     .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 Until(() => window.WindowState == WindowState.FullScreen, 2000);
-window.Close(); Until(() => window.OwnedWindows.Count > 0, 2000);
+Click("OpenFiles"); Pump(100);
+if(openedFolders.Count!=0)throw new Exception("Locked kiosk opened the filesystem without the PIN.");
+Until(() => window.OwnedWindows.Count > 0, 2000);
 var unlock = window.OwnedWindows.Single(); Pump(50);
 using (var unlockFrame = unlock.CaptureRenderedFrame()!) unlockFrame.Save(Path.Combine(screenshots, "unlock.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
 unlock.GetVisualDescendants().OfType<TextBox>().Single(t => t.PasswordChar == '●').Text = "000000";
@@ -48,13 +51,26 @@ unlock.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "D�
     .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 Until(()=>unlock.GetVisualDescendants().OfType<TextBlock>().Any(t=>t.Text?.StartsWith("Code incorrect")==true),2000);
 using (var unlockFrame = unlock.CaptureRenderedFrame()!) unlockFrame.Save(Path.Combine(screenshots, "unlock-error.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+if(openedFolders.Count!=0||window.WindowState!=WindowState.FullScreen)throw new Exception("Wrong PIN opened the filesystem.");
+unlock.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,"Retour à la fête"))
+    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+Until(()=>window.OwnedWindows.Count==0,2000);
+if(openedFolders.Count!=0||window.WindowState!=WindowState.FullScreen)throw new Exception("Cancelled PIN opened the filesystem.");
+window.Close();Until(()=>window.OwnedWindows.Count>0,2000);
+window.OwnedWindows.Single().GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,"Retour à la fête"))
+    .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+Until(()=>window.OwnedWindows.Count==0,2000);
+Click("OpenFiles");Until(()=>window.OwnedWindows.Count>0,2000);
+unlock=window.OwnedWindows.Single();
 unlock.GetVisualDescendants().OfType<TextBox>().Single(t => t.PasswordChar == '●').Text = "381629";
 unlock.GetVisualDescendants().OfType<Button>().Single(b => Equals(b.Content, "Déverrouiller"))
     .RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 Until(() => window.WindowState == WindowState.Normal, 3000);
+Until(()=>openedFolders.Count==1,2000);
+if(openedFolders[0]!=Path.GetDirectoryName(file))throw new Exception("Unlocked folder does not match the reviewed session.");
 if (File.ReadAllText(Path.Combine(root, "kiosk.json")).Contains("381629")) throw new Exception("Plain PIN stored");
 window.Close(); Pump(100);
-Console.WriteLine("PASS UI: home at three sizes with bounds checks, start, live fixture, countdown, four captures, result, print export, PIN fullscreen and protected close. No paid API or printer.");
+Console.WriteLine("PASS UI: home at three sizes, capture flow, print export, PIN fullscreen, protected close and file access (wrong/cancelled/correct PIN). No paid API or printer.");
 Directory.Delete(root, true);
 
 Button? Find(string name) => window.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == name);

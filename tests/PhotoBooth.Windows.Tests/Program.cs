@@ -2,6 +2,7 @@ using PhotoBooth.Core;
 using PhotoBooth.Imaging;
 using PhotoBooth.Runtime;
 using PhotoBooth.Windows;
+using System.Text.Json;
 
 var passed = 0;
 void Check(bool condition, string label) { if (!condition) throw new Exception(label); passed++; }
@@ -40,6 +41,24 @@ try
         var journal = await File.ReadAllTextAsync(Path.Combine(root, controller.Session.Id.ToString("N"), "print.json"));
         Check(journal.Contains(fail ? "needs_operator" : "submitted"), "Durable result journal");
     }
+    foreach (var fail in new[] { false, true })
+    {
+        var store=new SessionStore(root);
+        await using var controller=new BoothController(store,()=>new FixtureCamera(store),new RehearsalTransform(),(_,_)=>Task.CompletedTask);
+        await controller.BeginAsync(new(1,PhotoMode.Original));await controller.TakeAsync();
+        var printedSession=controller.Session!;var printedSheet=controller.Sheet!;
+        var printer=new PausedPrinter(fail);var printing=controller.PrintAsync(printer);
+        await printer.Entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await controller.BeginAsync(new(1,PhotoMode.Original));
+        var next=controller.Session!;
+        printer.Resume.SetResult();
+        try {await printing;}catch(IOException) when(fail) { }
+        Check(printedSession.PrintStage==(fail?PrintStage.NeedsOperator:PrintStage.Submitted),"Print completion stays attached to the original session");
+        Check(next.PrintStage==PrintStage.NotRequested,"Next guest never inherits another guest's print state");
+        var journal=JsonSerializer.Deserialize<PrintJournal>(await File.ReadAllTextAsync(Path.Combine(root,printedSession.Id.ToString("N"),"print.json")))!;
+        Check(journal.SheetKey==printedSheet.Key&&journal.Sha256==printedSheet.Sha256,"In-flight print journal retains the reviewed sheet after session switch");
+        Check(!File.Exists(Path.Combine(root,next.Id.ToString("N"),"print.json")),"No print journal is written for the next guest");
+    }
 }
 finally { Directory.Delete(root, true); }
 Console.WriteLine($"PASS {passed} print preparation checks; native spooler and Canon remain hardware gates.");
@@ -55,5 +74,17 @@ sealed class FakePrinter(SessionStore store, bool fail) : IPhotoPrinter
         if (!journal.Contains("requested")) throw new Exception("No durable intent before external side effect");
         if (fail) throw new IOException("Ambiguous spool timeout");
         return Task.FromResult(new PrintSubmission("test-job-42"));
+    }
+}
+
+sealed class PausedPrinter(bool fail):IPhotoPrinter
+{
+    public TaskCompletionSource Entered {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public TaskCompletionSource Resume {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public async Task<PrintSubmission> SubmitAsync(PrintRequest request,CancellationToken token)
+    {
+        Entered.SetResult();await Resume.Task;
+        if(fail)throw new IOException("Uncertain physical spool result");
+        return new("paused-job");
     }
 }

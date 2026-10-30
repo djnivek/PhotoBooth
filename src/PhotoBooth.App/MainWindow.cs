@@ -52,10 +52,12 @@ public sealed class MainWindow : Window
     private readonly DispatcherTimer pulse = new() { Interval = TimeSpan.FromMilliseconds(30) };
     private DateTimeOffset pulseStarted;
     private readonly Func<TimeSpan, CancellationToken, Task>? rehearsalDelay;
+    private readonly Action<string> openFolder;
 
-    public MainWindow(Func<TimeSpan, CancellationToken, Task>? rehearsalDelay = null)
+    public MainWindow(Func<TimeSpan, CancellationToken, Task>? rehearsalDelay = null, Action<string>? openFolder = null)
     {
         this.rehearsalDelay = rehearsalDelay;
+        this.openFolder = openFolder ?? OpenFolder;
         Title = "Estell’Art — l’anniversaire d’Estelle";
         Width = 1280; Height = 800; MinWidth = 960; MinHeight = 700;
         if (Screens.Primary is { } display)
@@ -138,7 +140,7 @@ public sealed class MainWindow : Window
             if (screen != "capture" || liveImage is null || controller.Session?.WantsLiveView != true) return;
             ReplaceImage(liveImage, bytes);
             liveViewReady=true;
-            if(capture is not null&&controller.Session?.Stage==SessionStage.Positioning&&!controller.IsTaking)capture.IsEnabled=true;
+            if(capture is not null&&controller.Session?.Stage==SessionStage.Positioning&&!controller.IsBusy)capture.IsEnabled=true;
         });
         return result;
     }
@@ -197,7 +199,7 @@ public sealed class MainWindow : Window
         stage.Children.Add(countdownBadge);
         Grid.SetRow(stage, 1); layout.Children.Add(stage);
         var actions = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto") };
-        var back = Button("Annuler", async () => { await controller.CancelAsync(); if (!controller.IsTaking) RenderHome(); }); actions.Children.Add(back);
+        var back = Button("Annuler", async () => { await controller.CancelAsync(); if (!controller.IsBusy) RenderHome(); }); actions.Children.Add(back);
         status.HorizontalAlignment = HorizontalAlignment.Center; status.VerticalAlignment = VerticalAlignment.Center;
         status.Margin = new Thickness(18, 0); Grid.SetColumn(status, 1); actions.Children.Add(status);
         capture = Button("On est prêts !", () => controller.TakeAsync(), primary: true); capture.Name = "TakePhotos";
@@ -210,7 +212,12 @@ public sealed class MainWindow : Window
     {
         var session = controller.Session; if (session is null) return;
         if (session.Stage == SessionStage.Ready) { if (screen != "result") RenderResult(); return; }
-        if (session.Stage == SessionStage.Cancelled) { if (!controller.IsTaking) RenderHome(); return; }
+        if (session.Stage == SessionStage.Cancelled)
+        {
+            if (!controller.IsBusy) RenderHome();
+            else { status.Text = "Annulation en cours…"; if (capture is not null) capture.IsVisible = false; }
+            return;
+        }
         if (session.Stage == SessionStage.Failed) { RenderError(controller.Message); return; }
         if (screen != "capture") RenderCapture();
         status.Text = controller.Message;
@@ -220,7 +227,7 @@ public sealed class MainWindow : Window
         showingCapture = isCapture;
         if (pose is not null) pose.Text = session.Stage == SessionStage.Processing ? "On prépare vos souvenirs…" :
             $"Pose {Math.Min(session.Captures.Count + 1, session.Options.PhotoCount)} sur {session.Options.PhotoCount}";
-        if (capture is not null) { capture.IsVisible = session.Stage == SessionStage.Positioning && !controller.IsTaking; capture.IsEnabled=liveViewReady; }
+        if (capture is not null) { capture.IsVisible = session.Stage == SessionStage.Positioning && !controller.IsBusy; capture.IsEnabled=liveViewReady; }
         if (countdown is not null)
         {
             var next = session.Stage == SessionStage.Countdown ? session.SecondsRemaining.ToString() : session.Stage == SessionStage.Capturing ? "Clic !" : "";
@@ -253,12 +260,19 @@ public sealed class MainWindow : Window
                 printState.Text = $"Envoyé à l’imprimante (travail {submission.SpoolJobId}). Récupérez votre feuille après sa sortie.";
                 return;
             }
+            var sessionId = controller.Session.Id;
             var bytes = await controller.GetPrintBytesAsync();
-            var target = Path.Combine(store.Root, controller.Session.Id.ToString("N"), "print-preview.jpg");
+            var target = Path.Combine(store.Root, sessionId.ToString("N"), "print-preview.jpg");
             await SessionStore.WriteAtomicAsync(target, bytes);
             printState.Text = "Planche vérifiée et enregistrée. Aucune feuille envoyée : mode répétition.";
         }, primary: true); print.Name = "PrintPreview"; actions.Children.Add(print); actions.Children.Add(printState);
-        actions.Children.Add(Button("Voir les fichiers", () => { OpenFolder(Path.GetDirectoryName(store.Resolve(controller.Sheet.Key))!); return Task.CompletedTask; }));
+        var folder = Path.GetDirectoryName(store.Resolve(controller.Sheet.Key))!;
+        var files = Button("Voir les fichiers", async () =>
+        {
+            if (kioskLocked) await ShowUnlockAsync();
+            if (!kioskLocked) openFolder(folder);
+        });
+        files.Name = "OpenFiles"; actions.Children.Add(files);
         var shareStatus = Text(cloud is null ? "Partage en ligne désactivé dans les réglages." : "Préparation de votre lien…", 17);
         var qr = new Image { Width = 230, Height = 230, IsVisible = false, HorizontalAlignment = HorizontalAlignment.Left };
         var retry = Button("Réessayer le partage", () => ShareAsync(qr, shareStatus)); retry.IsVisible = cloud is not null;
@@ -285,7 +299,7 @@ public sealed class MainWindow : Window
     private async Task ShowSettingsAsync()
     {
         if (kioskLocked) { await ShowUnlockAsync(); return; }
-        if (controller.IsTaking) return;
+        if (controller.IsBusy) return;
         var settings = Dialog("Réglages de la borne", 690, 680);
         var pin = new TextBox { PasswordChar = '●', MaxLength = 12 };
         var info = Text(boothSettings.CloudEnabled ? "Connexion en ligne active. Le mode Surprise lance des appels OpenAI payants." :

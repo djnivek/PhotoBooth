@@ -15,6 +15,9 @@ Mise à jour : 30 octobre 2026. Anniversaire demain. Lire [PROGRESS](PROGRESS.md
 - Canon sans SDK propriétaire intégré via FC.SDK3.2.1021/WPD, 25 tests de séquence fictive passés.
 - [Paquet Windows 0.2.0 publié](https://github.com/djnivek/PhotoBooth/releases/tag/v0.2.0) : ZIP extrait et EXE réellement exécuté sur Windows Server 2022, quatre parcours simulés réussis.
 - Accueil Windows vérifié à 992×700 puis 960×700 après redimensionnement ; débordements corrigés. Captures versionnées et ajoutées aux PR 3/5/6/7.
+- Correctifs 0.2.1 en préparation : accès aux fichiers protégé par le code, journal d’impression
+  lié à la bonne séance et fermeture d’une connexion caméra annulée avant la séance suivante.
+  Trois régressions reproduites puis corrigées ; paquet Windows et revue Claude en cours.
 
 ## Secrets et machines
 
@@ -76,13 +79,13 @@ Après une soumission incertaine, regarder le spooler : pas de renvoi automatiqu
 ## Limites et décisions à reprendre
 
 - 600 photos avec originaux + IA + ZIP : Free 1 Go probablement insuffisant ; scénario détaillé
-  dans COUTS. Pro recommandé à partir de 25 USD/mois, sans activation tant que Kevin ne décide pas.
+  dans COUTS. Kevin demande de conserver le forfait actuel et de réévaluer demain après les essais réussis.
 - Les originaux du photomaton sont non retouchés mais normalisés en JPEG 2560px, pas RAW capteur.
 - Expiration 7 jours des liens, pas suppression des objets. Décider du nettoyage après la fête.
 - Pas de réouverture d’ancienne séance par UI, malgré les fichiers/journaux conservés.
 - Windows 10 Pro 22H2 à tester ; succès CI Windows Server 2022 distinct.
-- Revue Claude demandée : contrôle automatique a refusé la transmission du brief privé. Question
-  explicite d’autorisation déjà envoyée, encore sans réponse. Aucun brief transmis.
+- Revue Claude autorisée explicitement le 30 octobre au soir : Opus 5.5, effort max, code et
+  preuves transmis sans secrets, photos personnelles ni identifiants d’infrastructure. Analyse en cours.
 - Nom de travail Estell’Art, choisi pour avancer ; pas d’approbation de nom inventée.
 
 PRs autorisées à être ouvertes puis mergées après validation. Commits/PR en anglais, sans co-auteur

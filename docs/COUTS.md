@@ -12,6 +12,8 @@ de 25 USD/mois. [Tarifs Supabase](https://supabase.com/pricing).
 
 Free convient à la répétition, mais ne doit pas être considéré comme suffisant pour 600 photos.
 Kevin demande maintenant la conservation cloud des originaux **et** des versions IA.
+Décision du 30 octobre au soir : conserver le forfait actuel pour les essais. Réévaluer
+le stockage demain uniquement après validation du fonctionnement ; aucun upgrade aujourd’hui.
 Dans l’implémentation actuelle, les fichiers individuels, la planche et le ZIP coexistent ;
 le résultat fournisseur intermédiaire est également conservé. Le ZIP n’est pas compressé
 une seconde fois : les JPEG sont déjà compressés, et ses octets restent stables en reprise.
