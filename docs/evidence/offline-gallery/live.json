@@ -1,8 +1,8 @@
 {
   "utc": "2026-10-30T22:15:12.989618+00:00",
   "gallery": "https://colors-party-estelle.vercel.app",
-  "deployment_id": "dpl_4TiEd1UiqzkSvBkPMaGmsSaL8TS6",
-  "source_commit": "d1b0e778be5f6a2e14fad03c0d068a720900af72",
+  "deployment_id": "dpl_EsSGcPdtdb6vH1wvKfshJY1eZdYn",
+  "source_commit": "aff64cf4c9fc48231dc47689626cab05d31fe119",
   "checks": [
     "deployed bytes match: index.html",
     "deployed bytes match: gallery.js",
@@ -19,5 +19,6 @@
   "success": true,
   "browser_scope": "separate Chromium CI uses mocked API/images",
   "download_sha256": "88aba01bd46f47022b3a00b1b05e6a3290e80dee1cdf7d7b4a43da4752d68ac6",
-  "cors_origin": "https://colors-party-estelle.vercel.app"
+  "cors_origin": "https://colors-party-estelle.vercel.app",
+  "updated_script_verified_utc": "2026-10-30T22:23:21.264471+00:00"
 }

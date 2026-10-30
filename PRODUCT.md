@@ -4,15 +4,15 @@
 
 ## Platform
 
-Native Windows desktop, rehearsed on macOS with Avalonia. No iOS or Android surface.
+Native Windows desktop, rehearsed on macOS with Avalonia, plus a guest gallery for phone and desktop browsers. No native iOS or Android application.
 
 ## Stack
 
-C# and .NET 10, Avalonia 12.1.4, local Skia imaging, Windows WPD/EDSDK camera adapters and GDI printing. Supabase Edge Function stores photos and calls OpenAI. Self-contained Windows x64 executable delivered through the private repository.
+C# and .NET 10, Avalonia 12.1.4, local Skia imaging, Windows WPD/EDSDK camera adapters and GDI printing. Supabase Edge Function stores photos and calls OpenAI. The guest gallery is static HTML, CSS and JavaScript with a read-only photo resolver. Self-contained Windows x64 executable delivered through the private repository.
 
 ## Users and purpose
 
-Estelle and guests at her birthday on 31 October 2026. Kevin operates the booth. Select one or four photos, Au naturel or Métamorphose, pose in live view, then 3, 2, 1 before each capture. Review the exact 4×6 sheet, optionally print, download using the QR.
+Estelle and guests at her birthday on 31 October 2026. Kevin operates the booth. Select one or four photos, Au naturel or Métamorphose, pose in live view, then 3, 2, 1 before each capture. Review the exact 4×6 sheet, optionally print, and open the guest gallery using the QR after successful online sharing. The gallery offers each original beside its transformation, individual downloads, the printable sheet and a complete archive. Au naturel and original-fallback sessions show each photograph once.
 
 ## Operating context
 
@@ -26,6 +26,12 @@ Kevin explicitly names the application Colors Party by Estelle and approves the 
 
 Large touch controls. Live image stays visible through countdown. A new camera preview and successful preparation precede each countdown. Transfer must complete before the next pose. Never retry an ambiguous shutter, paid generation or print submission automatically. Printed bytes match the verified preview sheet.
 
+## Offline and sharing
+
+Au naturel capture, local saving, sheet composition and printing do not require a network connection. A sharing network failure or timeout leaves the result and print action available, explains that sharing is waiting for a connection, and offers an explicit retry on that result screen. The QR appears after successful publication; no background queue or automatic retry is promised. If a transformation fails after all captures are saved, the guest can explicitly keep the originals and compose their sheet locally.
+
+The browser gallery needs a connection to resolve or refresh its links and load photos. It is not an offline gallery. It displays the returned expiry date and lets guests refresh download links manually. Invalid, missing or expired results show an explanation without visible photographs or download actions. The session link grants access to its photos and can be shared at the guest's discretion; no booth credential or provider key belongs in the browser.
+
 ## Dynamic universes
 
 Six built-in choices are immediately available. Fetch public metadata once in the background on startup, keep it only in memory, and refresh explicitly in settings. Opening the picker makes no request. Do not replace choices under a guest. Backend additions, removals, order and scene prompts can change without rebuilding the app. Unknown artwork uses a stable local fallback. Freeze scene prompt and chosen universe for an existing session.
@@ -36,4 +42,4 @@ Settings button visible in windowed mode. Optional four-character code. Entering
 
 ## Evidence and limits
 
-Native headless UI and mocked camera/cloud/printing tests exist. Windows package execution is checked by CI separately. No current hardware validation on EOS 4000D or DS620, and no paid OpenAI render in the automated suite. WPD autofocus completion is not proven on this camera; explicit verified manual focus is the available fallback. The official SDK is not provided. A scene prompt cannot guarantee identical generated facial pixels. Supabase plan changes remain deferred until physical rehearsal succeeds.
+Native headless UI and mocked camera/cloud/printing tests exist. Windows package execution is checked by CI separately. Desktop and phone browser gallery captures use synthetic API responses and images; native offline result captures use one- and four-photo fixtures. These do not establish production sharing or physical-device behavior. No current hardware validation on EOS 4000D or DS620, and no paid OpenAI render in the automated suite. WPD autofocus completion is not proven on this camera; explicit verified manual focus is the available fallback. The official SDK is not provided. A scene prompt cannot guarantee identical generated facial pixels. Supabase plan changes remain deferred until physical rehearsal succeeds.
