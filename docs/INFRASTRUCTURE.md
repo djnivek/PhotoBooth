@@ -10,7 +10,7 @@
 | Storage | Bucket booth-private privé, uploads et téléchargements signés vérifiés |
 | Edge Function | photobooth-api déployée, API métier active et authentifiée |
 | OpenAI | Aucun appel payé ; clé absente à la dernière vérification à 17:03 UTC |
-| Galerie web | Projet Vercel colors-party-estelle créé ; déploiement et test public en cours |
+| Galerie web | Vercel colors-party-estelle déployé ; HTTP200 sans compte, code et fichiers signés vérifiés |
 | QR | API 0.3.1 : galerie dans gallery_url, ZIP dans download_url |
 
 Le CLI Supabase fonctionne sur cette organisation ; le MCP de cette session est limité aux
