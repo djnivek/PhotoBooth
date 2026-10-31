@@ -41,7 +41,7 @@ public sealed partial class MainWindow
 
     private Image Art(string name, double width, double height)
     {
-        string[] known = ["wordmark", "colors_party", "halloween", "space", "fantasy", "elves", "disco", "chef", "animals", "showcase", "feast"];
+        var known = StyleCatalog.BuiltIn.Styles.Select(style => style.Asset).Append("wordmark").Append("chef");
         if (!known.Contains(name))
         {
             string[] defaults = ["colors_party", "disco", "chef"];

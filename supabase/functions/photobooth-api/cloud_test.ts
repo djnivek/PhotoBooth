@@ -457,6 +457,7 @@ Deno.test("public catalog is immediate, safe metadata without prompts or provide
   const data = await response.json();
   assert(data.styles.length === catalog.styles.length && data.version === catalog.version);
   assert(!JSON.stringify(data).includes('"prompt"'));
+  assert(!JSON.stringify(data).includes('"variations"'));
   assert(data.styles.every((s: { label: string; description: string; phrases: string[] }) =>
     !/[\u2013\u2014-]/.test([s.label, s.description, ...s.phrases].join(" "))));
   assert(fake.providerCreates === 0 && fake.sessions.length === 0);
@@ -473,6 +474,11 @@ Deno.test("server catalog obeys dynamic bounds, unique concrete IDs and nonempty
     assert(style.description.length <= 140 && guestCopy(style.description));
     assert(style.asset.length <= 80 && /^#[0-9a-f]{6}$/i.test(style.color));
     assert(["estelle", "essentials", "other"].includes(style.category));
+    const variants = (style as {variations?: string[]}).variations;
+    if (variants !== undefined) {
+      assert(variants.length === 4 && new Set(variants).size === 4);
+      assert(variants.every(v => v.trim().length > 0 && v.length < 1500));
+    }
     assert(style.phrases.length >= 1 && style.phrases.length <= 20);
     assert(style.phrases.every(p => p.trim().length > 0 && p.length <= 120 && guestCopy(p)));
   }
@@ -684,6 +690,40 @@ Deno.test("same-theme poses freeze different creative directions while preservin
   const plan = freezePlan(["halloween"], 4);
   assert(plan.every(shot => shot.id === "halloween") && new Set(plan.map(shot => shot.prompt)).size === 4);
   assert(plan.every(shot => shot.prompt.includes("corpulence") && shot.prompt.includes("aides à la mobilité") && shot.prompt.includes("Halloween")));
+});
+
+Deno.test("Estelle tables and essential order follow the seating-plan theme names only", () => {
+  const tables = catalog.styles.filter(s => s.category === "estelle");
+  assert(tables.map(s => s.label).join("|") === "Le Saphir|La Lavande|Le Cachemire|L’Olivier|Le Citron|Le Velour|Le Sunset|Les Marmots");
+  assert(catalog.styles.filter(s => s.category === "essentials").map(s => s.id).join("|") === "colors_party|halloween|showcase");
+  assert(catalog.styles.filter(s => s.category === "other").length === 6);
+});
+
+Deno.test("every theme freezes four distinct situations without weakening identity or provider settings", () => {
+  for (const theme of catalog.styles) {
+    const plan = freezePlan([theme.id], 4);
+    assert(plan.length === 4 && new Set(plan.map(s => s.variation)).size === 4);
+    assert(plan.every(s => s.id === theme.id && s.prompt.includes(theme.prompt) && s.prompt.includes("mêmes visages") && s.prompt.includes("corpulence")));
+    assert(plan.every(s => theme.variations.includes(s.variation)));
+    assert(plan.every(s => !s.prompt.includes("expression, pose et emplacement relatif") && !s.prompt.includes("mêmes distances relatives")));
+  }
+  const aerial = freezePlan(["colors_party"], 4);
+  assert(aerial.every(s => /plongée|dessus|drone/.test(s.variation) && s.prompt.includes("drone bas")));
+  const glass = freezePlan(["showcase"], 4);
+  assert(glass.every(s => /paume|mains/.test(s.variation) && s.prompt.includes("sans reflet")));
+  const children = freezePlan(["marmots"], 1)[0];
+  assert(children.prompt.includes("l’âge des adultes et des enfants") && children.prompt.includes("Aucune personne ne devient bébé"));
+});
+
+Deno.test("remote themes without dedicated scene directions retain the generic four-pose fallback", () => {
+  const theme = catalog.styles.find(s => s.id === "feast")!;
+  const original = theme.variations;
+  try {
+    delete (theme as {variations?: string[]}).variations;
+    const plan = freezePlan([theme.id], 4);
+    assert(new Set(plan.map(s => s.variation)).size === 4);
+    assert(plan.every(s => s.id === theme.id && s.prompt.includes(theme.prompt) && s.prompt.includes("mêmes visages")));
+  } finally { theme.variations = original; }
 });
 
 Deno.test("damaged frozen plans fail before claiming quota or contacting the provider", async () => {

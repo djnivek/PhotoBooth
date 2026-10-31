@@ -68,7 +68,10 @@ export const styles: Record<string, string> = {
 };
 export { identityPrompt } from "./style-plans.ts";
 export function publicCatalog() {
-  return { version: catalog.version, styles: catalog.styles.map(({ prompt: _prompt, ...style }) => style) };
+  return { version: catalog.version, styles: catalog.styles.map(s => ({
+    id: s.id, category: s.category, label: s.label, description: s.description,
+    asset: s.asset, color: s.color, phrases: s.phrases,
+  })) };
 }
 export function imageRequest(config: Config, imageUrl: string, style: string, savedPrompt?: string, frozenPrompt?: string) {
   if (!frozenPrompt && !savedPrompt && !(style in styles)) throw new ApiError(400, "invalid_style");

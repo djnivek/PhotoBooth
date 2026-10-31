@@ -4,7 +4,7 @@ const token=location.hash.slice(1);
 window.addEventListener('hashchange',()=>location.reload());
 const $=id=>document.getElementById(id);
 const phrases=['Quelqu’un vient de prendre la pose. Prêts à découvrir ?','De nouveaux souvenirs arrivent dans la salle.','La prochaine révélation, c’est maintenant.','La fête nous réserve de beaux portraits.'];
-const labels={colors_party:'Colors Party',halloween:'Halloween',space:'Dans les étoiles',fantasy:'Pays imaginaire',elves:'Petits lutins',disco:'Disco velours'};
+const labels={sapphire:'Le Saphir',lavender:'La Lavande',cashmere:'Le Cachemire',olive:'L’Olivier',lemon:'Le Citron',velvet:'Le Velour',sunset:'Le Sunset',marmots:'Les Marmots',colors_party:'Colors Party',halloween:'Halloween',showcase:'Sous cloche',space:'Dans les étoiles',fantasy:'Pays imaginaire',elves:'Petits lutins',disco:'Disco velours',animals:'Drôles de bêtes',feast:'À croquer',mix:'Plusieurs univers'};
 let queue,storageKey,lastView='',announced='',phrase=-1,revision='',enabled=false,busy=false,permanentError=false;
 const cache=new Map(),pending=new Map(),retryAt=new Map();
 async function request(route,body={}) {

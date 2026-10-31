@@ -50,35 +50,47 @@ export function balancedPlan(pool: readonly string[], count: number, random = ra
 }
 
 export const identityPrompt = "La photo jointe est l’unique référence des personnes. " +
-  "Conserve strictement le même nombre de personnes et leur identité : mêmes visages, traits, âge apparent, carnation, cheveux, expression, pose et emplacement relatif. " +
+  "Conserve strictement le même nombre de personnes et leur identité : mêmes visages, traits, âge apparent, carnation, cheveux et expression reconnaissable. " +
   "Conserve exactement leur corpulence, silhouette et proportions anatomiques, ainsi que leurs aides à la mobilité. " +
   "Conserve leurs lunettes, aides auditives, prothèses et couvre-chefs personnels. Tout accessoire ajouté laisse le visage entièrement visible et les cheveux reconnaissables. " +
   "Ne rajeunis, n’amincis, n’embellis, ne caricature et ne remplace aucun visage. N’ajoute ni personne ni membre. " +
   "Les vêtements, accessoires qui ne masquent pas les visages et le décor peuvent changer. " +
+  "Le point de vue, le regard vers l’objectif et la posture peuvent évoluer doucement pour réaliser la situation du thème : assis, debout ou une interaction simple avec un objet. " +
+  "Ces ajustements restent naturels, adaptés aux personnes et à leurs aides à la mobilité. Ne force aucune posture, torsion ou interaction incompatible avec la référence. " +
   "Le thème ne doit jamais modifier l’anatomie, la peau ou les visages. Si une consigne de thème entre en conflit, la fidélité à la référence prévaut. " +
-  "Garde dans le cadre toutes les parties du corps visibles dans la photo source et les mêmes distances relatives entre les personnes. " +
+  "Garde le groupe réuni, l’ordre des personnes et toutes les parties du corps visibles dans la photo source à l’intérieur du cadre. " +
+  "Utilise une perspective photographique naturelle sans fisheye, sans tête grossie et sans visage trop petit. Le verre, les reflets, les accessoires et les mains ne cachent ni ne déforment aucun visage. " +
   "Rendu photographique, familial et bienveillant. Ne sexualise personne. Une seule image carrée, sans texte, logo, collage ni planche. " +
   "Adapte le décor autour des personnes pour remplir le carré sans rogner les personnes ou les parties du corps visibles dans la référence.";
 
 export const creativeVariations = [
-  "Invente une interprétation où l’humour vient surtout des matières et des détails des tenues, sans modifier la silhouette.",
-  "Invente une interprétation où l’humour vient surtout d’un décor inattendu et de ses objets, sans changer la pose des personnes.",
-  "Invente une interprétation où l’humour vient surtout d’accessoires de fête surprenants, sans couvrir ni remplacer le visage.",
-  "Invente une interprétation où l’humour vient surtout d’un contraste amusant de couleurs et d’ambiance, sans modifier les visages ni les corps.",
+  "Une légère plongée révèle une scène inattendue autour du groupe qui regarde l’objectif, avec des visages grands et reconnaissables.",
+  "Si les personnes et leurs aides à la mobilité le permettent, une pose assise naturelle dans un décor accueillant raconte le thème.",
+  "Une interaction simple avec un objet du décor, les mains sous le menton, donne vie à la scène sans masquer aucun visage.",
+  "Un angle de trois quarts doux raconte une situation de groupe dans cet univers, sans modifier les visages ni la corpulence.",
 ];
 
 export function freezePlan(choices: readonly string[], count: number): FrozenShotStyle[] {
   const pool = choices[0] === "chef" ? catalog.styles.map(s => s.id) : [...choices];
   if (pool.some(id => !catalog.styles.some(s => s.id === id))) throw new Error("invalid_styles");
-  const variations = shuffled(creativeVariations);
-  return balancedPlan(pool, count).map((id, index) => {
+  const directions = new Map<string, string[]>();
+  const usedDirections = new Set<string>();
+  return balancedPlan(pool, count).map(id => {
     const theme = catalog.styles.find(s => s.id === id)!;
-    const variation = variations[index];
+    if (!directions.has(id)) {
+      const specific = (theme as { variations?: string[] }).variations;
+      directions.set(id, shuffled(specific?.length === 4 ? specific : creativeVariations));
+    }
+    const available = directions.get(id)!;
+    const next = available.findIndex(direction => !usedDirections.has(direction));
+    if (next < 0) throw new Error("invalid_variations");
+    const [variation] = available.splice(next, 1);
+    usedDirections.add(variation);
     return { id, variation,
       prompt: "Transforme cette seule photo pour un anniversaire familial. " + identityPrompt +
         " Univers choisi : " + theme.prompt +
         " Direction créative de cette pose : " + variation +
-        " Choisis librement les costumes, les détails et la situation dans cet univers. Aucun costume précis n’est imposé. " +
+        " Développe cette situation dans le thème choisi, avec des gestes simples et des tenues de fête adaptées. Aucun costume précis n’est imposé. " +
         "Ces indications créatives restent secondaires à la fidélité des personnes."
     };
   });

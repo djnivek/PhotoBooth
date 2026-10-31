@@ -18,7 +18,7 @@ Le matériel cible est un Canon EOS 4000D et une DNP DS620 sous Windows 10 Pro 2
 Par défaut, tout est simulé : aucune caméra, aucune impression et aucun appel payant.
 Dans Réglages, on peut sélectionner des photos locales pour répéter le vrai parcours.
 Le bouton « Imprimer » exporte ce même JPEG tant que l’envoi à l’imprimante est désactivé.
-Métamorphose propose neuf univers illustrés et La Surprise du Chef. Pour quatre photos, sélectionner de un à quatre univers répartis de façon équilibrée. Les catégories sont by Estelle, Les incontournables et Autres ; les sept tables attendent leurs vrais noms. Les réglages actualisent le catalogue depuis le serveur sans reconstruire l’application.
+Métamorphose propose dix sept univers illustrés et La Surprise du Chef. Les huit tables de la soirée sont dans **by Estelle** ; **Les incontournables** contient Colors Party, Halloween et Sous cloche ; les six autres restent dans **Autres**. Pour quatre photos, sélectionner de un à quatre univers répartis de façon équilibrée. Les réglages actualisent le catalogue depuis le serveur sans reconstruire l’application. Voir [les thèmes et leurs illustrations](docs/THEMES_ESTELLE.md).
 Voir [la gestion des univers](docs/UNIVERS.md).
 
 ```sh

@@ -1,11 +1,171 @@
 {
-  "version": "2026-10-31.4",
+  "version": "2026-10-31.5",
   "styles": [
     {
+      "id": "sapphire",
+      "category": "estelle",
+      "label": "Le Saphir",
+      "description": "Une fête au cœur du bleu.",
+      "asset": "sapphire",
+      "color": "#DDEBF0",
+      "phrases": [
+        "Les facettes préparent leur grand effet.",
+        "Une touche de bleu, beaucoup d’éclat.",
+        "Le saphir entre dans la lumière."
+      ],
+      "prompt": "Une fête photographique dans un palais de saphir bleu : grandes facettes minérales bleu profond, reflets turquoise et lumière douce. Le saphir doit être immédiatement reconnaissable dans le décor, pas seulement dans les habits. Les cristaux restent autour et derrière les personnes ; aucune facette, réflexion ou lumière bleue ne traverse ni ne recolore les visages. Des tenues de fête élégantes peuvent compléter la scène.",
+      "variations": [
+        "Le groupe est installé sur une large banquette devant une arche de saphirs géants, avec un cadrage frontal vivant et les visages dégagés.",
+        "Une légère plongée révèle une terrasse de cristal bleu autour du groupe qui regarde l’objectif, avec une perspective naturelle et des visages assez grands.",
+        "Les personnes présentent de petits objets en saphir à hauteur de taille devant un décor de géodes monumentales, sans main ni bijou devant les visages.",
+        "Une scène de fête dans une grande géode ouverte : le groupe se tient côte à côte à son entrée, avec un angle de trois quarts doux et un éclairage naturel sur les visages."
+      ]
+    },
+    {
+      "id": "lavender",
+      "category": "estelle",
+      "label": "La Lavande",
+      "description": "Une escapade au parfum de Provence.",
+      "asset": "lavender",
+      "color": "#E8E1EF",
+      "phrases": [
+        "La lavande sort ses habits de fête.",
+        "Un souffle de Provence.",
+        "Les bouquets préparent leur entrée."
+      ],
+      "prompt": "Une fête photographique joyeuse dans un univers de lavande, entre jardin provençal et fleurs délicatement démesurées. Épis violets reconnaissables, feuillages sauge, bois clair et lumière d’été douce. Le décor doit raconter la lavande, avec des fleurs qui restent sous les épaules ou derrière le groupe, jamais devant les visages. Aucun effet de peau violette.",
+      "variations": [
+        "Le groupe est assis sur un banc de jardin entouré de grandes lavandes en fleurs, avec un cadrage de trois quarts très doux.",
+        "Vue légèrement plongeante sur un pique nique couleur lavande ; les personnes regardent l’objectif et gardent les visages bien visibles.",
+        "Les personnes se tiennent ensemble sur une petite allée entre des bouquets de lavande géants, à hauteur des yeux, dans une scène de promenade festive.",
+        "Le groupe compose une gerbe de lavande sur une table de fleuriste, avec les mains visibles sous les visages et quelques fleurs en arrière plan."
+      ]
+    },
+    {
+      "id": "cashmere",
+      "category": "estelle",
+      "label": "Le Cachemire",
+      "description": "Un cocon de douceur, version grand luxe.",
+      "asset": "cashmere",
+      "color": "#E8DFD2",
+      "phrases": [
+        "Les mailles se mettent sur leur trente et un.",
+        "Une bonne dose de douceur.",
+        "Le cachemire déroule son décor."
+      ],
+      "prompt": "Une scène photographique de fête dans un cocon de cachemire : étoffes ivoire, sable et taupe, mailles tactiles et grands motifs paisley élégants. Des plis de tissu et des coussins démesurés composent un décor ludique et luxueux, qui reste clairement textile. Les personnes restent humaines, de leur âge et de leur corpulence ; aucun tissu ne couvre le visage ou ne serre le corps.",
+      "variations": [
+        "Le groupe est confortablement assis sur une banquette de coussins géants en cachemire, avec une vue frontale accueillante.",
+        "Une légère plongée montre les personnes au milieu de grands plis de cachemire comme un paysage textile ; elles regardent l’objectif.",
+        "Le groupe se tient devant une grande arche de tissu paisley, avec de petits gestes naturels et un cadrage de trois quarts doux.",
+        "Les personnes présentent ensemble une étoffe de cachemire à hauteur de taille devant une scène de fête en atelier textile, sans masquer aucun visage."
+      ]
+    },
+    {
+      "id": "olive",
+      "category": "estelle",
+      "label": "L’Olivier",
+      "description": "Une fête à l’ombre des oliviers.",
+      "asset": "olive",
+      "color": "#E1E8CF",
+      "phrases": [
+        "Les oliviers dressent la table.",
+        "Une pincée de soleil et de vert.",
+        "Les branches préparent leur grand effet."
+      ],
+      "prompt": "Une fête photographique méditerranéenne autour de l’olivier : feuilles argentées vert olive, olives noires et vertes, vieux troncs, terrasse de pierre et soleil doux. Le décor doit évoquer un vrai jardin d’oliviers chaleureux, avec une touche d’échelle surprenante et des tenues de fête naturelles. Aucun feuillage devant les visages, aucune teinte verte sur la peau.",
+      "variations": [
+        "Le groupe est assis sur un banc de pierre sous un grand olivier décoré de rubans, les visages à hauteur des yeux et bien éclairés.",
+        "Vue légèrement plongeante sur une tablée de jardin à l’olivier ; les personnes se tournent vers l’objectif et les olives restent des accessoires du décor.",
+        "Le groupe se tient dans une allée d’oliviers aux feuilles délicatement démesurées, avec un cadrage de trois quarts doux et une ambiance de fête.",
+        "Les personnes disposent de petites branches d’olivier sur une table de réception, les mains sous le menton et tous les visages dégagés."
+      ]
+    },
+    {
+      "id": "lemon",
+      "category": "estelle",
+      "label": "Le Citron",
+      "description": "Le soleil se presse pour vous.",
+      "asset": "lemon",
+      "color": "#F6EDB8",
+      "phrases": [
+        "Les citrons font le plein de soleil.",
+        "Une fête bien pressée de vous voir.",
+        "Une pincée de jaune et de bonne humeur."
+      ],
+      "prompt": "Une fête photographique dans un jardin de citrons lumineux : citrons jaunes reconnaissables, grandes feuilles vertes, terrasse ensoleillée et détails de limonade. Inventer une vraie situation dans un décor citronné spectaculaire et accueillant, avec une légère fantaisie d’échelle. Les personnes restent humaines ; aucun visage jaune, aucun corps en citron, aucune nourriture sur le visage.",
+      "variations": [
+        "Le groupe est assis sur une banquette jaune sous une arche de citrons géants, avec un angle de trois quarts doux.",
+        "Une plongée modérée révèle un sol à grands motifs de tranches de citron autour du groupe qui regarde l’objectif, sans éloigner les visages.",
+        "Les personnes tiennent un petit stand de limonade de fête, les mains au niveau du comptoir et les visages entièrement visibles, sans texte ni marque.",
+        "Le groupe se tient au milieu de citronniers où les fruits sont délicieusement démesurés, comme dans un jardin imaginaire photographique."
+      ]
+    },
+    {
+      "id": "velvet",
+      "category": "estelle",
+      "label": "Le Velour",
+      "description": "Le rouge velours entre en scène.",
+      "asset": "velvet",
+      "color": "#F1DADD",
+      "phrases": [
+        "Le rideau prépare son grand numéro.",
+        "Le velours prend la lumière.",
+        "La scène n’attendait que vous."
+      ],
+      "prompt": "Une fête photographique théâtrale autour du velours rouge et bordeaux : grands rideaux tactiles, rubans souples, lumière de scène chaleureuse et décor chic plein d’humour. Le velours est une vraie matière et une scénographie, pas seulement la couleur des vêtements. Ambiance familiale et élégante, sans registre de cabaret sexualisé. Les visages et les coiffures restent naturels et dégagés.",
+      "variations": [
+        "Le groupe est assis sur un grand canapé en velours rouge, dans une loge de théâtre accueillante, avec une vue de trois quarts douce.",
+        "Le groupe entrouvre ensemble un grand rideau de velours, les mains sur les bords à hauteur d’épaule au maximum, tous les visages au centre bien visibles.",
+        "Une légère plongée depuis un petit balcon révèle une scène de velours et le groupe qui lève les yeux vers l’objectif, sans déformer les têtes.",
+        "Les personnes se tiennent devant un ruban de velours géant formant une arche de fête, dans une scène photographique vivante à hauteur des yeux."
+      ]
+    },
+    {
+      "id": "sunset",
+      "category": "estelle",
+      "label": "Le Sunset",
+      "description": "Votre instant à l’heure dorée.",
+      "asset": "sunset",
+      "color": "#F5DED0",
+      "phrases": [
+        "Le soleil prépare sa plus belle sortie.",
+        "L’heure dorée vous attend.",
+        "Un peu de corail dans le ciel."
+      ],
+      "prompt": "Une fête photographique à l’heure du sunset : grand ciel de coucher de soleil pêche, corail et jaune doré, horizon marin ou terrasse lumineuse et ambiance chaleureuse. Le soleil couchant doit être lisible dans le décor sans éblouir ni assombrir les visages. Des tenues de fête de journée, aucune tenue de plage imposée. La lumière flatte la scène sans modifier les traits ou la couleur naturelle de peau.",
+      "variations": [
+        "Le groupe est assis sur une banquette de terrasse face à l’objectif, avec le soleil couchant et l’horizon en arrière plan, les visages éclairés doucement.",
+        "Une légère plongée montre un toit terrasse de fête aux couleurs corail ; le groupe regarde l’objectif et le ciel doré reste visible au loin.",
+        "Le groupe se tient sur un petit ponton de réception très sûr au bord de l’horizon, cadré de trois quarts doux, sans contre jour sur les visages.",
+        "Les personnes lèvent ensemble de petits rubans de fête sous les épaules devant un ciel de sunset spectaculaire, dans un cadrage rapproché et naturel."
+      ]
+    },
+    {
+      "id": "marmots",
+      "category": "estelle",
+      "label": "Les Marmots",
+      "description": "Un grand terrain de jeu pour vos sourires.",
+      "asset": "marmots",
+      "color": "#F5E2E1",
+      "phrases": [
+        "Les jouets sortent le grand jeu.",
+        "La fête prend de la hauteur.",
+        "Tout le monde garde sa place dans le jeu."
+      ],
+      "prompt": "Une fête photographique dans un pays de jouets démesurés : cubes de bois colorés sans lettres, petit train devenu grand, peluches accueillantes et ballons rose doux. Le thème Les Marmots évoque le jeu et l’enfance dans le décor, jamais une transformation des personnes. Conserver strictement l’âge des adultes et des enfants, leurs visages et leur corpulence. Aucune personne ne devient bébé, poupée, jouet ou animal. Ambiance familiale, vêtements appropriés à l’âge et fauteuils ou aides à la mobilité conservés.",
+      "variations": [
+        "Le groupe est installé sur une large banquette composée de grands cubes de jeu stables, les visages à hauteur des yeux, dans un décor de fête.",
+        "Une légère plongée révèle une piste de petit train géant autour du groupe qui regarde l’objectif, sans minifier les visages.",
+        "Les personnes se tiennent ensemble entre une grande peluche et des ballons de fête, cadrées de trois quarts doux, sans remplacer une personne par un jouet.",
+        "Le groupe fait une petite pause dans un wagon de jouet devenu un banc spacieux, sans changer l’âge ni les proportions de quiconque."
+      ]
+    },
+    {
       "id": "colors_party",
-      "category": "other",
+      "category": "essentials",
       "label": "Colors Party",
-      "description": "Du velours, des couleurs et vous.",
+      "description": "Une fête en couleurs, vue d’en haut.",
       "asset": "colors_party",
       "color": "#E0E7D8",
       "phrases": [
@@ -13,11 +173,17 @@
         "Le velours entre en scène.",
         "Vos sourires sont entre de bonnes mains."
       ],
-      "prompt": "Une Colors Party chic, joyeuse et délicieusement extravagante, dans une ambiance de fête des années 80 aux couleurs sauge, jaune beurre, corail et rouge velours. Invente librement les tenues, les matières et le décor de fête. Trouve une situation drôle et élégante qui respecte la pose de la référence. Humour tendre et lumière douce."
+      "prompt": "Une Colors Party photographique chic, joyeuse et extravagante, vue en plongée comme depuis un drone bas. Les personnes lèvent naturellement les yeux vers l’objectif, qui reste assez proche pour rendre tous les visages reconnaissables. Vue oblique d’environ 35 à 55 degrés, pas une vue verticale de crânes. Autour du groupe : sol coloré, rubans, grands confettis et décor de fête des années 80 sauge, jaune beurre, corail et rouge velours. Utiliser une perspective d’objectif normal, jamais un grand angle déformant. L’effet spectaculaire vient du point de vue et de la scène, pas d’une modification des visages ou des corps.",
+      "variations": [
+        "Vue en plongée sur le groupe debout au centre d’une grande piste de fête couverte de confettis colorés ; tous regardent l’objectif et les rubans restent loin des visages.",
+        "Le groupe est assis côte à côte sur une large banquette colorée ; la caméra est placée au dessus et devant, et tous lèvent les yeux vers elle, avec les visages bien lisibles.",
+        "Vue de drone bas oblique sur une petite terrasse de fête aux grands motifs colorés ; le groupe se tourne ensemble vers l’objectif avec des gestes simples sous les épaules.",
+        "Une plongée rapprochée montre le groupe au milieu de grands rubans et de décors de papier coloré disposés autour de lui ; les visages restent grands et la perspective naturelle."
+      ]
     },
     {
       "id": "halloween",
-      "category": "other",
+      "category": "essentials",
       "label": "Halloween",
       "description": "Des frissons, surtout des sourires.",
       "asset": "halloween",
@@ -27,7 +193,33 @@
         "Les invités préparent leur grand effet.",
         "La fête se donne des frissons."
       ],
-      "prompt": "Une fête Halloween familiale, drôle et charmante. Imagine librement pour chaque personne un déguisement et une ambiance de fête dans cet univers, sans costume ni personnage imposé. Cherche une interprétation surprenante et bienveillante. Aucun masque, maquillage du visage, sang, violence ou horreur. Les visages restent des visages photographiques inchangés."
+      "prompt": "Une fête Halloween familiale, drôle et charmante. Imagine librement pour chaque personne un déguisement et une ambiance de fête dans cet univers, sans costume ni personnage imposé. Cherche une interprétation surprenante et bienveillante. Aucun masque, maquillage du visage, sang, violence ou horreur. Les visages restent des visages photographiques inchangés.",
+      "variations": [
+        "Une légère plongée donne à la scène un point de vue nouveau ; les personnes regardent naturellement l’objectif sans déformer les têtes ni réduire la lisibilité des visages.",
+        "Si le décor et les aides à la mobilité le permettent, installer le groupe assis sur un banc ou un siège spacieux adapté au thème, dans une pose naturelle à hauteur des yeux.",
+        "Créer une interaction simple et crédible avec un accessoire du décor, avec les mains à hauteur de taille ou de poitrine et jamais devant les visages.",
+        "Composer une petite situation de groupe vivante cadrée de trois quarts doux ; garder chacun reconnaissable et utiliser le décor pour raconter une scène, pas seulement changer les habits."
+      ]
+    },
+    {
+      "id": "showcase",
+      "category": "essentials",
+      "label": "Sous cloche",
+      "description": "Entrez dans votre petit monde sous verre.",
+      "asset": "showcase",
+      "color": "#E0E7D8",
+      "phrases": [
+        "On vous prépare une place de choix.",
+        "Le décor sort de sa réserve.",
+        "La vitrine prend des airs de fête."
+      ],
+      "prompt": "Une scène photographique théâtrale et drôle où toutes les personnes se trouvent réellement à l’intérieur d’une grande cloche de vitrine spacieuse. La base, les bords courbes et le sommet de la cloche entourent le groupe et rendent le concept immédiatement lisible. Les personnes peuvent appuyer doucement leurs paumes sur la paroi intérieure, sous le menton ou sur les côtés, comme pour saluer à travers la vitrine. Le verre est invisible devant les visages, sans reflet, buée, montant, grossissement ou distorsion sur eux. Les mains restent anatomiquement correctes, sans doigt supplémentaire, et ne cachent aucun visage. Vitrine de curiosités festive non alimentaire, chaleureuse, avec de l’espace pour chacun ; aucune impression d’enfermement, de danger ou de détresse.",
+      "variations": [
+        "Vue frontale légèrement plongeante de la cloche entière : le groupe presse doucement les paumes contre les côtés intérieurs du verre, les mains sous les mentons et les visages tous bien visibles.",
+        "Vue de trois quarts douce : le groupe est assis sur un banc spacieux sous la cloche, quelques mains saluent contre la paroi latérale transparente sans traverser les visages.",
+        "Le groupe se penche très légèrement et naturellement vers l’avant pour regarder dehors, les mains posées bas sur la paroi de la cloche ; conserver les proportions et montrer la base et le sommet.",
+        "Le groupe debout interagit avec la vitrine, une paume ouverte par personne sur la paroi intérieure à hauteur de poitrine ; cadrage assez large pour voir la cloche mais avec des visages lisibles."
+      ]
     },
     {
       "id": "space",
@@ -41,7 +233,13 @@
         "Votre équipage prépare son entrée.",
         "Un petit détour par Saturne."
       ],
-      "prompt": "Une fête dans un univers spatial rétrofuturiste, photographique, chaleureux et plein d’humour. Imagine librement les tenues et une situation cosmique inattendue, en gardant la pose des personnes. Le décor et les accessoires portent la fantaisie. Aucun équipement ne cache ou ne déforme le visage. Ne transforme pas les personnes en créatures."
+      "prompt": "Une fête dans un univers spatial rétrofuturiste, photographique, chaleureux et plein d’humour. Imagine librement les tenues et une situation cosmique inattendue, avec une posture naturelle adaptée à la scène. Le décor et les accessoires portent la fantaisie. Aucun équipement ne cache ou ne déforme le visage. Ne transforme pas les personnes en créatures.",
+      "variations": [
+        "Une légère plongée donne à la scène un point de vue nouveau ; les personnes regardent naturellement l’objectif sans déformer les têtes ni réduire la lisibilité des visages.",
+        "Si le décor et les aides à la mobilité le permettent, installer le groupe assis sur un banc ou un siège spacieux adapté au thème, dans une pose naturelle à hauteur des yeux.",
+        "Créer une interaction simple et crédible avec un accessoire du décor, avec les mains à hauteur de taille ou de poitrine et jamais devant les visages.",
+        "Composer une petite situation de groupe vivante cadrée de trois quarts doux ; garder chacun reconnaissable et utiliser le décor pour raconter une scène, pas seulement changer les habits."
+      ]
     },
     {
       "id": "fantasy",
@@ -55,7 +253,13 @@
         "Un peu de poussière de fée.",
         "Le jardin sort ses habits de fête."
       ],
-      "prompt": "Une fête dans un pays imaginaire merveilleux, photographique et espiègle. Invente librement une scène de conte, des tenues et des accessoires surprenants qui respectent la silhouette et la pose de la référence. La magie vient du décor et des vêtements. Les personnes gardent une apparence humaine, sans modification de peau, oreilles, yeux ou corps. Les licornes font partie du décor en arrière plan, sans cacher ni remplacer les personnes."
+      "prompt": "Une fête dans un pays imaginaire merveilleux, photographique et espiègle. Invente librement une scène de conte, des tenues et des accessoires surprenants qui respectent la silhouette et permettent une pose naturelle. La magie vient du décor et des vêtements. Les personnes gardent une apparence humaine, sans modification de peau, oreilles, yeux ou corps. Les licornes font partie du décor en arrière plan, sans cacher ni remplacer les personnes.",
+      "variations": [
+        "Une légère plongée donne à la scène un point de vue nouveau ; les personnes regardent naturellement l’objectif sans déformer les têtes ni réduire la lisibilité des visages.",
+        "Si le décor et les aides à la mobilité le permettent, installer le groupe assis sur un banc ou un siège spacieux adapté au thème, dans une pose naturelle à hauteur des yeux.",
+        "Créer une interaction simple et crédible avec un accessoire du décor, avec les mains à hauteur de taille ou de poitrine et jamais devant les visages.",
+        "Composer une petite situation de groupe vivante cadrée de trois quarts doux ; garder chacun reconnaissable et utiliser le décor pour raconter une scène, pas seulement changer les habits."
+      ]
     },
     {
       "id": "elves",
@@ -69,7 +273,13 @@
         "Les champignons dressent la table.",
         "Le petit monde s’agite en cuisine."
       ],
-      "prompt": "Une joyeuse fête de petits lutins dans un monde qui semble trop grand. Invente librement des costumes et un décor de conte avec un décalage d’échelle amusant. L’impression miniature vient exclusivement des objets et du décor agrandis. Conserve la taille relative des personnes, leurs proportions, leur pose et leurs visages photographiques. Aucune caricature anatomique."
+      "prompt": "Une joyeuse fête de petits lutins dans un monde qui semble trop grand. Invente librement des costumes et un décor de conte avec un décalage d’échelle amusant. L’impression miniature vient exclusivement des objets et du décor agrandis. Conserve la taille relative des personnes, leurs proportions, leurs visages photographiques. Aucune caricature anatomique.",
+      "variations": [
+        "Une légère plongée donne à la scène un point de vue nouveau ; les personnes regardent naturellement l’objectif sans déformer les têtes ni réduire la lisibilité des visages.",
+        "Si le décor et les aides à la mobilité le permettent, installer le groupe assis sur un banc ou un siège spacieux adapté au thème, dans une pose naturelle à hauteur des yeux.",
+        "Créer une interaction simple et crédible avec un accessoire du décor, avec les mains à hauteur de taille ou de poitrine et jamais devant les visages.",
+        "Composer une petite situation de groupe vivante cadrée de trois quarts doux ; garder chacun reconnaissable et utiliser le décor pour raconter une scène, pas seulement changer les habits."
+      ]
     },
     {
       "id": "disco",
@@ -83,7 +293,13 @@
         "Le velours chauffe la piste.",
         "Les paillettes répètent leur numéro."
       ],
-      "prompt": "Une soirée disco rétro pleine d’humour et d’élégance. Invente librement des tenues, des accessoires et un décor de fête inspirés des années 70 et 80, avec des matières tactiles et une ambiance joyeuse. Ne modifie ni les silhouettes ni les coiffures. Aucun accessoire ne cache les visages. Rendu photographique de soirée."
+      "prompt": "Une soirée disco rétro pleine d’humour et d’élégance. Invente librement des tenues, des accessoires et un décor de fête inspirés des années 70 et 80, avec des matières tactiles et une ambiance joyeuse. Ne modifie ni les silhouettes ni les coiffures. Aucun accessoire ne cache les visages. Rendu photographique de soirée.",
+      "variations": [
+        "Une légère plongée donne à la scène un point de vue nouveau ; les personnes regardent naturellement l’objectif sans déformer les têtes ni réduire la lisibilité des visages.",
+        "Si le décor et les aides à la mobilité le permettent, installer le groupe assis sur un banc ou un siège spacieux adapté au thème, dans une pose naturelle à hauteur des yeux.",
+        "Créer une interaction simple et crédible avec un accessoire du décor, avec les mains à hauteur de taille ou de poitrine et jamais devant les visages.",
+        "Composer une petite situation de groupe vivante cadrée de trois quarts doux ; garder chacun reconnaissable et utiliser le décor pour raconter une scène, pas seulement changer les habits."
+      ]
     },
     {
       "id": "animals",
@@ -97,21 +313,13 @@
         "Un peu de panache dans les pelages.",
         "La fête prend un air sauvage."
       ],
-      "prompt": "Une fête animalière élégante et drôle. Choisis librement une inspiration animale pour chaque personne et évoque cette inspiration uniquement par un costume inventif et des accessoires. Les personnes restent humaines : visage, peau, cheveux, silhouette, membres et proportions strictement conservés. Aucune tête animale, aucun museau ni maquillage, aucune transformation anatomique. Laisse les visages complètement dégagés. Imagine un décor de fête assorti, sans danger ni violence. Choisis cette inspiration sans te baser sur l’apparence physique, l’âge ou l’origine des personnes. Reste dans un registre tendre et valorisant, jamais humiliant. Écarte les animaux employés comme moqueries envers une personne, notamment les singes, cochons, vaches et ânes."
-    },
-    {
-      "id": "showcase",
-      "category": "other",
-      "label": "Sous cloche",
-      "description": "Votre petit monde en vitrine.",
-      "asset": "showcase",
-      "color": "#E0E7D8",
-      "phrases": [
-        "On vous prépare une place de choix.",
-        "Le décor sort de sa réserve.",
-        "La vitrine prend des airs de fête."
-      ],
-      "prompt": "Une mise en scène de collection photographique, drôle et théâtrale : les personnes semblent installées dans un petit monde de fête présenté sous une grande cloche de vitrine. Invente librement le décor et les vêtements, avec des objets d’échelle surprenante. Les personnes restent humaines et conservent leur pose et toutes leurs proportions. La cloche est spacieuse, légère et suggérée autour du décor, sans reflet, montant ou déformation sur les visages et sans partie du corps coupée. Ambiance accueillante et joyeuse, sans impression de danger, de cage ou de détresse. Le petit monde est une vitrine de curiosités non alimentaire. La cloche dessine une grande arche autour et derrière le groupe ; les visages sont parfaitement dégagés, sans verre au premier plan."
+      "prompt": "Une fête animalière élégante et drôle. Choisis librement une inspiration animale pour chaque personne et évoque cette inspiration uniquement par un costume inventif et des accessoires. Les personnes restent humaines : visage, peau, cheveux, silhouette, membres et proportions strictement conservés. Aucune tête animale, aucun museau ni maquillage, aucune transformation anatomique. Laisse les visages complètement dégagés. Imagine un décor de fête assorti, sans danger ni violence. Choisis cette inspiration sans te baser sur l’apparence physique, l’âge ou l’origine des personnes. Reste dans un registre tendre et valorisant, jamais humiliant. Écarte les animaux employés comme moqueries envers une personne, notamment les singes, cochons, vaches et ânes.",
+      "variations": [
+        "Une légère plongée donne à la scène un point de vue nouveau ; les personnes regardent naturellement l’objectif sans déformer les têtes ni réduire la lisibilité des visages.",
+        "Si le décor et les aides à la mobilité le permettent, installer le groupe assis sur un banc ou un siège spacieux adapté au thème, dans une pose naturelle à hauteur des yeux.",
+        "Créer une interaction simple et crédible avec un accessoire du décor, avec les mains à hauteur de taille ou de poitrine et jamais devant les visages.",
+        "Composer une petite situation de groupe vivante cadrée de trois quarts doux ; garder chacun reconnaissable et utiliser le décor pour raconter une scène, pas seulement changer les habits."
+      ]
     },
     {
       "id": "feast",
@@ -125,7 +333,13 @@
         "Une bonne dose de gourmandise.",
         "Le décor prend du volume."
       ],
-      "prompt": "Une fête gourmande photographique où le décor et les gourmandises semblent démesurés autour des personnes. Invente librement un banquet imaginaire et des tenues de fête avec un décalage d’échelle drôle et élégant. Les personnes gardent leur pose, leurs visages et leurs proportions humaines. L’effet miniature vient uniquement du décor agrandi. Ne transforme jamais les personnes en aliments, ne les mange pas et ne couvre pas leur visage de nourriture. Humour tendre, aucune menace, aucun corps comestible. Les personnes se tiennent au milieu du décor gourmand, jamais posées dans une assiette, un bol ou près de couverts ou de bouches. Pas de cloche, de présentoir ni de costume alimentaire."
+      "prompt": "Une fête gourmande photographique où le décor et les gourmandises semblent démesurés autour des personnes. Invente librement un banquet imaginaire et des tenues de fête avec un décalage d’échelle drôle et élégant. Les personnes gardent leurs visages et leurs proportions humaines. L’effet miniature vient uniquement du décor agrandi. Ne transforme jamais les personnes en aliments, ne les mange pas et ne couvre pas leur visage de nourriture. Humour tendre, aucune menace, aucun corps comestible. Les personnes se tiennent au milieu du décor gourmand, jamais posées dans une assiette, un bol ou près de couverts ou de bouches. Pas de cloche, de présentoir ni de costume alimentaire.",
+      "variations": [
+        "Une légère plongée donne à la scène un point de vue nouveau ; les personnes regardent naturellement l’objectif sans déformer les têtes ni réduire la lisibilité des visages.",
+        "Si le décor et les aides à la mobilité le permettent, installer le groupe assis sur un banc ou un siège spacieux adapté au thème, dans une pose naturelle à hauteur des yeux.",
+        "Créer une interaction simple et crédible avec un accessoire du décor, avec les mains à hauteur de taille ou de poitrine et jamais devant les visages.",
+        "Composer une petite situation de groupe vivante cadrée de trois quarts doux ; garder chacun reconnaissable et utiliser le décor pour raconter une scène, pas seulement changer les habits."
+      ]
     }
   ]
 }

@@ -76,6 +76,15 @@ var squares = Enumerable.Range(0, 4).Select(i => {
     return PhotoProcessor.Jpeg(bitmap);
 }).ToArray();
 var hashes = squares.Select(bytes => SessionStore.Hash(bytes)).ToArray();
+foreach (var style in StyleCatalog.BuiltIn.Styles.Where(style => style.Category == "estelle"))
+{
+    using var stream = typeof(MetamorphosisSheet).Assembly.GetManifestResourceStream($"PhotoBooth.Print.{style.Asset}.png")
+        ?? throw new Exception("Missing table artwork: " + style.Id);
+    using var emblem = SKBitmap.Decode(stream);
+    Check(emblem.Width >= 512 && emblem.Height >= 512, "Table artwork has enough definition for the print band");
+    Check(emblem.GetPixel(0,0).Alpha == 0 && emblem.GetPixel(emblem.Width-1,emblem.Height-1).Alpha == 0,
+        "Table artwork keeps actual transparent corners on cream paper");
+}
 foreach (var style in StyleCatalog.BuiltIn.Styles.Append(StyleCatalog.Surprise).Append(new PhotoStyle(StyleCatalog.Mixed, "Plusieurs univers", "", "colors_party", "#E0E7D8", ["Les couleurs se préparent."])))
 foreach (var count in new[] { 1, 4 })
 {

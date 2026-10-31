@@ -186,15 +186,22 @@ window=new MainWindow(refreshCatalogOnOpen:false);window.Show();Pump(80);ClickLa
 if(!window.GetVisualDescendants().OfType<StackPanel>().Any(c=>c.Name=="Category_estelle") ||
    !window.GetVisualDescendants().OfType<StackPanel>().Any(c=>c.Name=="Category_other"))
     throw new Exception("Estelle and other theme sections are missing.");
-Click("Style_halloween");Click("Style_animals");Click("Style_showcase");Click("Style_feast");
-Capture("themes-nine-1280x800.png");window.Width=960;window.Height=700;Pump(100);AssertStylesFit();Capture("themes-nine-960x700.png");
-var nineScroll=window.GetVisualDescendants().OfType<ScrollViewer>().Single(control=>control.Name=="StyleScroll");
-nineScroll.Offset=new Vector(0,nineScroll.Extent.Height);Pump(100);Capture("themes-nine-bottom-960x700.png");
+var tableSections=window.GetVisualDescendants().OfType<StackPanel>().Where(c=>c.Name?.StartsWith("Category_")==true).ToArray();
+if(!tableSections.Select(s=>s.Name).SequenceEqual(new[]{"Category_estelle","Category_essentials","Category_other"}) ||
+   tableSections.Select(s=>s.GetVisualDescendants().OfType<ToggleButton>().Count()).SequenceEqual(new[]{8,3,6})==false)
+    throw new Exception("Production categories do not contain the eight tables, three essentials and six other themes.");
+Click("Style_sapphire");Click("Style_halloween");Click("Style_showcase");Click("Style_lemon");
+Capture("themes-seventeen-1280x800.png");window.Width=960;window.Height=700;Pump(100);AssertStylesFit();Capture("themes-seventeen-960x700.png");
+var tableScroll=window.GetVisualDescendants().OfType<ScrollViewer>().Single(control=>control.Name=="StyleScroll");
+var essentials=window.GetVisualDescendants().OfType<StackPanel>().Single(s=>s.Name=="Category_essentials");
+tableScroll.Offset=new Vector(0,essentials.TranslatePoint(new Point(),tableScroll)!.Value.Y+tableScroll.Offset.Y);Pump(100);
+Capture("themes-essentials-960x700.png");
+tableScroll.Offset=new Vector(0,tableScroll.Extent.Height);Pump(100);Capture("themes-other-960x700.png");
 window.Close();Pump(80);
 // Backend categories reorder sections but preserve within-category catalog order and selections.
 var categories = new StyleCatalog("categories.1", [
-    StyleCatalog.BuiltIn.Styles[0] with { Category="other" },
-    StyleCatalog.BuiltIn.Styles[1] with { Category="essentials" },
+    StyleCatalog.BuiltIn.Find("colors_party") with { Category="other" },
+    StyleCatalog.BuiltIn.Find("halloween") with { Category="essentials" },
     new PhotoStyle("citron","Citron","La table des citrons.","", "#F4E6B7",["Une pincée de soleil."],"estelle"),
     new PhotoStyle("velours","Velours","La table du velours.","", "#F1D5D3",["Le velours entre en scène."],"estelle") ]);
 window=new MainWindow(catalogLoader:_=>Task.FromResult(categories));window.Show();Pump(100);ClickLabel("Métamorphose");AssertStylesFit();
