@@ -5,8 +5,8 @@
 Télécharger [le dernier paquet Colors Party Windows x64](https://github.com/djnivek/PhotoBooth/releases)
 avec un compte ayant accès au dépôt privé. Extraire **tout** le ZIP dans un dossier local avant
 `ColorsParty.exe` ; ne pas lancer depuis la vue ZIP du navigateur. Pas de SDK .NET requis.
-Le ZIP est accompagné de son SHA-256. Il a été extrait et exécuté sur Windows Server 2022 ;
-[preuves et captures0.3.1](evidence/offline-gallery/README.md). Le lancement sur le Windows 10 cible reste à vérifier.
+Le ZIP est accompagné de son SHA-256. Le pipeline extrait le paquet et l'exécute sur Windows Server 2022 ;
+[revue et reçus 0.8.1](reviews/technical-readiness-2026-10-31/README.md). Le lancement sur le Windows 10 cible reste à vérifier.
 
 1. Lancer en répétition (défaut). Tester 1/4 poses, Au naturel/Métamorphose, placement,
    décompte 3 secondes, effet de capture, aperçu. Aucun appareil ni Internet requis pour ce parcours.
@@ -48,7 +48,7 @@ Le résultat d’autofocus WPD n’est pas interprété comme une confirmation t
 n’a pas été validé. Régler l’objectif sur MF, vérifier la netteté à distance réelle, cocher
 « Mise au point manuelle vérifiée sur le Canon » et enregistrer le matériel. Le logiciel
 contrôle que le boîtier annonce MF ; sans cette confirmation il bloque la capture.
-Vérifier aussi JPEG haute qualité, alimentation, veille et flash.
+Vérifier aussi JPEG haute qualité uniquement (pas RAW+JPEG), alimentation, veille et flash.
 Tester aussi Annuler pendant la connexion, une fois appareil éteint/débranché. Une connexion
 native qui ne rend jamais la main peut laisser « Annulation en cours… » affiché : vérifier la
 sortie par code puis le redémarrage. Ne pas relancer des connexions en parallèle ni continuer la
@@ -60,12 +60,28 @@ Ne pas dégrader l’installation existante pour tenter de faire fonctionner la 
 
 DNP : installer le pilote officiel si absent, sélectionner la **bonne file DS620**, 4×6,
 une copie, pas de double bande 2×6. Activer l’envoi réel dans Réglages seulement sur ce PC.
+La notice recommande (6x4) ; PR (4x6) est son équivalent avec une orientation différente.
+Avant le premier envoi, relever les formats réellement annoncés par le pilote dans PowerShell 5.1 :
+
+```powershell
+Add-Type -AssemblyName System.Drawing
+$boothPrinter = New-Object System.Drawing.Printing.PrinterSettings
+$boothPrinter.PrinterName = 'Nom exact de la file DS620'
+$boothPrinter.PaperSizes | Select-Object PaperName, RawKind, Width, Height
+$boothPrinter.DefaultPageSettings.PrintableArea
+```
+
+Ces dimensions sont en centièmes de pouce, contrairement aux dixièmes de millimètre de l'API GDI. Le format nominal donne environ 400×600 ; le raster DNP avec débord correspond à environ 413×615. Le sélecteur actuel accepte le format nominal. Si le pilote ne présente que le format élargi, conserver ce relevé pour ajuster le sélecteur et ses tests ; ne pas contourner le contrôle ni choisir un autre papier au hasard. Le refus intervient avant toute soumission.
+
 Imprimer une mire puis la planche quatre poses : une feuille, quatre images dans l’ordre,
 aucune rotation inattendue, marges visibles, couleurs et visages lisibles. Examiner le papier.
 
 Tester double appui, imprimante hors ligne et annulation Windows. « Envoyé » avec un numéro de
 travail signifie accepté par le spooler, pas imprimé. Si `print.json` indique `needs_operator`,
 vérifier la file avant toute reprise manuelle ; ne pas supprimer le journal pour forcer un renvoi.
+Le réglage DNP « Print Re-try » peut conserver un travail dans la mémoire de l'imprimante même s'il n'est plus dans la file Windows. Après une panne de papier, ruban ou couvercle, corriger la panne puis attendre sa reprise avant toute décision de renvoi.
+
+À partir de 0.8.1, un refus prouvé avant `StartDoc` est journalisé `not_submitted` : corriger le réglage puis appuyer explicitement sur Imprimer est autorisé. `requested`, `submitted` et `needs_operator` restent bloquants. Aucun renvoi automatique n'a été ajouté.
 
 ## Validation finale
 

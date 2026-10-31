@@ -14,13 +14,13 @@ A desktop secret is not hardware attestation. Someone controlling the provisione
 | --- | --- | --- |
 | generation_enabled | true | Stop new generations when false |
 | max_images | 2400 | Hard lifetime event ceiling, enough for 600 four-pose sessions; NOT a dollar estimate |
-| max_per_minute | 8 | Shared rolling one-minute start ceiling |
-| max_in_flight | 4 | Shared maximum of starting/running/uncertain jobs |
-| started | 0 at this delivery | Counts accepted claims, including ambiguous provider calls |
+| max_per_minute | 16 | Shared rolling one-minute start ceiling, set by migration 20261031094041 |
+| max_in_flight | 8 | Shared maximum of starting/running/uncertain jobs, set by the same migration |
+| started | Read the current row | Counts accepted claims, including ambiguous provider calls |
 
 All checks, job claim and counter increment share a database transaction and budget row lock. Repeated starts for the same pose do not spend again. A rejected claim never increments the counter or reaches OpenAI. No timeout automatically frees an uncertain job or resets the budget. A published session cannot start a new pose. Existing provider jobs can still finish after the kill switch; it does not refund or cancel a prior request.
 
-Eight starts per minute allows a four-pose session without retry storms. On 429/503, originals remain available. The app never retries a paid start automatically. A global cap is an upper bound on image count, not an OpenAI monetary budget; actual price depends on model usage. Keep an additional provider budget if desired.
+Sixteen starts per minute allows several four-pose sessions without retry storms. On 429/503, originals remain available. The app never retries a paid start automatically. A global cap is an upper bound on image count, not an OpenAI monetary budget; actual price depends on model usage. Keep an additional provider budget if desired.
 
 ## Stop, revoke, recover
 
@@ -33,6 +33,27 @@ update public.booth_budget set generation_enabled=false where id='event';
 To revoke a compromised booth credential, generate a new random secret outside Git, replace `BOOTH_ACCESS_KEY_HASH` with its SHA-256 using Supabase secrets, and provision the new secret separately. Existing sessions retain their old owner hash; their public share capability still works, but private operations require the old owner. Decide explicitly whether to migrate specific owned sessions. Never reset `started` as part of rotation.
 
 When an uncertain/running job occupies a slot, inspect its response ID and provider outcome first. Poll existing jobs where possible. Only an operator who has checked the outcome may mark an abandoned job terminal. Do not delete the job or the local journal to retry an ambiguous generation. Standard photographs and local printing are still available during investigation.
+
+Read-only pre-party checks in the project's privileged SQL editor:
+
+```sql
+select generation_enabled, max_images, started, max_per_minute, max_in_flight
+from public.booth_budget where id = 'event';
+select state, count(*) from public.booth_jobs group by state order by state;
+select session_id, shot_index, response_id, updated_at
+from public.booth_jobs where state = 'uncertain' order by updated_at;
+```
+
+Eight uncertain jobs intentionally block new generation claims. This prevents an unknown provider outcome from being treated as free capacity. After confirming that one specific job has finished or is abandoned and no worker can still complete it, an operator may release that job's slot with the statement below. Replace the zero UUID and pose index with the inspected identifiers. It marks a terminal failure, does not regenerate the pose, and does not refund or reset `started`. Never run a bulk update or change the job back to `queued`. These recovery statements were documented, not executed as part of the readiness review.
+
+```sql
+update public.booth_jobs
+set state = 'failed', updated_at = now()
+where session_id = '00000000-0000-0000-0000-000000000000'::uuid
+  and shot_index = 0
+  and state = 'uncertain'
+returning session_id, shot_index, state;
+```
 
 ## Guest gallery
 

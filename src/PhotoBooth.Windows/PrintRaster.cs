@@ -12,7 +12,8 @@ public static class PrintRaster
     {
         if (device.DpiX < 72 || device.DpiY < 72 || device.PrintableWidth <= 0 || device.PrintableHeight <= 0)
             throw new InvalidDataException("Le pilote annonce une surface d’impression invalide.");
-        // Account for non-square device pixels (DNP high-quality modes may be 300x600).
+        // Preserve physical aspect for any non-square device DPI. DNP documents
+        // 600x600 to applications, with 300x600 conversion inside its driver.
         var inchesWide = (double)device.PrintableWidth / device.DpiX;
         var inchesHigh = (double)device.PrintableHeight / device.DpiY;
         var scale = Math.Min(inchesWide / 6, inchesHigh / 4);

@@ -3,6 +3,11 @@ COLORS PARTY BY ESTELLE
 VERSION 0.8.1
    Les seances terminees sont liberees de la memoire, y compris lorsque
    la generation se termine pendant la seance de l invite suivant.
+   Un arret de visee en erreur bloque la photo. Les erreurs de fermeture
+   ne masquent plus le probleme initial. Metamorphose demande une connexion
+   en ligne configuree quand le Canon est selectionne.
+   Si aucune impression n a ete envoyee, l application permet un nouveau
+   clic apres correction du reglage. Un envoi incertain reste bloque.
 
 NOUVEAU PARCOURS 0.8
    En ligne, le QR apparait pendant la preparation des metamorphoses.
@@ -11,7 +16,7 @@ NOUVEAU PARCOURS 0.8
    La borne doit rester ouverte pour terminer les seances en arriere-plan.
    Une nouvelle seance reste bien visible en bas du resultat ; Reessayer le
    partage apparait seulement si un envoi a echoue.
-   Serveur 0.6.0 : jusqu a huit generations simultanees, entrees optimisees privees,
+   Connexion en ligne : jusqu a huit generations simultanees, entrees optimisees privees,
    originaux preserves et ZIP fabrique cote serveur pour limiter les transferts.
    Metamorphose : Sunburst direct, medium, carre 1024x1024. La planche 10x15
    conserve les photos entieres et ajoute le logo et le decor du theme.
