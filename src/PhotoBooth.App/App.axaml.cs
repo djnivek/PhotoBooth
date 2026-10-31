@@ -51,13 +51,13 @@ public sealed partial class App : Application
         var logical=window.ClientSize;var scaling=window.RenderScaling;
         var size=new PixelSize((int)Math.Ceiling(logical.Width*scaling),(int)Math.Ceiling(logical.Height*scaling));
         if(logical.Width<900||logical.Height<650)throw new InvalidOperationException("Native window did not receive usable bounds.");
-        var controls=window.GetVisualDescendants().OfType<Control>().Where(b=>b.Name is "Settings" or "StartSession" or "HomeSheet").Select(b=>
+        var controls=window.GetVisualDescendants().OfType<Control>().Where(b=>b.Name is "Settings" or "HomeSettings" or "StartSession" or "HomeSheet").Select(b=>
         {var position=b.TranslatePoint(new Point(0,0),window)??throw new InvalidOperationException("Missing control transform.");
             var viewport=b.GetVisualAncestors().OfType<Control>().First(c=>c.Name is "SessionBody" or "Header");
             var origin=viewport.TranslatePoint(new Point(0,0),window)!.Value;
             var insideViewport=position.X>=origin.X-1&&position.Y>=origin.Y-1&&position.X+b.Bounds.Width<=origin.X+viewport.Bounds.Width+1&&position.Y+b.Bounds.Height<=origin.Y+viewport.Bounds.Height+1;
             return new {b.Name,position.X,position.Y,b.Bounds.Width,b.Bounds.Height,right=position.X+b.Bounds.Width,bottom=position.Y+b.Bounds.Height,inside_viewport=insideViewport};}).ToArray();
-        var inside=controls.Length==3&&controls.All(c=>c.inside_viewport&&c.X>=0&&c.Y>=0&&c.right<=logical.Width+1&&c.bottom<=logical.Height+1);
+        var inside=controls.Length==4&&controls.All(c=>c.inside_viewport&&c.X>=0&&c.Y>=0&&c.right<=logical.Width+1&&c.bottom<=logical.Height+1);
         using var screenshot=new RenderTargetBitmap(size,new Vector(96*scaling,96*scaling));screenshot.Render(window);
         var path=Path.Combine(directory,imageName);screenshot.Save(path,PngBitmapEncoderOptions.Default);
         File.WriteAllText(Path.Combine(directory,receiptName),JsonSerializer.Serialize(new

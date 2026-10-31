@@ -86,7 +86,9 @@ public sealed partial class MainWindow : Window
         settingsPath = Path.Combine(root, "kiosk.json");
         boothSettingsPath = Path.Combine(root, "booth-settings.json");
         credentialPath = Path.Combine(root, "cloud-credential");
-        try { boothSettings = BoothSettings.Load(boothSettingsPath); } catch (Exception) { /* Safe local rehearsal defaults. */ }
+        try { boothSettings = BoothSettings.Load(boothSettingsPath); } catch (Exception) { /* Keep the real-hardware defaults if a profile is unreadable. */ }
+        try { boothSettings = boothSettings with { PrinterName = WindowsPhotoPrinter.SelectPrinter(boothSettings.PrinterName, WindowsPhotoPrinter.ListPrinters()) }; }
+        catch (Exception) { /* A missing spooler must not block operator access. */ }
         try { cloudKey = CredentialStore.Load(credentialPath); } catch (Exception) { boothSettings = boothSettings with { CloudEnabled = false }; }
         if (cloudKey.Length == 0) boothSettings = boothSettings with { CloudEnabled = false };
         if (File.Exists(settingsPath))
@@ -97,7 +99,7 @@ public sealed partial class MainWindow : Window
         controller = CreateController();
         var header = new Grid { Name = "Header", ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(0, 0, 0, 24) };
         header.Children.Add(Text("Colors Party by Estelle", 26, FontWeight.SemiBold));
-        adminButton = Button("Réglages", ShowSettingsAsync); var admin = adminButton; admin.Name = "Settings";
+        adminButton = Button("Réglages", RequestOperatorAsync); var admin = adminButton; admin.Name = "Settings";
         Grid.SetColumn(admin, 1); header.Children.Add(admin);
         var layout = new Grid { Name = "AppLayout", RowDefinitions = new RowDefinitions("Auto,*"), Margin = new Thickness(36, 24) };
         layout.Children.Add(header); Grid.SetRow(body, 1); layout.Children.Add(body);
@@ -117,7 +119,16 @@ public sealed partial class MainWindow : Window
                 else if (screen == "styles") RenderStyles();
             }
         }
-        Opened += (_, _) => { ConstrainLayout(); if (boothSettings.FullscreenEnabled || Program.ForceKiosk) EnterFullscreen(); if (refreshCatalogOnOpen) _ = RefreshCatalogAsync(); };
+        Opened += async (_, _) =>
+        {
+            ConstrainLayout();
+            if (boothSettings.FullscreenEnabled || Program.ForceKiosk) EnterFullscreen();
+            // Persist the one-time hardware migration without changing the code or cloud credential.
+            try { await boothSettings.SaveAsync(boothSettingsPath); }
+            catch (IOException) { /* Settings remain usable; an explicit save will report any write failure. */ }
+            catch (UnauthorizedAccessException) { /* A read-only profile must not prevent the home screen. */ }
+            if (refreshCatalogOnOpen) _ = RefreshCatalogAsync();
+        };
         Resized += (_, _) => ConstrainLayout();
         pulse.Tick += (_, _) =>
         {
@@ -279,7 +290,8 @@ public sealed partial class MainWindow : Window
             try {
             if (boothSettings.PhysicalPrinting)
             {
-                var submission = await controller.PrintAsync(new WindowsPhotoPrinter(store, controller.Sheet!, boothSettings.PrinterName));
+                var printer = WindowsPhotoPrinter.SelectPrinter(boothSettings.PrinterName, WindowsPhotoPrinter.ListPrinters());
+                var submission = await controller.PrintAsync(new WindowsPhotoPrinter(store, controller.Sheet!, printer));
                 printState.Text = $"Envoyé à l’imprimante (travail {submission.SpoolJobId}). Récupérez votre feuille après sa sortie.";
                 return;
             }
@@ -328,7 +340,7 @@ public sealed partial class MainWindow : Window
 
     private async Task ShowSettingsAsync()
     {
-        if (kioskLocked && !operatorAccess) { await RequestOperatorAsync(); return; }
+        if (!operatorAccess) { await RequestOperatorAsync(); return; }
         if (controller.IsBusy) return;
         var settings = Dialog("Réglages de la borne", 690, 680);
         var pin = new TextBox { PasswordChar = '●', MaxLength = 4 };
@@ -337,10 +349,11 @@ public sealed partial class MainWindow : Window
         var content = new StackPanel { Spacing = 18, Margin = new Thickness(30) };
         content.Children.Add(Text("Prêts pour la fête ?", 34, FontWeight.SemiBold));
         content.Children.Add(info);
-        var canon = new CheckBox { Content = "Utiliser le Canon USB (Windows)", IsChecked = boothSettings.CanonCamera };
+        var canon = new CheckBox { Name = "CanonCamera", Content = "Utiliser le Canon USB (Windows)", IsChecked = boothSettings.CanonCamera };
         var canonSdk = new CheckBox { Content = "Connexion avancée : SDK Canon officiel installé", IsChecked = boothSettings.CanonUseOfficialSdk };
-        var printing = new CheckBox { Content = "Envoyer à l’imprimante", IsChecked = boothSettings.PhysicalPrinting };
-        var printers = new ComboBox { ItemsSource = WindowsPhotoPrinter.ListPrinters(), SelectedItem = boothSettings.PrinterName,
+        var printing = new CheckBox { Name = "PhysicalPrinting", Content = "Envoyer à l’imprimante", IsChecked = boothSettings.PhysicalPrinting };
+        var installedPrinters = WindowsPhotoPrinter.ListPrinters();
+        var printers = new ComboBox { Name = "PhotoPrinter", ItemsSource = installedPrinters, SelectedItem = WindowsPhotoPrinter.SelectPrinter(boothSettings.PrinterName, installedPrinters),
             PlaceholderText = "Choisir la DNP DS620", HorizontalAlignment = HorizontalAlignment.Stretch };
         content.Children.Add(canon); content.Children.Add(canonSdk);
         content.Children.Add(Text("Par défaut, connexion par le pilote Windows existant, sans SDK à installer. Compatibilité à vérifier sur le boîtier.",15));

@@ -46,7 +46,9 @@ Six built-in choices are immediately available. Fetch public metadata once in th
 
 ## Operator access
 
-Settings button visible in windowed mode. Optional four-character code. Entering fullscreen keeps settings open. Once dismissed, hold the lower-left corner for three seconds; authenticate if a code is configured. Short hold, movement away or cancellation must not open settings. Common Windows desktop shortcuts are filtered in version 0.9.1; secure desktop and system access still require Windows kiosk policies.
+A 56×56 gear button at the lower-left of home opens settings with a single click in both windowed and fullscreen modes. It authenticates with the optional saved four-character code, or opens directly if none is configured. The windowed header settings button uses the same protected route. Authentication and entering fullscreen keep fullscreen active until an explicit operator exit. The older corner hold remains a fallback on other screens. Common Windows desktop shortcuts are filtered; secure desktop and system access still require Windows kiosk policies.
+
+Version 0.10.1 defaults to real Canon WPD capture and physical printing. It migrates older rehearsal profiles once without changing their credential, cloud, projection, focus or fullscreen preferences. A unique installed DS620/DS620A queue is selected automatically; absent or ambiguous DNP drivers require an operator choice, never a substitute PDF printer. An explicit later rehearsal choice survives restart. Tests select fake hardware explicitly. The official SDK and manual-focus confirmation are never assumed.
 
 ## Evidence and limits
 

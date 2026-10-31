@@ -15,9 +15,9 @@ Le matériel cible est un Canon EOS 4000D et une DNP DS620 sous Windows 10 Pro 2
 - [Recette Windows](docs/REPRISE_WINDOWS.md) : installation et essais sur le PC de la salle.
 - [Validation](docs/VALIDATION.md) : preuves, commandes, limites.
 
-Par défaut, tout est simulé : aucune caméra, aucune impression et aucun appel payant.
-Dans Réglages, on peut sélectionner des photos locales pour répéter le vrai parcours.
-Le bouton « Imprimer » exporte ce même JPEG tant que l’envoi à l’imprimante est désactivé.
+Par défaut, le Canon USB et l’impression réelle sont activés. Une seule file DNP DS620 installée est présélectionnée ; aucune imprimante PDF n’est choisie automatiquement. La mise à jour 0.10.1 applique ces réglages une fois aux anciens profils de démonstration, sans changer le code ni la connexion en ligne.
+La roue crantée en bas à gauche de l’accueil ouvre les réglages d’un clic, même en plein écran. Le code enregistré est demandé ; sans code, l’accès est direct.
+Pour répéter sans matériel, désactiver explicitement le Canon et l’envoi à l’imprimante dans les réglages, puis enregistrer. On peut alors choisir des photos locales ; « Imprimer » exporte `print-preview.jpg`. Ce choix de répétition reste conservé aux lancements suivants.
 Métamorphose propose dix sept univers illustrés et La Surprise du Chef. Les huit tables de la soirée sont dans **by Estelle** ; **Les incontournables** contient Colors Party, Halloween et Sous cloche ; les six autres restent dans **Autres**. Pour quatre photos, sélectionner de un à quatre univers répartis de façon équilibrée. Les réglages actualisent le catalogue depuis le serveur sans reconstruire l’application. Voir [les thèmes et leurs illustrations](docs/THEMES_ESTELLE.md).
 Voir [la gestion des univers](docs/UNIVERS.md).
 
@@ -48,7 +48,7 @@ L’API exige le secret de la borne pour créer une image. Les jetons QR ne perm
 
 **À valider dans la salle :** portrait Métamorphose, QR, verrouillage Windows 10 et vraies
 liaisons caméra/imprimante. La connexion Canon utilise le pilote Windows existant sans SDK
-propriétaire par défaut ; sa compatibilité EOS4000D doit être vérifiée sur l’appareil. Le plein écran utilise un code facultatif de quatre caractères et un maintien de trois secondes dans le coin inférieur gauche pour les réglages. Les sorties courantes au clavier sont bloquées en plein écran ; la protection de Windows lui-même exige un compte kiosque dédié, décrit dans [KIOSQUE_WINDOWS.md](docs/KIOSQUE_WINDOWS.md).
+propriétaire par défaut ; sa compatibilité EOS4000D doit être vérifiée sur l’appareil. Le plein écran utilise un code facultatif de quatre caractères, demandé après un clic sur la roue crantée de l’accueil. Les sorties courantes au clavier sont bloquées en plein écran ; la protection de Windows lui-même exige un compte kiosque dédié, décrit dans [KIOSQUE_WINDOWS.md](docs/KIOSQUE_WINDOWS.md).
 
 Le pilote WPD ne confirme pas encore l’autofocus du 4000D : le premier essai nécessite une mise au point manuelle vérifiée dans les réglages ou la voie du SDK officiel.
 

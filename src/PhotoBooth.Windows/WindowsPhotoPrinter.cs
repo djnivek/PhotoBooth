@@ -44,6 +44,17 @@ public sealed class WindowsPhotoPrinter(SessionStore store, StoredAsset sheet, s
         finally { Marshal.FreeHGlobal(buffer); }
     }
 
+    public static string SelectPrinter(string configured, IReadOnlyList<string> installed)
+    {
+        var saved = installed.FirstOrDefault(name => string.Equals(name, configured, StringComparison.OrdinalIgnoreCase));
+        if (saved is not null) return saved;
+        var dnp = installed.Where(name => System.Text.RegularExpressions.Regex.IsMatch(name,
+            @"\bDS[\s_-]*620A?\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase |
+            System.Text.RegularExpressions.RegexOptions.CultureInvariant)).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        // Never send a guest's photo to a PDF driver or an ambiguous second queue.
+        return dnp.Length == 1 ? dnp[0] : "";
+    }
+
     private PrintSubmission Submit(PrintRequest request, byte[] pixels)
     {
         IntPtr printer = IntPtr.Zero, devmode = IntPtr.Zero, dc = IntPtr.Zero; var started = false; var submissionAttempted = false;
