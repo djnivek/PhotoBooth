@@ -168,7 +168,9 @@ foreach(var size in new[]{new Size(1280,800),new Size(960,700)})
 {
     var requests=0; var multiTransform=new DelayedTransform();
     window=new MainWindow((_,_)=>Task.CompletedTask,catalogLoader:_=>{requests++;return Task.FromResult(many);},transformFactory:()=>multiTransform);
-    window.Width=size.Width;window.Height=size.Height;window.Show();Pump(100);ClickLabel("Métamorphose");AssertStylesFit();
+    window.Width=size.Width;window.Height=size.Height;window.Show();
+    Until(()=>requests==1&&window.CatalogCount==many.Styles.Length,3000);
+    ClickLabel("Métamorphose");AssertStylesFit();
     var scroll=window.GetVisualDescendants().OfType<ScrollViewer>().Single(control=>control.Name=="StyleScroll");
     if(scroll.Extent.Height<=scroll.Viewport.Height)throw new Exception("Twenty themes did not create a scrollable catalog.");
     scroll.Offset=new Vector(0,scroll.Extent.Height);Pump(100);var offset=scroll.Offset;

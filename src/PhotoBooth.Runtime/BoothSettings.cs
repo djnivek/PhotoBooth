@@ -5,6 +5,7 @@ namespace PhotoBooth.Runtime;
 
 public sealed record BoothSettings
 {
+    private static readonly SemaphoreSlim SettingsWrites = new(1, 1);
     public const int CurrentHardwareDefaultsVersion = 1;
     public int HardwareDefaultsVersion { get; init; } = CurrentHardwareDefaultsVersion;
     public bool CanonCamera { get; init; } = true;
@@ -32,5 +33,11 @@ public sealed record BoothSettings
             settings = settings with { HardwareDefaultsVersion = CurrentHardwareDefaultsVersion, CanonCamera = true, PhysicalPrinting = true };
         return settings;
     }
-    public Task SaveAsync(string path) => SessionStore.WriteAtomicAsync(path, JsonSerializer.SerializeToUtf8Bytes(this, SessionStore.JsonOptions));
+    public async Task SaveAsync(string path)
+    {
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(this, SessionStore.JsonOptions);
+        await SettingsWrites.WaitAsync();
+        try { await SessionStore.WriteAtomicAsync(path, bytes); }
+        finally { SettingsWrites.Release(); }
+    }
 }

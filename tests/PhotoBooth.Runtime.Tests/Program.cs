@@ -134,6 +134,11 @@ try
         await (upgraded with { CanonCamera = false, PhysicalPrinting = false }).SaveAsync(path);
         var rehearsal = BoothSettings.Load(path);
         Check(!rehearsal.CanonCamera && !rehearsal.PhysicalPrinting, "An explicit later rehearsal choice survives restart");
+        var startupWrite = upgraded.SaveAsync(path);
+        var operatorWrite = (upgraded with { CanonCamera=false, PhysicalPrinting=false }).SaveAsync(path);
+        await Task.WhenAll(startupWrite, operatorWrite);
+        var lastSaved = BoothSettings.Load(path);
+        Check(!lastSaved.CanonCamera && !lastSaved.PhysicalPrinting, "A later operator save cannot be overwritten by startup persistence");
     }
 }
 finally { Directory.Delete(root, recursive: true); }
