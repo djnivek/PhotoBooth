@@ -1,0 +1,18 @@
+{
+  "operating_system_lockdown_applied": false,
+  "node_tests": 44,
+  "native_ui_journeys": "pass",
+  "csharp": {
+    "imaging": 308,
+    "canon_fake": 34,
+    "cloud": 102,
+    "print_preparation": 50,
+    "runtime": 72,
+    "core": 29
+  },
+  "hardware_validated": false,
+  "chromium_gallery": "pass",
+  "deno_tests": 37,
+  "chromium_viewer": "pass",
+  "openai_called": false
+}

@@ -1,8 +1,9 @@
 {
-  "version": "2026-10-31.3",
+  "version": "2026-10-31.4",
   "styles": [
     {
       "id": "colors_party",
+      "category": "other",
       "label": "Colors Party",
       "description": "Du velours, des couleurs et vous.",
       "asset": "colors_party",
@@ -16,6 +17,7 @@
     },
     {
       "id": "halloween",
+      "category": "other",
       "label": "Halloween",
       "description": "Des frissons, surtout des sourires.",
       "asset": "halloween",
@@ -29,6 +31,7 @@
     },
     {
       "id": "space",
+      "category": "other",
       "label": "Dans les étoiles",
       "description": "Votre équipage change de planète.",
       "asset": "space",
@@ -42,6 +45,7 @@
     },
     {
       "id": "fantasy",
+      "category": "other",
       "label": "Pays imaginaire",
       "description": "Les licornes sont de la partie.",
       "asset": "fantasy",
@@ -55,6 +59,7 @@
     },
     {
       "id": "elves",
+      "category": "other",
       "label": "Petits lutins",
       "description": "Petits dans un monde trop grand.",
       "asset": "elves",
@@ -68,6 +73,7 @@
     },
     {
       "id": "disco",
+      "category": "other",
       "label": "Disco velours",
       "description": "La piste n’attendait que vous.",
       "asset": "disco",
@@ -81,6 +87,7 @@
     },
     {
       "id": "animals",
+      "category": "other",
       "label": "Drôles de bêtes",
       "description": "Un brin sauvage, toujours vous.",
       "asset": "animals",
@@ -94,6 +101,7 @@
     },
     {
       "id": "showcase",
+      "category": "other",
       "label": "Sous cloche",
       "description": "Votre petit monde en vitrine.",
       "asset": "showcase",
@@ -107,6 +115,7 @@
     },
     {
       "id": "feast",
+      "category": "other",
       "label": "À croquer",
       "description": "La gourmandise voit les choses en grand.",
       "asset": "feast",

@@ -46,7 +46,7 @@ L’API exige le secret de la borne pour créer une image. Les jetons QR ne perm
 
 **Encore nécessaires :** clé OpenAI et essai manuel payant, exécution Windows 10 et vraies
 liaisons caméra/imprimante. La connexion Canon utilise le pilote Windows existant sans SDK
-propriétaire par défaut ; sa compatibilité EOS4000D doit être vérifiée sur l’appareil. Le plein écran utilise un code facultatif de quatre caractères et un maintien de trois secondes dans le coin inférieur gauche pour les réglages. Il ne neutralise pas les commandes système Windows.
+propriétaire par défaut ; sa compatibilité EOS4000D doit être vérifiée sur l’appareil. Le plein écran utilise un code facultatif de quatre caractères et un maintien de trois secondes dans le coin inférieur gauche pour les réglages. Les sorties courantes au clavier sont bloquées en plein écran ; la protection de Windows lui-même exige un compte kiosque dédié, décrit dans [KIOSQUE_WINDOWS.md](docs/KIOSQUE_WINDOWS.md).
 
 Le pilote WPD ne confirme pas encore l’autofocus du 4000D : le premier essai nécessite une mise au point manuelle vérifiée dans les réglages ou la voie du SDK officiel.
 

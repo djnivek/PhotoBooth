@@ -133,3 +133,9 @@ Stockage Free conservé à la demande de Kevin ; revoir après les essais réuss
 `sh scripts/verify.sh`, ou `./scripts/verify.ps1` sur Windows. Sur ce Mac : `PHOTOBOOTH_DOTNET=/tmp/photobooth-dotnet/dotnet`, `DOTNET_CLI_HOME=/tmp/photobooth-dotnet-home`. Tests C# exécutables, Deno et Node ; pas dotnet test. Construire avec `--disable-build-servers -m:1`, puis tests `--no-build`.
 
 `./scripts/package-windows.ps1 -Version 0.9.0` prépare un ZIP autonome, l’extrait puis exécute `--self-test` et `--smoke-ui` sur Windows. Release GitHub privée à distinguer de ce paquet local, SHA256, captures et reçus. Sources seules dans Git. Aucun auteur ou co-auteur assistant.
+
+## 0.9.1 : kiosque, catégories et audit de publication
+
+Base récupérée sur main d7652f4. Plein écran renforcé et conservé au redémarrage, sorties clavier courantes bloquées, fichiers cachés aux invités, code facultatif et maintien de trois secondes conservés. Catégories by Estelle / Les incontournables / Autres : neuf thèmes existants dans Autres en attendant les sept tables et le classement de Kevin. Catalogue 2026-10-31.4 déployé et vérifié, sans génération ni modification de budget/abonnement. Aucun secret détecté dans l'audit de l'historique, des releases et des journaux GitHub ; compteurs dans docs/evidence/kiosk-categories. Dépôt encore privé, décision de publication à Kevin. scripts/audit-secrets.ps1 ajoute la garde CI.
+
+La protection complète du bureau exige un compte standard Assigned Access sur le PC de la salle : guide et générateur XML inclus dans le ZIP, aucun changement de politique effectué sur le PC de développement. Vérifier sur place les gestes système et Ctrl+Alt+Suppr, puis Canon et DNP. La fonction de classement ne change pas les prompts ni la répartition multi thème de main. Les exemples Citron/Velours des captures sont uniquement des fixtures.

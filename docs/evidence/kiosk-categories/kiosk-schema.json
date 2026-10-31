@@ -1,0 +1,10 @@
+{
+  "os_configuration_applied": false,
+  "source": "https://learn.microsoft.com/en-us/windows/configuration/assigned-access/xsd",
+  "schemas": 6,
+  "validated": [
+    "Windows10",
+    "Windows11",
+    "escaped-path"
+  ]
+}

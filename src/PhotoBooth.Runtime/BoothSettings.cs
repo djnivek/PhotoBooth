@@ -9,6 +9,7 @@ public sealed record BoothSettings
     public bool CanonUseOfficialSdk { get; init; }
     public bool CanonManualFocusConfirmed { get; init; }
     public bool ReducedMotion { get; init; }
+    public bool FullscreenEnabled { get; init; }
     public bool PhysicalPrinting { get; init; }
     public string PrinterName { get; init; } = "";
     public bool CloudEnabled { get; init; }

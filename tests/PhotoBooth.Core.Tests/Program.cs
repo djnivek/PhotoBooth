@@ -205,6 +205,17 @@ Test("four-character operator code roundtrip and legacy credential compatibility
     Check(KioskExitGate.Restore(old).TryAuthorizeExit("381629"));
 });
 
+Test("catalog categories are ordered, backward compatible and bounded", () =>
+{
+    Check(StyleCatalog.Categories.Select(c => c.Id).SequenceEqual(new[] {"estelle", "essentials", "other"}));
+    var oldJson = System.Text.Json.JsonSerializer.Serialize(StyleCatalog.BuiltIn).Replace(",\"Category\":\"other\"", "");
+    Check(StyleCatalog.Parse(oldJson).Styles.All(style => style.Category == "other"));
+    var categorized = StyleCatalog.BuiltIn with { Styles = [StyleCatalog.BuiltIn.Styles[0] with { Category = "estelle" }] };
+    Check(StyleCatalog.Parse(System.Text.Json.JsonSerializer.Serialize(categorized)).Styles[0].Category == "estelle");
+    Throws<InvalidDataException>(() => StyleCatalog.Parse(System.Text.Json.JsonSerializer.Serialize(categorized with {
+        Styles = [categorized.Styles[0] with { Category = "untrusted" }] })));
+});
+
 Test("theme selection is bounded, immutable and independent of click order", () =>
 {
     string[] chosen = ["space", "halloween", "fantasy"];

@@ -63,6 +63,12 @@ DialogClick(settings,"Activer le plein écran");Until(()=>window.WindowState==Wi
 if(!settings.IsVisible)throw new Exception("Entering fullscreen must leave settings open.");
 if(Find("Settings")!.IsVisible)throw new Exception("Settings button leaked into fullscreen guest UI.");
 DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);
+window.KeyPress(Key.Escape,RawInputModifiers.None,PhysicalKey.Escape,null);window.KeyPress(Key.F11,RawInputModifiers.None,PhysicalKey.F11,null);window.Close();Pump(100);
+if(!window.IsVisible||window.WindowState!=WindowState.FullScreen||window.OwnedWindows.Count!=0)
+    throw new Exception("Guest keyboard/close action escaped or opened the operator code dialog.");
+window.WindowState=WindowState.Minimized;Pump(80);
+if(window.WindowState!=WindowState.FullScreen||!window.Topmost||window.CanResize||window.WindowDecorations!=WindowDecorations.None)
+    throw new Exception("Guest fullscreen does not enforce undecorated, non-minimizable foreground presentation.");
 // Short press, moving away, and release must not authorize or open the protected panel.
 HoldCorner(350);Pump(100);if(window.OwnedWindows.Count!=0)throw new Exception("Short corner tap opened settings.");
 var corner=new Point(20,window.ClientSize.Height-20);
@@ -84,12 +90,16 @@ DialogClick(settings,"Actualiser les univers");Until(()=>catalogCalls==2,2000);
 failCatalog=true;DialogClick(settings,"Actualiser les univers");Until(()=>catalogCalls==3,2000);
 if(window.CatalogCount!=StyleCatalog.BuiltIn.Styles.Length)throw new Exception("Network failure replaced the in-memory catalog.");
 DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);
-// Preserve the existing desktop escape guard after the operator-access refactor.
-Click("OpenFiles");Until(()=>window.OwnedWindows.Count==1,2000);unlock=window.OwnedWindows.Single();
-DialogClick(unlock,"Retour à la fête");Until(()=>window.OwnedWindows.Count==0,2000);
-if(openedFolders.Count!=0||window.WindowState!=WindowState.FullScreen)throw new Exception("Cancelling file access escaped the protected booth.");
-Click("OpenFiles");Until(()=>window.OwnedWindows.Count==1,2000);unlock=window.OwnedWindows.Single();
+// Guest results must not offer a second operator route or launch Explorer, even without a PIN.
+if(Find("OpenFiles")!.IsVisible)throw new Exception("Explorer action leaked into guest fullscreen.");
+Find("OpenFiles")!.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump(80);
+if(openedFolders.Count!=0||window.OwnedWindows.Count!=0||window.WindowState!=WindowState.FullScreen)
+    throw new Exception("Hidden file action escaped the protected booth.");
+HoldCorner(3150);Until(()=>window.OwnedWindows.Count==1,2000);unlock=window.OwnedWindows.Single();
 unlock.GetVisualDescendants().OfType<TextBox>().Single().Text="E629";DialogClick(unlock,"Déverrouiller");
+Until(()=>window.OwnedWindows.Any(w=>w.Title=="Réglages de la borne"),3000);settings=window.OwnedWindows.Single();
+DialogClick(settings,"Quitter le plein écran");Until(()=>window.WindowState==WindowState.Normal&&Find("OpenFiles")!.IsVisible,2000);
+DialogClick(settings,"Fermer les réglages");Click("OpenFiles");
 Until(()=>openedFolders.Count==1&&window.WindowState==WindowState.Normal,2000);
 Click("Settings");Until(()=>window.OwnedWindows.Count==1,2000);settings=window.OwnedWindows.Single();
 DialogClick(settings,"Activer le plein écran");Until(()=>window.WindowState==WindowState.FullScreen,2000);
@@ -114,6 +124,16 @@ using(var touch=window.TouchBegin(touchPoint)) {Pump(3150);window.TouchEnd(touch
 Until(()=>window.OwnedWindows.Any(w=>w.Title=="Réglages de la borne"),2000);settings=window.OwnedWindows.Single();
 DialogClick(settings,"Quitter le plein écran");Until(()=>window.WindowState==WindowState.Normal,2000);
 DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);window.Close();Pump(100);
+// Fullscreen preference survives an application restart without saving a plaintext code.
+var restartSettings = BoothSettings.Load(Path.Combine(root,"booth-settings.json")) with { FullscreenEnabled=true };
+var saveRestart = restartSettings.SaveAsync(Path.Combine(root,"booth-settings.json"));
+Until(()=>saveRestart.IsCompleted,2000);saveRestart.GetAwaiter().GetResult();
+window=new MainWindow(refreshCatalogOnOpen:false);window.Show();Pump(80);
+if(window.WindowState!=WindowState.FullScreen)throw new Exception("Saved fullscreen preference was ignored at startup.");
+HoldCorner(3150);Until(()=>window.OwnedWindows.Count==1,2000);settings=window.OwnedWindows.Single();
+if(settings.Title!="Réglages de la borne")throw new Exception("No-code hold did not open settings after restart.");
+DialogClick(settings,"Quitter le plein écran");Until(()=>window.WindowState==WindowState.Normal,2000);
+DialogClick(settings,"Fermer les réglages");window.Close();Pump(80);
 // A large dynamic catalog remains selectable by touch without rebuilding or losing scroll/focus.
 var many = new StyleCatalog("twenty.1", Enumerable.Range(0,20).Select(i => new PhotoStyle($"theme_{i:00}",
     i==19?"Les grandes aventures de tous les invités":$"Univers {i+1}",
@@ -163,10 +183,27 @@ foreach(var size in new[]{new Size(1280,800),new Size(960,700)})
     window.Close();Pump(80);
 }
 window=new MainWindow(refreshCatalogOnOpen:false);window.Show();Pump(80);ClickLabel("Métamorphose");
+if(!window.GetVisualDescendants().OfType<StackPanel>().Any(c=>c.Name=="Category_estelle") ||
+   !window.GetVisualDescendants().OfType<StackPanel>().Any(c=>c.Name=="Category_other"))
+    throw new Exception("Estelle and other theme sections are missing.");
 Click("Style_halloween");Click("Style_animals");Click("Style_showcase");Click("Style_feast");
 Capture("themes-nine-1280x800.png");window.Width=960;window.Height=700;Pump(100);AssertStylesFit();Capture("themes-nine-960x700.png");
 var nineScroll=window.GetVisualDescendants().OfType<ScrollViewer>().Single(control=>control.Name=="StyleScroll");
 nineScroll.Offset=new Vector(0,nineScroll.Extent.Height);Pump(100);Capture("themes-nine-bottom-960x700.png");
+window.Close();Pump(80);
+// Backend categories reorder sections but preserve within-category catalog order and selections.
+var categories = new StyleCatalog("categories.1", [
+    StyleCatalog.BuiltIn.Styles[0] with { Category="other" },
+    StyleCatalog.BuiltIn.Styles[1] with { Category="essentials" },
+    new PhotoStyle("citron","Citron","La table des citrons.","", "#F4E6B7",["Une pincée de soleil."],"estelle"),
+    new PhotoStyle("velours","Velours","La table du velours.","", "#F1D5D3",["Le velours entre en scène."],"estelle") ]);
+window=new MainWindow(catalogLoader:_=>Task.FromResult(categories));window.Show();Pump(100);ClickLabel("Métamorphose");AssertStylesFit();
+var names=window.GetVisualDescendants().OfType<StackPanel>().Where(c=>c.Name?.StartsWith("Category_")==true).Select(c=>c.Name);
+if(!names.SequenceEqual(new[]{"Category_estelle","Category_essentials","Category_other"}))throw new Exception("Theme category order changed.");
+Click("Style_citron");Click("Style_halloween");
+if(((ToggleButton)Find("Style_citron")!).IsChecked!=true||((ToggleButton)Find("Style_halloween")!).IsChecked!=true)
+    throw new Exception("Themes cannot be mixed across categories.");
+Capture("themes-categories-1280x800.png");window.Width=960;window.Height=700;Pump(80);AssertStylesFit();Capture("themes-categories-960x700.png");
 window.Close();Pump(80);
 // A slow startup catalog must not replace the picker underneath a guest.
 var deferredCatalog=new TaskCompletionSource<StyleCatalog>();

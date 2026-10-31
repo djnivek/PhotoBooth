@@ -472,6 +472,7 @@ Deno.test("server catalog obeys dynamic bounds, unique concrete IDs and nonempty
     assert(style.label.trim().length > 0 && style.label.length <= 48 && guestCopy(style.label));
     assert(style.description.length <= 140 && guestCopy(style.description));
     assert(style.asset.length <= 80 && /^#[0-9a-f]{6}$/i.test(style.color));
+    assert(["estelle", "essentials", "other"].includes(style.category));
     assert(style.phrases.length >= 1 && style.phrases.length <= 20);
     assert(style.phrases.every(p => p.trim().length > 0 && p.length <= 120 && guestCopy(p)));
   }

@@ -117,7 +117,7 @@ public sealed partial class MainWindow : Window
                 else if (screen == "styles") RenderStyles();
             }
         }
-        Opened += (_, _) => { ConstrainLayout(); if (refreshCatalogOnOpen) _ = RefreshCatalogAsync(); };
+        Opened += (_, _) => { ConstrainLayout(); if (boothSettings.FullscreenEnabled || Program.ForceKiosk) EnterFullscreen(); if (refreshCatalogOnOpen) _ = RefreshCatalogAsync(); };
         Resized += (_, _) => ConstrainLayout();
         pulse.Tick += (_, _) =>
         {
@@ -130,13 +130,14 @@ public sealed partial class MainWindow : Window
         flashTimer.Tick += (_, _) => { if (flashVeil is not null) flashVeil.Opacity = 0; flashTimer.Stop(); };
         Closing += (_, e) =>
         {
-            if (kioskLocked) { e.Cancel = true; _ = RequestOperatorAsync(true); }
+            if (kioskLocked) e.Cancel = true;
         };
         Closed += async (_, _) => { resultReturn.Stop(); pulse.Stop(); flashTimer.Stop(); StopProcessing(); cornerTimer.Stop(); lifetime.Cancel(); sharingCancellation?.Cancel(); await controller.DisposeAsync(); foreach (var pending in detachedControllers.ToArray()) await pending.DisposeAsync(); foreach(var metrics in telemetryClients.Values) await metrics.DisposeAsync(); foreach(var viewer in projectionClients.Values) await viewer.DisposeAsync(); currentBitmap?.Dispose(); resultBitmap?.Dispose(); foreach (var bitmap in artwork.Values) bitmap.Dispose(); lifetime.Dispose(); };
+        Closed += (_, _) => shortcutGuard?.Dispose();
         KeyDown += (_, e) =>
         {
             if (e.Key == Key.F11 || (e.Key == Key.Escape && kioskLocked))
-            { e.Handled = true; _ = RequestOperatorAsync(true); }
+                e.Handled = true;
         };
         RenderHome();
     }
@@ -290,11 +291,12 @@ public sealed partial class MainWindow : Window
             } finally {Interlocked.Decrement(ref printingResults);}
         }); print.Name = "PrintPreview"; footer.Children.Add(print); left.Children.Add(printState);
         var folder = Path.GetDirectoryName(store.Resolve(controller.Sheet.Key))!;
-        var files = Button("Voir les fichiers", async () =>
+        var files = Button("Voir les fichiers", () =>
         {
-            if (kioskLocked) await RequestOperatorAsync(true);
             if (!kioskLocked) openFolder(folder);
+            return Task.CompletedTask;
         });
+        resultFiles = files; files.IsVisible = !kioskLocked;
         files.Name = "OpenFiles"; files.Margin = new Thickness(12,0,12,0); Grid.SetColumn(files,1); footer.Children.Add(files);
         var shareStatus = Text(cloud is null ? "Partage en ligne désactivé dans les réglages." : "Préparation de votre lien…", 17); shareStatus.Name = "ShareStatus";
         var qr = new Image { Name = "ShareQr", Width = 230, Height = 230, IsVisible = false, HorizontalAlignment = HorizontalAlignment.Left };
@@ -326,7 +328,7 @@ public sealed partial class MainWindow : Window
 
     private async Task ShowSettingsAsync()
     {
-        if (kioskLocked && !operatorAccess) { await RequestOperatorAsync(false); return; }
+        if (kioskLocked && !operatorAccess) { await RequestOperatorAsync(); return; }
         if (controller.IsBusy) return;
         var settings = Dialog("Réglages de la borne", 690, 680);
         var pin = new TextBox { PasswordChar = '●', MaxLength = 4 };
@@ -419,13 +421,15 @@ public sealed partial class MainWindow : Window
         saveCode.Name = "SaveOperatorCode"; content.Children.Add(saveCode);
         var fullscreen = Button("Activer le plein écran", async () =>
         {
-            await SaveProtection(); kioskLocked = true; WindowState = WindowState.FullScreen;
-            if (adminButton is not null) adminButton.IsVisible = false;
+            await SaveProtection(); EnterFullscreen();
+            boothSettings = boothSettings with { FullscreenEnabled = true };
+            await boothSettings.SaveAsync(boothSettingsPath);
             info.Text = "Plein écran activé. Fermez les réglages pour reprendre la fête.";
         }, true); fullscreen.Name = "EnterFullscreen"; content.Children.Add(fullscreen);
-        var leave = Button("Quitter le plein écran", () => { LeaveFullscreen(); return Task.CompletedTask; });
+        var leave = Button("Quitter le plein écran", LeaveFullscreenAsync);
         leave.Name = "LeaveFullscreen"; content.Children.Add(leave);
         content.Children.Add(Text("Pour retrouver les réglages, gardez le doigt trois secondes dans le coin inférieur gauche.", 16));
+        content.Children.Add(Text("Le plein écran sera conservé au prochain lancement. Pour protéger aussi l’accès à Windows, configurez un compte kiosque dédié sur le PC de la borne.", 15));
         content.Children.Add(Button("Fermer les réglages", () => { settings.Close(); return Task.CompletedTask; }));
         settings.Content = new ScrollViewer { Content = content }; await settings.ShowDialog(this);
     }
@@ -465,7 +469,7 @@ public sealed partial class MainWindow : Window
     }
 
     private Window Dialog(string title, double width, double height) => new()
-    { Title = title, Width = width, Height = height, CanResize = false, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+    { Title = title, Width = width, Height = height, CanResize = false, Topmost = kioskLocked, WindowStartupLocation = WindowStartupLocation.CenterOwner };
 
     private static Grid ChoiceRow(params (string Label, bool Selected, Action Action)[] choices)
     {
