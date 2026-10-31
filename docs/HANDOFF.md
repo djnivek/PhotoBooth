@@ -1,5 +1,13 @@
 # Handoff actif : Colors Party by Estelle
 
+## Admin Mac accessible via Tailscale
+
+Le 31 octobre, le checkout Mac a été actualisé sur main `e602b40`, puis le service utilisateur `local.kevin.photobooth-admin` a été installé sur `127.0.0.1:8787`. [Rapport privé](https://macmini-de-kevin.tail8f2f33.ts.net/photobooth/api/report?days=7&fixtures=0) : identifiant `admin`, mot de passe dans `artifacts/admin-local/access-token` sur ce Mac. Ce jeton admin distinct change au redémarrage ; ne pas publier sa valeur. [Procédure, arrêt et redémarrage](ADMIN_LOCAL.md).
+
+Correctifs nécessaires au vrai Mac : CLI `db query --linked` sans l'option non reconnue `--project-ref`, vérification du projet lié avant exécution, et prise en charge du tableau JSON renvoyé par la CLI. Connexion HTTP Basic ajoutée au navigateur en conservant Bearer, les restrictions d'hôte/origine et la lecture seule. Cinq tests admin réussis ; vraie lecture du rapport par le service et par HTTPS Tailscale, certificat et refus d'accès vérifiés. Les autres routes privées sont intactes. Aucun changement de l'app Windows, du backend déployé ou du budget OpenAI. [Reçu](evidence/mac-admin/service.json).
+
+L'admin actuel est un rapport JSON. Le tableau de bord visuel et le test depuis un autre appareil du tailnet restent distincts de cette activation.
+
 ## Version 0.7 — monitoring et admin local
 
 Kevin demande la collecte métier durable puis le dashboard plus tard sur Mac. Il autorise explicitement la PR et sa fusion. PR17 (version 0.6 déjà approuvée) fusionnée sur b93740a ; travail 0.7 dans `feat/monitoring-local-admin`.

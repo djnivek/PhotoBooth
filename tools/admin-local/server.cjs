@@ -9,15 +9,19 @@ const {promisify}=require('node:util');
 const run=promisify(execFile);
 const project='frkckrvsdsiwivdfyjau';
 function equal(a,b){const x=Buffer.from(a||'');const y=Buffer.from(b);return x.length===y.length&&crypto.timingSafeEqual(x,y);}
-async function readReport(days,fixtures,{cli=process.env.PHOTOBOOTH_SUPABASE_CLI||'supabase',cwd=path.resolve(__dirname,'../..')}={}){
+async function readReport(days,fixtures,{cli=process.env.PHOTOBOOTH_SUPABASE_CLI||'supabase',cwd=path.resolve(__dirname,'../..'),execute=run}={}){
+ // Current CLI selects the project from the linked checkout, not a query flag.
+ if(!Number.isInteger(days)||days<1||days>366||typeof fixtures!=='boolean')throw new Error('Invalid report range');
+ const linkedProject=(await fs.readFile(path.join(cwd,'supabase/.temp/project-ref'),'utf8')).trim();
+ if(linkedProject!==project)throw new Error('Link this checkout to the PhotoBooth project before reading reports');
  const directory=await fs.mkdtemp(path.join(os.tmpdir(),'photobooth-admin-'));
  try{
   const file=path.join(directory,'report.sql');
   // Interpolated values have already been reduced to a bounded integer and boolean.
-  if(!Number.isInteger(days)||days<1||days>366||typeof fixtures!=='boolean')throw new Error('Invalid report range');
   await fs.writeFile(file,'select public.booth_monitoring_report('+days+','+(fixtures?'true':'false')+') as report;');
-  const {stdout}=await run(cli,['db','query','--linked','--project-ref',project,'--file',file,'--output','json'],{cwd,windowsHide:true,timeout:25000,maxBuffer:4*1024*1024});
-  const result=JSON.parse(stdout).rows?.[0]?.report;
+  const {stdout}=await execute(cli,['db','query','--linked','--file',file,'--output','json'],{cwd,windowsHide:true,timeout:25000,maxBuffer:4*1024*1024});
+  const output=JSON.parse(stdout);const rows=Array.isArray(output)?output:output?.rows;
+  const result=rows?.[0]?.report;
   if(!result||!result.totals||!Array.isArray(result.timings))throw new Error('Invalid report response');
   return result;
  }finally{
@@ -28,15 +32,16 @@ async function readReport(days,fixtures,{cli=process.env.PHOTOBOOTH_SUPABASE_CLI
 function createAdminServer({token,read=readReport,tailnetHost}={}){
  if(typeof token!=='string'||token.length<32)throw new Error('Strong local token required');
  if(tailnetHost&&!/^[a-z0-9-]+\.[a-z0-9.-]+\.ts\.net$/.test(tailnetHost))throw new Error('Use the exact Tailscale .ts.net hostname');
+ const browserCredential='Basic '+Buffer.from('admin:'+token).toString('base64');
  const cache=new Map();const inFlight=new Map();
  const server=http.createServer(async(req,res)=>{
-  const respond=(status,body)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'; frame-ancestors 'none'",'Referrer-Policy':'no-referrer'});res.end(JSON.stringify(body));};
+  const respond=(status,body)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Vary':'Authorization','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'; frame-ancestors 'none'",'Referrer-Policy':'no-referrer',...(status===401?{'WWW-Authenticate':'Basic realm="PhotoBooth admin", charset="UTF-8"'}:{})});res.end(JSON.stringify(body));};
   const port=server.address()?.port;
   const hosts=new Set(['127.0.0.1:'+port,'localhost:'+port,...(tailnetHost?[tailnetHost]:[])]);
   if(!hosts.has(req.headers.host))return respond(403,{error:'host_not_allowed'});
   const origins=new Set(['http://127.0.0.1:'+port,'http://localhost:'+port,...(tailnetHost?['https://'+tailnetHost]:[])]);
   if(req.headers.origin&&!origins.has(req.headers.origin))return respond(403,{error:'origin_not_allowed'});
-  if(!equal(req.headers.authorization,'Bearer '+token))return respond(401,{error:'local_admin_token_required'});
+  if(!equal(req.headers.authorization,'Bearer '+token)&&!equal(req.headers.authorization,browserCredential))return respond(401,{error:'local_admin_token_required'});
   if(req.method!=='GET')return respond(405,{error:'read_only'});
   const url=new URL(req.url,'http://127.0.0.1');
   if(url.pathname==='/health')return respond(200,{service:'photobooth-admin',read_only:true,project});
