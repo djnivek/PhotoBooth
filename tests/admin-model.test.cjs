@@ -1,6 +1,11 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');
 const M=require('../web/admin/report-model.js');
 const report=()=>({days:7,include_fixtures:false,generated_at:'2026-10-31T12:00:00Z',collection_started_at:null,totals:{sessions:0,captured:0,generated:0,download_requests:0,generation_failures:0,gallery_views:0,sessions_viewed:0,image_views:0,sessions_ready:0,sessions_failed:0,unclassified_events:0},timings:[],modes:[],chosen_themes:[],resolved_themes:[],download_assets:[],hourly:[]});
+test('all shipped themes keep their French labels in monitoring',()=>{
+ const catalog=require('../src/PhotoBooth.Core/styles.json');
+ for(const theme of catalog.styles)assert.equal(M.label(theme.id),theme.label);
+ assert.equal(M.label('unlisted_remote_theme'),'unlisted_remote_theme');
+});
 test('unknown durations and byte counts are never presented as zero',()=>{
  assert.equal(M.duration(null),'Non mesuré');assert.equal(M.duration(undefined),'Non mesuré');assert.equal(M.bytes(null),'Non mesuré');assert.equal(M.count(NaN),'Non mesuré');
  assert.equal(M.duration(0),'0 ms');assert.equal(M.duration(12750),'12,8 s');assert.equal(M.bytes(1024**3),'1 Go');assert.equal(M.date(null),'Non mesuré');

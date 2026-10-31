@@ -1,0 +1,27 @@
+{
+  "table_artwork_alpha_corners": "transparent",
+  "builtin_asset_bytes": 28078705.0,
+  "native_ui": "pass",
+  "node_tests": 45,
+  "chromium_gallery": "pass",
+  "catalog_groups": {
+    "other": 6,
+    "essentials": 3,
+    "estelle": 8
+  },
+  "provider_portrait_calls": 0,
+  "table_artworks": 8,
+  "chromium_viewer": "pass at 3 sizes, Le Citron and Sous cloche captions",
+  "deno_tests": 40,
+  "asset_generation": "built-in image tool",
+  "real_portrait_identity_validated": false,
+  "camera_and_printer_validated": false,
+  "csharp": {
+    "cloud": 102,
+    "print_preparation": 50,
+    "imaging": 476,
+    "runtime": 72,
+    "core": 30,
+    "canon_fake": 34
+  }
+}

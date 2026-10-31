@@ -183,7 +183,7 @@ Test("catalog accepts new identifiers without prompts and rejects malformed meta
 {
     var json = System.Text.Json.JsonSerializer.Serialize(StyleCatalog.BuiltIn);
     var loaded = StyleCatalog.Parse(json);
-    Check(loaded.Styles.Length == 9 && loaded.Find("not_bundled").Id == StyleCatalog.Chef);
+    Check(loaded.Styles.Length == 17 && loaded.Find("not_bundled").Id == StyleCatalog.Chef);
     Check(new SessionOptions(4, PhotoMode.Surprise, styleChoice: "ocean").StyleChoice == "ocean");
     Throws<InvalidDataException>(() => StyleCatalog.Parse("{\"version\":\"x\",\"styles\":[null]}"));
     Throws<ArgumentException>(() => new SessionOptions(1, PhotoMode.Surprise, styleChoice: "../path"));
@@ -208,7 +208,7 @@ Test("four-character operator code roundtrip and legacy credential compatibility
 Test("catalog categories are ordered, backward compatible and bounded", () =>
 {
     Check(StyleCatalog.Categories.Select(c => c.Id).SequenceEqual(new[] {"estelle", "essentials", "other"}));
-    var oldJson = System.Text.Json.JsonSerializer.Serialize(StyleCatalog.BuiltIn).Replace(",\"Category\":\"other\"", "");
+    var oldJson = System.Text.RegularExpressions.Regex.Replace(System.Text.Json.JsonSerializer.Serialize(StyleCatalog.BuiltIn), ",\"Category\":\"(?:estelle|essentials|other)\"", "");
     Check(StyleCatalog.Parse(oldJson).Styles.All(style => style.Category == "other"));
     var categorized = StyleCatalog.BuiltIn with { Styles = [StyleCatalog.BuiltIn.Styles[0] with { Category = "estelle" }] };
     Check(StyleCatalog.Parse(System.Text.Json.JsonSerializer.Serialize(categorized)).Styles[0].Category == "estelle");

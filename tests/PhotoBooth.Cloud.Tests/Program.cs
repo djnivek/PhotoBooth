@@ -15,7 +15,7 @@ try
     using(var handler=new CatalogHttp(catalogJson))
     {
         var catalog=await StyleCatalogClient.FetchAsync("https://test.supabase.co/functions/v1/photobooth-api",default,handler);
-        Check(catalog.Styles.Length==9&&handler.Calls==1,"Public catalog uses exactly one unauthenticated request");
+        Check(catalog.Styles.Length==17&&handler.Calls==1,"Public catalog uses exactly one unauthenticated request");
     }
     foreach(var invalid in new[]{"{}",new string('x',256*1024+1),catalogJson.Replace("Halloween","Halloween AI"),catalogJson.Replace("Halloween","Halloween-party")})
     {
@@ -220,7 +220,7 @@ try
         Check(!File.ReadAllText(secret).Contains("test-only-credential"),"Credential not stored as literal text");
     }
 }
-finally{Directory.Delete(root,true);}
+finally{if(Directory.Exists(root))Directory.Delete(root,true);}
 Console.WriteLine($"PASS {passed} cloud client checks; HTTP fully replaced by a fake handler, no paid API or external network.");
 
 sealed class FailingTransform:IPhotoTransform

@@ -6,6 +6,7 @@ const server=http.createServer((req,res)=>{for(const h of JSON.parse(fs.readFile
 const origin='https://frkckrvsdsiwivdfyjau.supabase.co';
 const make=(id,count=1)=>({id,photo_count:count,mode:'surprise',style:'halloween',released_at:new Date().toISOString(),photos:Array.from({length:count},(_,i)=>({name:`photo-${i+1}.jpg`}))});
 const first=make('e3ac9960-328c-4a62-8d68-1266361bb8cf'),second=make('a3ac9960-328c-4a62-8d68-1266361bb8cf',4);
+first.style='lemon';second.style='showcase';
 (async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));const local=`http://127.0.0.1:${server.address().port}`;const browser=await chromium.launch();const reports=[];
 try {for(const viewport of [{width:1920,height:1080},{width:1280,height:720},{width:390,height:844}]){
  const page=await browser.newPage({viewport});page.setDefaultTimeout(10000);await page.clock.install({time:new Date("2026-10-31T12:00:00Z")});const errors=[];page.on('pageerror',e=>errors.push(e.message));let feed=[first],enabled=true,offline=false;const requested=[];
@@ -18,9 +19,9 @@ try {for(const viewport of [{width:1920,height:1080},{width:1280,height:720},{wi
  await page.goto(local+'/viewer/');await page.clock.pauseAt(new Date('2026-10-31T12:00:10Z'));assert.match(await page.locator('#detail').textContent(),/lien de projection/);
  await page.goto(local+'/viewer/#'+'a'.repeat(64));await page.locator('#countdown').waitFor({state:'visible'});await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:path.join(output,`announcement-${viewport.width}.png`),fullPage:true});
  await page.clock.runFor(16000);await page.locator('#photograph').waitFor({state:'visible'});await page.waitForFunction(()=>document.querySelector('#photo').naturalWidth>0);await page.screenshot({path:path.join(output,`photo-${viewport.width}.png`),fullPage:true});
- feed=[first,second];await page.clock.runFor(5000);assert.match(await page.locator('#caption').textContent(),/1 \/ 1/);assert.equal(await page.locator('#photograph').isVisible(),true);
+ feed=[first,second];await page.clock.runFor(5000);assert.match(await page.locator('#caption').textContent(),/Le Citron.*1 \/ 1/);assert.equal(await page.locator('#photograph').isVisible(),true);
  await page.clock.runFor(23900);assert.equal(await page.locator('#stage').getAttribute('data-phase'),'photo');await page.clock.runFor(2100);assert.equal(await page.locator('#stage').getAttribute('data-phase'),'announcement');
- await page.clock.runFor(16000);await page.locator('#photograph').waitFor({state:'visible'});assert.match(await page.locator('#caption').textContent(),/1 \/ 4/);
+ await page.clock.runFor(16000);await page.locator('#photograph').waitFor({state:'visible'});assert.match(await page.locator('#caption').textContent(),/Sous cloche.*1 \/ 4/);
  for(let i=2;i<=4;i++){await page.clock.runFor(15250);assert.match(await page.locator('#caption').textContent(),new RegExp(i+' / 4'));}
  await page.clock.runFor(15250);await page.locator('#stage[data-phase=idle]').waitFor({state:'visible'});assert.equal(await page.locator('#stage').getAttribute('data-phase'),'idle');const cachedCalls=requested.length;
  await page.clock.runFor(30000);assert.equal(requested.length,cachedCalls);offline=true;await page.clock.runFor(5500);assert.match(await page.locator('#connection').textContent(),/interrompue/);assert.equal(await page.locator('#photograph').isVisible(),true);

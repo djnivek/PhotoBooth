@@ -1,11 +1,115 @@
 {
-  "version": "2026-10-31.4",
+  "version": "2026-10-31.5",
   "styles": [
     {
+      "id": "sapphire",
+      "category": "estelle",
+      "label": "Le Saphir",
+      "description": "Une fête au cœur du bleu.",
+      "asset": "sapphire",
+      "color": "#DDEBF0",
+      "phrases": [
+        "Les facettes préparent leur grand effet.",
+        "Une touche de bleu, beaucoup d’éclat.",
+        "Le saphir entre dans la lumière."
+      ]
+    },
+    {
+      "id": "lavender",
+      "category": "estelle",
+      "label": "La Lavande",
+      "description": "Une escapade au parfum de Provence.",
+      "asset": "lavender",
+      "color": "#E8E1EF",
+      "phrases": [
+        "La lavande sort ses habits de fête.",
+        "Un souffle de Provence.",
+        "Les bouquets préparent leur entrée."
+      ]
+    },
+    {
+      "id": "cashmere",
+      "category": "estelle",
+      "label": "Le Cachemire",
+      "description": "Un cocon de douceur, version grand luxe.",
+      "asset": "cashmere",
+      "color": "#E8DFD2",
+      "phrases": [
+        "Les mailles se mettent sur leur trente et un.",
+        "Une bonne dose de douceur.",
+        "Le cachemire déroule son décor."
+      ]
+    },
+    {
+      "id": "olive",
+      "category": "estelle",
+      "label": "L’Olivier",
+      "description": "Une fête à l’ombre des oliviers.",
+      "asset": "olive",
+      "color": "#E1E8CF",
+      "phrases": [
+        "Les oliviers dressent la table.",
+        "Une pincée de soleil et de vert.",
+        "Les branches préparent leur grand effet."
+      ]
+    },
+    {
+      "id": "lemon",
+      "category": "estelle",
+      "label": "Le Citron",
+      "description": "Le soleil se presse pour vous.",
+      "asset": "lemon",
+      "color": "#F6EDB8",
+      "phrases": [
+        "Les citrons font le plein de soleil.",
+        "Une fête bien pressée de vous voir.",
+        "Une pincée de jaune et de bonne humeur."
+      ]
+    },
+    {
+      "id": "velvet",
+      "category": "estelle",
+      "label": "Le Velour",
+      "description": "Le rouge velours entre en scène.",
+      "asset": "velvet",
+      "color": "#F1DADD",
+      "phrases": [
+        "Le rideau prépare son grand numéro.",
+        "Le velours prend la lumière.",
+        "La scène n’attendait que vous."
+      ]
+    },
+    {
+      "id": "sunset",
+      "category": "estelle",
+      "label": "Le Sunset",
+      "description": "Votre instant à l’heure dorée.",
+      "asset": "sunset",
+      "color": "#F5DED0",
+      "phrases": [
+        "Le soleil prépare sa plus belle sortie.",
+        "L’heure dorée vous attend.",
+        "Un peu de corail dans le ciel."
+      ]
+    },
+    {
+      "id": "marmots",
+      "category": "estelle",
+      "label": "Les Marmots",
+      "description": "Un grand terrain de jeu pour vos sourires.",
+      "asset": "marmots",
+      "color": "#F5E2E1",
+      "phrases": [
+        "Les jouets sortent le grand jeu.",
+        "La fête prend de la hauteur.",
+        "Tout le monde garde sa place dans le jeu."
+      ]
+    },
+    {
       "id": "colors_party",
-      "category": "other",
+      "category": "essentials",
       "label": "Colors Party",
-      "description": "Du velours, des couleurs et vous.",
+      "description": "Une fête en couleurs, vue d’en haut.",
       "asset": "colors_party",
       "color": "#E0E7D8",
       "phrases": [
@@ -16,7 +120,7 @@
     },
     {
       "id": "halloween",
-      "category": "other",
+      "category": "essentials",
       "label": "Halloween",
       "description": "Des frissons, surtout des sourires.",
       "asset": "halloween",
@@ -25,6 +129,19 @@
         "Une pincée de mystère.",
         "Les invités préparent leur grand effet.",
         "La fête se donne des frissons."
+      ]
+    },
+    {
+      "id": "showcase",
+      "category": "essentials",
+      "label": "Sous cloche",
+      "description": "Entrez dans votre petit monde sous verre.",
+      "asset": "showcase",
+      "color": "#E0E7D8",
+      "phrases": [
+        "On vous prépare une place de choix.",
+        "Le décor sort de sa réserve.",
+        "La vitrine prend des airs de fête."
       ]
     },
     {
@@ -90,19 +207,6 @@
         "La ménagerie se met sur son trente et un.",
         "Un peu de panache dans les pelages.",
         "La fête prend un air sauvage."
-      ]
-    },
-    {
-      "id": "showcase",
-      "category": "other",
-      "label": "Sous cloche",
-      "description": "Votre petit monde en vitrine.",
-      "asset": "showcase",
-      "color": "#E0E7D8",
-      "phrases": [
-        "On vous prépare une place de choix.",
-        "Le décor sort de sa réserve.",
-        "La vitrine prend des airs de fête."
       ]
     },
     {

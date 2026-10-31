@@ -1,0 +1,11 @@
+# Recette des thèmes by Estelle
+
+La photo du plan de table reste dans les pièces jointes privées de la conversation. Seuls les huit noms des tables sont repris, Les Marmots compris, sans les noms des invités. Les huit emblems PNG et leurs prompts sont dans src/PhotoBooth.App/Assets/Party ; leur création a utilisé l’outil intégré d’images avec le style Colors Party approuvé comme seule référence visuelle.
+
+La suite locale passe : 764 contrôles C# (30 cœur, 476 imagerie, 72 fonctionnement, 50 préparation impression, 34 Canon simulé, 102 client cloud) et parcours natifs complets, 40 tests backend, 45 tests Node et Chromium galerie/viewer. Les captures 1280×800 et 960×700 montrent les catégories et leurs vrais assets. Les captures de sélection quatre choix montrent le gris intentionnel des choix supplémentaires désactivés. Le défilement conserve les actions du bas.
+
+Les trois JPEG sont des planches de calibration synthétiques, pas des portraits générés. Ils vérifient la continuité de l’impression 1800×1200 à 300 dpi et l’identité graphique propre à la table. Tous les autres thèmes sont aussi composés en une et quatre photos par la suite imagerie. Les coins des huit PNG sont réellement transparents et les ressources sont embarquées dans les deux assemblies de la borne et de l’impression.
+
+Le backend fige une direction par photo, toutes distinctes dans une séance, et conserve les prompts déjà enregistrés malgré les changements ultérieurs du catalogue. Le modèle, medium, 1024×1024, l’API directe, la parallélisation et les limites de génération restent identiques. Les directions privées ne passent pas dans GET /styles. Le viewer et les statistiques nomment les nouveaux thèmes en français. Les tests utilisent de fausses photos et du HTTP remplacé : pas de portrait OpenAI payé, ni Canon/DNP physique. Le changement de perspective peut modifier le rendu d’un visage ; Kevin doit juger un vrai résultat avec sa photo de référence.
+
+Le détecteur Impeccable n’a pas de finding sur les trois sources modifiées. Inspection visuelle bornée : les huit images générées, deux viewports natifs, la sélection des incontournables et une planche citron. Aucun changement de grille, papier, pied de page ou déverrouillage kiosque.

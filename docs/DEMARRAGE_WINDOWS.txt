@@ -1,16 +1,26 @@
 COLORS PARTY BY ESTELLE
 
-VERSION 0.9.1
+VERSION 0.10.0
+   by Estelle : Le Saphir, La Lavande, Le Cachemire, L Olivier, Le Citron,
+   Le Velour, Le Sunset et Les Marmots, avec huit illustrations propres.
+   Les incontournables : Colors Party, Halloween et Sous cloche.
+   Autres : Dans les etoiles, Pays imaginaire, Petits lutins, Disco velours,
+   Droles de betes et A croquer. La Surprise du Chef reste toujours disponible.
+   Chaque univers a quatre situations distinctes : points de vue, poses et decor.
+   Colors Party : plongee de drone bas. Sous cloche : groupe et mains sous verre.
+   Visages, ages et corpulences restent prioritaires. Le resultat reel reste a juger.
+   Les nouvelles illustrations sont embarquees, sans telechargement en 4G.
+
+PLEIN ECRAN 0.9.1 CONSERVE
    Plein ecran protege : fermeture et raccourcis courants bloques.
    Retour aux reglages uniquement par maintien trois secondes en bas a gauche.
    Code demande si enregistre ; acces direct sans protection configuree.
    Le plein ecran est conserve au prochain lancement.
    Lire KIOSQUE_WINDOWS.md pour restreindre aussi Windows sur un compte dedie.
    Univers regroupes : by Estelle, Les incontournables, Autres.
-   Les sept themes des tables attendent leurs noms. Les neuf actuels restent dans Autres.
 
 SELECTION DES UNIVERS 0.9
-   Metamorphose propose neuf univers et La Surprise du Chef.
+   Metamorphose propose dix sept univers et La Surprise du Chef.
    Une photo : choisir un univers. Quatre photos : choisir de un a quatre univers
    avant de poser. Avec quatre choix, une photo par univers. Avec trois choix,
    tous apparaissent et un revient. Avec deux choix, deux photos chacun.
