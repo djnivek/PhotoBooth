@@ -28,6 +28,14 @@ public sealed partial class App : Application
                         window.Width=960;window.Height=700;
                         await Task.Delay(500);
                         CaptureNativeWindow(window,directory,"native-minimum.png","native-minimum-ui.json");
+                        if(Environment.GetEnvironmentVariable("PHOTOBOOTH_SMOKE_DESKTOP_CAPTURE")=="1")
+                        {
+                            // The external capture helper may compile its Win32 bridge slowly
+                            // on a fresh CI runner. Keep the real window alive until its receipt.
+                            using var limit=new CancellationTokenSource(TimeSpan.FromSeconds(25));
+                            while(!File.Exists(Path.Combine(directory,"desktop-client.json")))
+                                await Task.Delay(100,limit.Token);
+                        }
                         desktop.Shutdown(0);
                     }
                     catch(Exception exception)

@@ -34,7 +34,7 @@ try {
     New-Item -ItemType Directory -Path $diagnostics -Force | Out-Null
     $executable = Join-Path $unpacked 'ColorsParty.exe'
     foreach ($mode in @('--self-test', '--smoke-ui')) {
-        $process = Start-Process -FilePath $executable -ArgumentList @($mode, ('"' + $diagnostics + '"')) -PassThru
+        $process = Start-Process -FilePath $executable -ArgumentList @($mode, ('"' + $diagnostics + '"')) -Environment @{PHOTOBOOTH_SMOKE_DESKTOP_CAPTURE='1'} -PassThru
         if ($mode -eq '--smoke-ui') { & (Join-Path $PSScriptRoot 'capture-window.ps1') -ApplicationProcess $process -OutputDirectory $diagnostics }
         if (-not $process.WaitForExit(90000)) { $process.Kill(); throw "Packaged executable timed out: $mode" }
         if ($process.ExitCode -ne 0) { throw "Packaged executable failed: $mode, exit $($process.ExitCode). Inspect $diagnostics." }
@@ -49,6 +49,10 @@ try {
     [ordered]@{version=$Version; artifact=[IO.Path]::GetFileName($zip); sha256=$digest; bytes=(Get-Item $zip).Length;
         source_commit=(git rev-parse HEAD); windows_self_test=$true; native_window_opened=$true;
         hardware_validated=$false; openai_called=$false} | ConvertTo-Json | Set-Content (Join-Path $diagnostics 'package.json') -Encoding utf8
+    foreach($temporary in @($stage,$unpacked)) {
+        $resolved=[IO.Path]::GetFullPath($temporary)
+        if(-not $resolved.StartsWith($output+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)) {throw 'Unsafe package cleanup target'}
+    }
     Remove-Item -LiteralPath $stage,$unpacked -Recurse -Force
     Write-Host "PASS: downloaded/extracted Windows executable, four rehearsal modes, native window. $zip"
 }
