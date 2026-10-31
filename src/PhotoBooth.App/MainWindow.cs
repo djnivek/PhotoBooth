@@ -274,7 +274,7 @@ public sealed partial class MainWindow : Window
         var printState = Text("", 18);
         var print = Button("Imprimer", async () =>
         {
-            printingResult=true;
+            Interlocked.Increment(ref printingResults);
             try {
             if (boothSettings.PhysicalPrinting)
             {
@@ -287,7 +287,7 @@ public sealed partial class MainWindow : Window
             var target = Path.Combine(store.Root, sessionId.ToString("N"), "print-preview.jpg");
             await SessionStore.WriteAtomicAsync(target, bytes);
             printState.Text = "Votre planche est enregistrée.";
-            } finally {printingResult=false;}
+            } finally {Interlocked.Decrement(ref printingResults);}
         }); print.Name = "PrintPreview"; footer.Children.Add(print); left.Children.Add(printState);
         var folder = Path.GetDirectoryName(store.Resolve(controller.Sheet.Key))!;
         var files = Button("Voir les fichiers", async () =>

@@ -14,7 +14,8 @@ public sealed partial class MainWindow
     private readonly DispatcherTimer resultReturn=new() {Interval=TimeSpan.FromMilliseconds(200)};
     private DateTimeOffset returnAt,lastReturnTick;
     private TextBlock? returnLabel;
-    private bool startingNext,printingResult,resultShareReady;
+    private bool startingNext,resultShareReady;
+    private int printingResults;
     private readonly Func<DateTimeOffset> clock;
     public bool ResultReturnRunning=>resultReturn.IsEnabled;
     public int ResultReturnSeconds=>Math.Clamp((int)Math.Ceiling((returnAt-clock()).TotalSeconds),0,60);
@@ -51,7 +52,7 @@ public sealed partial class MainWindow
     {
         var now=clock();
         if(!boothSettings.ViewerEnabled || screen!="result" || lifetime.IsCancellationRequested){resultReturn.Stop();return;}
-        if(OwnedWindows.Any() || printingResult || cloud is not null && !resultShareReady) returnAt+=now-lastReturnTick;
+        if(OwnedWindows.Any() || printingResults>0 || cloud is not null && !resultShareReady) returnAt+=now-lastReturnTick;
         lastReturnTick=now;
         if(returnLabel is not null)returnLabel.Text=$"{ResultReturnSeconds} s";
         if(ResultReturnSeconds==0)
