@@ -131,3 +131,7 @@ Avant chaque décompte : nouvelle visée, préparation caméra, contrôle de fra
 ## Monitoring 0.7
 
 Borne → file locale durable → POST monitoring/booth → RPC privé → table booth_metrics. Fournisseur → mesure de réponse indépendante du stockage → même table, sans bloquer les images si la collecte échoue. Galerie → événements de consultation/clic validés par capacité → table privée. Aucun endpoint public de lecture des statistiques. Admin Mac → serveur 127.0.0.1 authentifié → CLI Supabase connectée → fonction SQL de rapport en lecture seule. Tailscale Serve sera configuré sur le Mac ; le dashboard graphique reste à réaliser.
+
+## Projection de salle 0.8
+
+`BoothProjection` conserve les intentions de projection par séance dans une file locale, distincte des traitements photo et du monitoring. Un envoi acquitté supprime uniquement son intention ; les échecs conservent le même identifiant. Le code viewer distinct est protégé par DPAPI et le serveur ne garde que son hash. Le contrôleur Avalonia ne change pas de parcours caméra/impression : l’option ajoute le compteur de retour et l’intention au départ. Le feed SQL sélectionne uniquement les séances libérées et complètement publiées, puis le lecteur web gère l’annonce, la file et le cache borné. [Procédure](VIEWER.md).

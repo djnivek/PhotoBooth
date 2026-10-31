@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "synthetic": true,
+  "cases": [
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "real_api": true,
+      "real_signed_images": true,
+      "natural_then_four_results": true,
+      "no_archived_originals": true,
+      "no_provider_calls": true,
+      "success": true
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "real_api": true,
+      "real_signed_images": true,
+      "natural_then_four_results": true,
+      "no_archived_originals": true,
+      "no_provider_calls": true,
+      "success": true
+    }
+  ]
+}

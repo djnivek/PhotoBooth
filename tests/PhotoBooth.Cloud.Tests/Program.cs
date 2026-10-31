@@ -166,6 +166,29 @@ try
             Check(resumed.PendingCount==0&&handler.Metrics.All(m=>m.GetProperty("mode").GetString()=="original"&&m.GetProperty("requested_style").GetString()=="original"),"Reopened natural outbox is acknowledged without inventing a Chef selection");
         }
     }
+
+    {
+        var folder=Path.Combine(root,"viewer-test");var id=Guid.NewGuid();var handler=new ProjectionHttp();string link;
+        await using(var viewer=new BoothProjection(folder,"https://test.supabase.co/api","fake-booth",false,false,handler,automatic:false))
+        {
+            await viewer.FlushAsync();await viewer.ReleaseAsync(id,"fixture");
+            Check(handler.Calls==0&&viewer.PendingCount==0,"Disabled viewer does not enqueue, create a secret or request anything");
+            await viewer.ConfigureAsync(true,true);link=viewer.ViewerUrl;
+            Check(link.StartsWith("https://colors-party-estelle.vercel.app/viewer/#")&&link.Split('#')[1].Length==64,"Separate read-only viewer capability is generated");
+            await viewer.ReleaseAsync(id,"fixture");await viewer.ReleaseAsync(id,"fixture");
+            Check(viewer.PendingCount==1,"One durable intent for duplicate departure actions");
+            await viewer.FlushAsync();Check(viewer.PendingCount==1,"Failed release retains the durable intent");
+        }
+        var resumedHandler=new ProjectionHttp {Offline=false};
+        await using(var viewer=new BoothProjection(folder,"https://test.supabase.co/api","fake-booth",true,true,resumedHandler,automatic:false))
+        {
+            Check(viewer.ViewerUrl==link&&viewer.PendingCount==1,"Viewer credential and release survive a restart");
+            await viewer.FlushAsync();Check(viewer.PendingCount==0&&resumedHandler.Releases==1,"Resumed release acknowledged without generation");
+            await viewer.ConfigureAsync(false,false);await viewer.ReleaseAsync(Guid.NewGuid(),"camera");await viewer.FlushAsync();
+            Check(viewer.PendingCount==0&&!resumedHandler.Enabled,"Disabling synchronizes server state and prevents new releases");
+            Check(resumedHandler.Calls==3,"Only configure, one release, disable; never a provider call");
+        }
+    }
     {
         var secret=Path.Combine(root,"credential");await CredentialStore.SaveAsync(secret,"test-only-credential");
         Check(CredentialStore.Load(secret)=="test-only-credential","Credential roundtrip (DPAPI on Windows)");
@@ -268,4 +291,18 @@ sealed class StalledRead:Stream
     public override int Read(byte[] buffer,int offset,int count)=>throw new NotSupportedException();
     public override void Flush()=>throw new NotSupportedException();public override long Seek(long offset,SeekOrigin origin)=>throw new NotSupportedException();
     public override void SetLength(long value)=>throw new NotSupportedException();public override void Write(byte[] buffer,int offset,int count)=>throw new NotSupportedException();
+}
+
+sealed class ProjectionHttp:HttpMessageHandler
+{
+    public bool Offline=true,Enabled;public int Calls,Releases;
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)
+    {
+        Calls++;if(request.Headers.Authorization?.Parameter!="fake-booth")throw new Exception("Missing booth auth");
+        using var body=JsonDocument.Parse(await request.Content!.ReadAsByteArrayAsync(token));
+        if(request.RequestUri!.AbsolutePath.EndsWith("/viewer/settings"))Enabled=body.RootElement.GetProperty("enabled").GetBoolean();
+        else if(request.RequestUri.AbsolutePath.EndsWith("/viewer")){if(Offline)return new(HttpStatusCode.ServiceUnavailable);Releases++;}
+        else throw new Exception("Unexpected projection call");
+        return new(HttpStatusCode.OK){Content=JsonContent.Create(new{accepted=true})};
+    }
 }

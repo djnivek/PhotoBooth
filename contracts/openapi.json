@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "PhotoBooth API",
-    "version": "0.7.0",
-    "description": "Personal booth API. Direct medium square image edits, idempotent claims, private storage and first-party business metrics. No public analytics read API. Printing stays local."
+    "version": "0.8.0",
+    "description": "Personal booth API. Direct medium square image edits, idempotent claims, private storage and first-party business metrics. No public analytics read API. Printing stays local. Optional read-only room projection has a distinct capability and only exposes released complete results."
   },
   "servers": [
     {
@@ -613,6 +613,238 @@
             "description": "Monitoring temporarily unavailable; retain the queue"
           }
         }
+      }
+    },
+    "/viewer/settings": {
+      "post": {
+        "summary": "Enable or disable projection; hash a separate viewer capability",
+        "operationId": "_viewer_settings_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "include_tests": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "token",
+                  "enabled",
+                  "include_tests"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Read-only projection state or idempotent acknowledgement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Capability or session unavailable"
+          },
+          "503": {
+            "description": "Temporary outage"
+          }
+        }
+      }
+    },
+    "/sessions/{session_id}/viewer": {
+      "post": {
+        "summary": "Release a session for projection after guest departure",
+        "operationId": "_sessions_viewer_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "camera",
+                      "fixture"
+                    ]
+                  }
+                },
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Read-only projection state or idempotent acknowledgement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Capability or session unavailable"
+          },
+          "503": {
+            "description": "Temporary outage"
+          }
+        },
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/viewer/feed": {
+      "post": {
+        "summary": "List complete released sessions; no signed photo URLs",
+        "operationId": "_viewer_feed_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "known": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "token"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Read-only projection state or idempotent acknowledgement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Capability or session unavailable"
+          },
+          "503": {
+            "description": "Temporary outage"
+          }
+        },
+        "security": []
+      }
+    },
+    "/viewer/photos": {
+      "post": {
+        "summary": "Sign only eligible final photos for one session",
+        "operationId": "_viewer_photos_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "session_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "token",
+                  "session_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Read-only projection state or idempotent acknowledgement",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Capability or session unavailable"
+          },
+          "503": {
+            "description": "Temporary outage"
+          }
+        },
+        "security": []
       }
     }
   },

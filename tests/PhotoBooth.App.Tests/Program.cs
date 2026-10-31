@@ -187,6 +187,35 @@ Click("TakePhotos");Until(()=>Find("PrintPreview") is not null&&progressiveHttp.
 if(Find("ShareRetry") is {IsVisible:true})throw new Exception("Retry share visible after successful publication.");
 if(Find("NewSession") is not {IsVisible:true} newSession||!newSession.Classes.Contains("primary"))throw new Exception("New session is not the prominent primary action.");
 Capture("shared-result-960x700.png");window.Close();Pump(100);
+
+// Projection enabled: fixed button footprint, pause for settings, automatic release, disable restores manual flow.
+var viewerSettings=new BoothSettings {CloudEnabled=true,ViewerEnabled=true,ViewerIncludeTests=true};
+var saveViewer=viewerSettings.SaveAsync(Path.Combine(root,"booth-settings.json"));Until(()=>saveViewer.IsCompleted,3000);saveViewer.GetAwaiter().GetResult();
+var viewerClock=DateTimeOffset.UtcNow;var shareGate=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);var viewerHttp=new ProgressiveUiHttp {ShareGate=shareGate.Task};
+window=new MainWindow((_,_)=>Task.CompletedTask,refreshCatalogOnOpen:false,clock:()=>viewerClock,
+    cloudFactory:store=>new BoothCloudClient("https://progress.invalid/api","offline-test-only",store,handler:viewerHttp));
+window.Show();Pump(80);ClickLabel("Une photo");Click("StartSession");Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);Click("TakePhotos");Until(()=>Find("NewSession") is not null,10000);Pump(300);
+if(!window.ResultReturnRunning||window.ResultReturnSeconds!=60)throw new Exception("60 second result timer missing");
+viewerClock=viewerClock.AddSeconds(70);Pump(300);if(window.ResultReturnSeconds!=60||Find("NewSession") is null)throw new Exception("Unfinished sharing must pause auto-return");
+shareGate.SetResult();Until(()=>viewerHttp.Shares==1,3000);Pump(100);
+if(!window.GetVisualDescendants().Any(c=>c.Name=="ProjectionGuestMessage"))throw new Exception("Room projection message missing");
+var sixtyBounds=Find("NewSession")!.Bounds.Size;Capture("viewer-result-1280x800.png");
+viewerClock=viewerClock.AddSeconds(51);Pump(300);if(window.ResultReturnSeconds!=9||Find("NewSession")!.Bounds.Size!=sixtyBounds)throw new Exception("Button moved at single digits");
+Click("Settings");Until(()=>window.OwnedWindows.Count==1,2000);settings=window.OwnedWindows.Single();viewerClock=viewerClock.AddSeconds(90);Pump(300);
+if(window.ResultReturnSeconds!=9)throw new Exception("Settings did not pause auto-return");
+DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);
+window.Width=960;window.Height=700;Pump(80);viewerClock=viewerClock.AddSeconds(8);Pump(300);Capture("viewer-result-960x700.png");
+var oneBounds=Find("NewSession")!.Bounds.Size;viewerClock=viewerClock.AddMilliseconds(100);Pump(250);if(Find("NewSession")!.Bounds.Size!=oneBounds)throw new Exception("Countdown changed button dimensions");
+viewerClock=viewerClock.AddSeconds(1);Until(()=>Find("StartSession") is not null,3000);Pump(300);
+if(window.ResultReturnRunning||Directory.GetFiles(Path.Combine(root,"projection"),"*.json",SearchOption.AllDirectories).Length!=1)throw new Exception("Auto-return must enqueue exactly one release and stop its timer");
+// Disable from the actual settings UI; repeated tick cannot return another result.
+Click("Settings");Until(()=>window.OwnedWindows.Count==1,2000);settings=window.OwnedWindows.Single();
+settings.GetVisualDescendants().OfType<CheckBox>().Single(c=>c.Name=="ViewerEnabled").IsChecked=false;
+DialogClick(settings,"Enregistrer la projection");Until(()=>!BoothSettings.Load(Path.Combine(root,"booth-settings.json")).ViewerEnabled,3000);
+DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);
+Click("StartSession");Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);Click("TakePhotos");Until(()=>Find("NewSession") is not null,10000);
+viewerClock=viewerClock.AddMinutes(2);Pump(300);if(window.ResultReturnRunning||Find("NewSession") is null||window.GetVisualDescendants().Any(c=>c.Name=="NewSessionCountdown"))throw new Exception("Disabled mode regressed manual result flow");
+Click("PrintPreview");Click("NewSession");Until(()=>Find("StartSession") is not null,3000);window.Close();Pump(100);
 Console.WriteLine("PASS UI: native flows, cloud offline, early QR, visible loading and wait copy, background completion during next guest, no share retry after success, prominent new-session action. No network, paid API or hardware.");
 Directory.Delete(root,true);
 void HoldCorner(int milliseconds)
@@ -270,7 +299,7 @@ sealed class OfflineHttp:HttpMessageHandler
 sealed class ProgressiveUiHttp:HttpMessageHandler
 {
     public TaskCompletionSource Resume {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
-    public bool GenerationWaiting;public int Shares;
+    public bool GenerationWaiting;public int Shares;public Task? ShareGate;
     private readonly HashSet<string> started=[];
     private readonly Dictionary<string,string> galleryTokens=[];
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)
@@ -285,7 +314,7 @@ sealed class ProgressiveUiHttp:HttpMessageHandler
             var shareToken=input.RootElement.GetProperty("token").GetString()!;var id=path.Split('/')[^2];
             if(galleryTokens.TryGetValue(id,out var previous)&&previous!=shareToken)throw new Exception("Gallery token changed before final publication.");
             galleryTokens[id]=shareToken;
-            if(path.EndsWith("/share"))Shares++;
+            if(path.EndsWith("/share")){if(ShareGate is not null)await ShareGate.WaitAsync(token);Shares++;}
             return Json(new{gallery_url="https://gallery.invalid/#"+shareToken,expires_at=DateTimeOffset.UtcNow.AddDays(7),download_url="https://progress.invalid/storage/archive.zip"});
         }
         if(path.Contains("/assets/"))return Json(new{sha256=SessionStore.Hash(await request.Content!.ReadAsByteArrayAsync(token))});

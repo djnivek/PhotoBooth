@@ -1,0 +1,55 @@
+{
+  "synthetic": true,
+  "paid_api_calls": 0,
+  "cases": [
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "single_seconds": 30,
+      "four_pose_seconds": 15,
+      "announcement_seconds": 15,
+      "queue_preserved": true,
+      "cache_reused": true,
+      "offline_reconnect": true,
+      "disable_clears": true,
+      "no_originals_requested": true,
+      "overflow": false,
+      "success": true
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "single_seconds": 30,
+      "four_pose_seconds": 15,
+      "announcement_seconds": 15,
+      "queue_preserved": true,
+      "cache_reused": true,
+      "offline_reconnect": true,
+      "disable_clears": true,
+      "no_originals_requested": true,
+      "overflow": false,
+      "success": true
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "single_seconds": 30,
+      "four_pose_seconds": 15,
+      "announcement_seconds": 15,
+      "queue_preserved": true,
+      "cache_reused": true,
+      "offline_reconnect": true,
+      "disable_clears": true,
+      "no_originals_requested": true,
+      "overflow": false,
+      "success": true
+    }
+  ],
+  "success": true
+}

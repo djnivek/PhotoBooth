@@ -62,9 +62,11 @@ public sealed partial class MainWindow : Window
     public MainWindow(Func<TimeSpan, CancellationToken, Task>? rehearsalDelay = null, Action<string>? openFolder = null,
         Func<SessionStore, IPhotoCamera>? cameraFactory = null,
         Func<CancellationToken, Task<StyleCatalog>>? catalogLoader = null, bool refreshCatalogOnOpen = true, Func<IPhotoTransform>? transformFactory = null,
-        Func<SessionStore, BoothCloudClient>? cloudFactory = null)
+        Func<SessionStore, BoothCloudClient>? cloudFactory = null, Func<DateTimeOffset>? clock = null)
     {
         this.rehearsalDelay = rehearsalDelay;
+        this.clock=clock??(()=>DateTimeOffset.UtcNow);
+        resultReturn.Tick+=ReturnTick;
         this.openFolder = openFolder ?? OpenFolder;
         cameraFactoryOverride = cameraFactory; transformFactoryOverride = transformFactory;
         cloudFactoryOverride = cloudFactory;
@@ -130,7 +132,7 @@ public sealed partial class MainWindow : Window
         {
             if (kioskLocked) { e.Cancel = true; _ = RequestOperatorAsync(true); }
         };
-        Closed += async (_, _) => { pulse.Stop(); flashTimer.Stop(); StopProcessing(); cornerTimer.Stop(); lifetime.Cancel(); sharingCancellation?.Cancel(); await controller.DisposeAsync(); foreach (var pending in detachedControllers.ToArray()) await pending.DisposeAsync(); foreach(var metrics in telemetryClients.Values) await metrics.DisposeAsync(); currentBitmap?.Dispose(); resultBitmap?.Dispose(); foreach (var bitmap in artwork.Values) bitmap.Dispose(); lifetime.Dispose(); };
+        Closed += async (_, _) => { resultReturn.Stop(); pulse.Stop(); flashTimer.Stop(); StopProcessing(); cornerTimer.Stop(); lifetime.Cancel(); sharingCancellation?.Cancel(); await controller.DisposeAsync(); foreach (var pending in detachedControllers.ToArray()) await pending.DisposeAsync(); foreach(var metrics in telemetryClients.Values) await metrics.DisposeAsync(); foreach(var viewer in projectionClients.Values) await viewer.DisposeAsync(); currentBitmap?.Dispose(); resultBitmap?.Dispose(); foreach (var bitmap in artwork.Values) bitmap.Dispose(); lifetime.Dispose(); };
         KeyDown += (_, e) =>
         {
             if (e.Key == Key.F11 || (e.Key == Key.Escape && kioskLocked))
@@ -141,6 +143,7 @@ public sealed partial class MainWindow : Window
 
     private BoothController CreateController()
     {
+        PrepareProjection();
         cloud = boothSettings.CloudEnabled ? cloudFactoryOverride?.Invoke(store) ?? new BoothCloudClient(boothSettings.ApiBaseUrl, cloudKey, store, boothSettings.GalleryBaseUrl) : null;
         BoothTelemetry? metrics=null;
         try
@@ -251,6 +254,7 @@ public sealed partial class MainWindow : Window
     private void RenderResult()
     {
         StopProcessing(); screen = "result"; pulse.Stop();
+        resultShareReady=cloud is null;
         var resultRoot = new Grid { RowDefinitions = new RowDefinitions("*,Auto") };
         var footer = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*"), Margin = new Thickness(0,18,0,0) };
         Grid.SetRow(footer,1); resultRoot.Children.Add(footer);
@@ -270,6 +274,8 @@ public sealed partial class MainWindow : Window
         var printState = Text("", 18);
         var print = Button("Imprimer", async () =>
         {
+            Interlocked.Increment(ref printingResults);
+            try {
             if (boothSettings.PhysicalPrinting)
             {
                 var submission = await controller.PrintAsync(new WindowsPhotoPrinter(store, controller.Sheet!, boothSettings.PrinterName));
@@ -281,6 +287,7 @@ public sealed partial class MainWindow : Window
             var target = Path.Combine(store.Root, sessionId.ToString("N"), "print-preview.jpg");
             await SessionStore.WriteAtomicAsync(target, bytes);
             printState.Text = "Votre planche est enregistrée.";
+            } finally {Interlocked.Decrement(ref printingResults);}
         }); print.Name = "PrintPreview"; footer.Children.Add(print); left.Children.Add(printState);
         var folder = Path.GetDirectoryName(store.Resolve(controller.Sheet.Key))!;
         var files = Button("Voir les fichiers", async () =>
@@ -294,8 +301,10 @@ public sealed partial class MainWindow : Window
         Button? retry = null;
         retry = Button("Réessayer le partage", () => ShareAsync(qr, shareStatus, retry!)); retry.Name = "ShareRetry"; retry.IsVisible = false;
         actions.Children.Add(qr); actions.Children.Add(shareStatus); actions.Children.Add(retry);
+        AddProjectionNote(actions);
         var again = Button("Une nouvelle séance", StartNextSessionAsync, primary: true);
         again.Name = "NewSession"; again.HorizontalAlignment = HorizontalAlignment.Stretch;
+        PrepareReturnButton(again);
         Grid.SetColumn(again, 2); footer.Children.Add(again);
         var scrollingActions = new ScrollViewer { Content = actions };
         Grid.SetColumn(scrollingActions, 1); layout.Children.Add(scrollingActions); body.Content = resultRoot;
@@ -373,17 +382,20 @@ public sealed partial class MainWindow : Window
             sharingCancellation?.Cancel(); await controller.DisposeAsync();
             boothSettings=boothSettings with {CloudEnabled=true}; await boothSettings.SaveAsync(boothSettingsPath);
             controller=CreateController(); RenderHome(); connection.Text="";
-            info.Text=imageReady ? "Connexion vérifiée. Une séance Métamorphose utilisera OpenAI en qualité xhigh et sera facturée." :
+            info.Text=imageReady ? "Connexion vérifiée. Une séance Métamorphose utilisera OpenAI en qualité medium et sera facturée." :
                 "Partage connecté. Ajoutez la clé OpenAI dans Supabase avant d’utiliser Métamorphose.";
         }));
         content.Children.Add(Button("Désactiver la connexion en ligne",async()=>
         {
-            sharingCancellation?.Cancel(); await controller.DisposeAsync(); boothSettings=boothSettings with {CloudEnabled=false};
+            sharingCancellation?.Cancel(); await controller.DisposeAsync();
+            if(projection is not null)await projection.ConfigureAsync(false,boothSettings.ViewerIncludeTests);
+            boothSettings=boothSettings with {CloudEnabled=false,ViewerEnabled=false};
             await boothSettings.SaveAsync(boothSettingsPath);controller=CreateController();RenderHome();info.Text="Connexion en ligne désactivée. Aucun appel OpenAI payant.";
         }));
         content.Children.Add(Text("Le mode en ligne envoie les photos vers Supabase, et vers OpenAI uniquement en mode Métamorphose. Les liens expirent après 7 jours.",15));
         var catalogInfo = Text(catalogStatus, 17); content.Children.Add(catalogInfo);
         var refresh = Button("Actualiser les univers", () => RefreshCatalogAsync(catalogInfo)); refresh.Name = "RefreshStyles"; content.Children.Add(refresh);
+        AddViewerSettings(content,info);
         var reduce = new CheckBox { Content = "Réduire les animations", IsChecked = boothSettings.ReducedMotion };
         reduce.IsCheckedChanged += async (_, _) => { boothSettings = boothSettings with { ReducedMotion = reduce.IsChecked == true }; await boothSettings.SaveAsync(boothSettingsPath); };
         content.Children.Add(reduce);
@@ -434,7 +446,7 @@ public sealed partial class MainWindow : Window
             label.Text="Envoi de vos souvenirs…";
             var result=await PublishOnceAsync(source, client);
             if (token.IsCancellationRequested || screen!="result" || controller.Session?.Id!=session.Id) return;
-            ShowQr(qr, result); retry.IsVisible=false;
+            ShowQr(qr, result); retry.IsVisible=false; resultShareReady=true;
             label.Text=$"Scannez pour retrouver vos photos. Lien valable jusqu’au {result.ExpiresAt.LocalDateTime:dd/MM}.";
         }
         catch (OperationCanceledException) when(token.IsCancellationRequested) { }
