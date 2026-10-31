@@ -1,0 +1,46 @@
+{
+  "api_version": "0.9.0",
+  "catalog_version": "2026-10-31.3",
+  "public_metadata_matches": true,
+  "public_prompt_absent": true,
+  "plan": [
+    "halloween",
+    "fantasy",
+    "animals",
+    "halloween"
+  ],
+  "checks": [
+    {
+      "route": "/styles",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    }
+  ],
+  "paid_generation_calls": 0,
+  "photos_uploaded": 0,
+  "source_sha256": {
+    "supabase/functions/photobooth-api/cloud.ts": "8567ffd4e17e5724f0ddfb820fab5d796f815a502bb5a40019fbaf22c38d7061",
+    "supabase/functions/photobooth-api/style-plans.ts": "58c68b71bd39b87ea757caecf9a114c2ecbeef06d76567e0070b84abfea8181f",
+    "supabase/functions/photobooth-api/styles.json": "f106344e933ce6dd30fa0f1d83422d3d4b4fe6f196ae8542446b6b4ff630571f"
+  },
+  "database_verification": {
+    "animal_exclusion_in_frozen_prompt": true,
+    "budget": {
+      "generation_enabled": true,
+      "id": "event",
+      "max_images": 2400,
+      "max_in_flight": 8,
+      "max_per_minute": 16,
+      "started": 1
+    },
+    "no_jobs_assets_or_metrics": true,
+    "residual_test_sessions": 0,
+    "unambiguous_costume_direction_in_plan": true,
+    "unicorn_background_in_frozen_prompt": true
+  }
+}

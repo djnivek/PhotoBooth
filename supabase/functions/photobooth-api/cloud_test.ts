@@ -455,11 +455,26 @@ Deno.test("public catalog is immediate, safe metadata without prompts or provide
   const response = await api.handle(request("/styles", "GET", undefined, false));
   assert(response.status === 200);
   const data = await response.json();
-  assert(data.styles.length === 9 && data.version);
+  assert(data.styles.length === catalog.styles.length && data.version === catalog.version);
   assert(!JSON.stringify(data).includes('"prompt"'));
   assert(data.styles.every((s: { label: string; description: string; phrases: string[] }) =>
     !/[\u2013\u2014-]/.test([s.label, s.description, ...s.phrases].join(" "))));
   assert(fake.providerCreates === 0 && fake.sessions.length === 0);
+});
+Deno.test("server catalog obeys dynamic bounds, unique concrete IDs and nonempty private prompts", () => {
+  const guestCopy = (value: string) => !/[\p{Dash_Punctuation}]|\b(AI|IA|OpenAI)\b/iu.test(value);
+  assert(catalog.version.trim().length > 0 && catalog.version.length <= 80);
+  assert(catalog.styles.length <= 200);
+  assert(new Set(catalog.styles.map(s => s.id)).size === catalog.styles.length);
+  for (const style of catalog.styles) {
+    assert(/^[a-z][a-z0-9_]{0,47}$/.test(style.id) && !["chef", "mix"].includes(style.id));
+    assert(style.prompt.trim().length > 0, `Missing private prompt for ${style.id}`);
+    assert(style.label.trim().length > 0 && style.label.length <= 48 && guestCopy(style.label));
+    assert(style.description.length <= 140 && guestCopy(style.description));
+    assert(style.asset.length <= 80 && /^#[0-9a-f]{6}$/i.test(style.color));
+    assert(style.phrases.length >= 1 && style.phrases.length <= 20);
+    assert(style.phrases.every(p => p.trim().length > 0 && p.length <= 120 && guestCopy(p)));
+  }
 });
 Deno.test("explicit universe and prompt freeze across updates; rejected changes do not generate", async () => {
   const fake = new FakeServices(); const api = new CloudApi(config, fake.send);

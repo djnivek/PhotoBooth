@@ -58,5 +58,13 @@
     "target Windows 10 Pro 22H2",
     "real OpenAI portrait identity or visual variety"
   ],
-  "paid_generation_api_calls": 0
+  "paid_generation_api_calls": 0,
+  "review_amendments_followup": {
+    "core": 29,
+    "deno_check_and_lint": "passed",
+    "deno_tests": 37,
+    "gallery_dom_tests": 21,
+    "local_chromium": "not run: npm UNABLE_TO_GET_ISSUER_CERT_LOCALLY, including with system CA; TLS checks retained",
+    "windows_chromium": "required in final CI"
+  }
 }

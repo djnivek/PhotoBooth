@@ -1,0 +1,19 @@
+{
+  "repository": "djnivek/PhotoBooth",
+  "pr": 24,
+  "source_commit": "85f9f3ce5d65da73039891dfc4b36b9a01cb5e56",
+  "run_id": 41229724708,
+  "url": "https://github.com/djnivek/PhotoBooth/actions/runs/41229724708",
+  "conclusion": "success",
+  "runner": "windows-2022",
+  "steps": {
+    "full_suite": "success",
+    "gallery_chromium": "success",
+    "extracted_package_and_native_window": "success",
+    "evidence_upload": "success"
+  },
+  "real_canon": false,
+  "real_dnp": false,
+  "paid_portrait_api": false,
+  "target_windows_10": false
+}

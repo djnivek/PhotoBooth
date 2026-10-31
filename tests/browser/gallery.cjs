@@ -13,7 +13,7 @@ const server=http.createServer((req,res)=>{
  }catch{res.writeHead(404);res.end();}
 });
 const origin='https://frkckrvsdsiwivdfyjau.supabase.co';const sid='e3ac9960-328c-4a62-8d68-1266361bb8cf';
-const payload=(count,edited)=>({mode:edited?'surprise':'original',photo_count:count,expires_at:'2026-11-06T12:00:00Z',assets:[...Array.from({length:count},(_,i)=>`photo-${i+1}.jpg`),...(edited?Array.from({length:count},(_,i)=>`original-${i+1}.jpg`):[]),'sheet.jpg','archive.zip'].map(name=>({name,url:`${origin}/storage/v1/object/sign/booth-private/${sid}/${name}?token=fixture`}))});
+const payload=(count,edited)=>({mode:edited?'surprise':'original',photo_count:count,expires_at:'2026-11-06T12:00:00Z',style:edited?(count===4?'mix':'halloween'):'original',assets:[...Array.from({length:count},(_,i)=>`photo-${i+1}.jpg`),...(edited?Array.from({length:count},(_,i)=>`original-${i+1}.jpg`):[]),'sheet.jpg','archive.zip'].map(name=>({name,url:`${origin}/storage/v1/object/sign/booth-private/${sid}/${name}?token=fixture`}))});
 (async()=>{
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const local=`http://127.0.0.1:${server.address().port}`;
  const browser=await chromium.launch();const reports=[];
@@ -28,7 +28,7 @@ const payload=(count,edited)=>({mode:edited?'surprise':'original',photo_count:co
     if(request.url().endsWith('/downloads/events'))return route.fulfill({status:200,json:{accepted:JSON.parse(request.postData()).events.length},headers:{'Access-Control-Allow-Origin':local}});
     if(request.url().endsWith('/downloads/resolve')){requests++;assert.equal(request.method(),'POST');assert.equal(JSON.parse(request.postData()).token,'a'.repeat(64));if(delayResolve)await delayResolve;
       let result=payload(count,edited);
-      if(progressive)result={...result,state:'processing',style:'halloween',assets:result.assets.filter(a=>a.name.startsWith('original-')||a.name==='photo-1.jpg')};
+      if(progressive)result={...result,state:'processing',style:'mix',assets:result.assets.filter(a=>a.name.startsWith('original-')||a.name==='photo-1.jpg')};
       return route.fulfill({status:responseStatus,json:result,headers:{'Access-Control-Allow-Origin':local}});}
     assert.ok(request.url().includes('/storage/v1/object/sign/booth-private/'));
     const isSheet=request.url().includes('/sheet.jpg');

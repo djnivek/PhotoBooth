@@ -1,0 +1,327 @@
+{
+  "utc": "2026-10-31T18:40:23.501173+00:00",
+  "project": "frkckrvsdsiwivdfyjau",
+  "api_version": "0.9.0",
+  "catalog_version": "2026-10-31.2",
+  "theme_count": 9,
+  "checks": [
+    {
+      "route": "/health",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "route": "/styles",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "route": "/booth/check",
+      "method": "GET",
+      "status": 401
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 401
+    },
+    {
+      "route": "/booth/check",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 409
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 400
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 400
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 400
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 400
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 400
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 400
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 400
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 400
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 400
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "route": "/sessions",
+      "method": "POST",
+      "status": 201
+    }
+  ],
+  "plans": [
+    {
+      "selected": [
+        "halloween",
+        "animals",
+        "showcase",
+        "feast"
+      ],
+      "photo_count": 4,
+      "shots": [
+        "feast",
+        "halloween",
+        "showcase",
+        "animals"
+      ],
+      "stable_on_replay": true
+    },
+    {
+      "selected": [
+        "halloween",
+        "animals",
+        "showcase"
+      ],
+      "photo_count": 4,
+      "shots": [
+        "halloween",
+        "showcase",
+        "showcase",
+        "animals"
+      ],
+      "stable_on_replay": true
+    },
+    {
+      "selected": [
+        "animals",
+        "feast"
+      ],
+      "photo_count": 4,
+      "shots": [
+        "animals",
+        "feast",
+        "feast",
+        "animals"
+      ],
+      "stable_on_replay": true
+    },
+    {
+      "selected": [
+        "halloween"
+      ],
+      "photo_count": 4,
+      "shots": [
+        "halloween",
+        "halloween",
+        "halloween",
+        "halloween"
+      ],
+      "stable_on_replay": true
+    },
+    {
+      "selected": [
+        "chef"
+      ],
+      "photo_count": 4,
+      "shots": [
+        "elves",
+        "fantasy",
+        "animals",
+        "space"
+      ],
+      "stable_on_replay": true
+    },
+    {
+      "selected": [
+        "chef"
+      ],
+      "photo_count": 1,
+      "shots": [
+        "colors_party"
+      ],
+      "stable_on_replay": true
+    },
+    {
+      "selected": [
+        "showcase"
+      ],
+      "photo_count": 1,
+      "shots": [
+        "showcase"
+      ],
+      "stable_on_replay": true
+    }
+  ],
+  "concurrent_creation_stable": true,
+  "legacy_scalar_session_preserved": true,
+  "original_mode_compatible": true,
+  "invalid_inputs_rejected": true,
+  "public_prompts_exposed": false,
+  "photos_uploaded": 0,
+  "paid_generation_routes_called": 0,
+  "source_sha256": {
+    "supabase/functions/photobooth-api/cloud.ts": "8567ffd4e17e5724f0ddfb820fab5d796f815a502bb5a40019fbaf22c38d7061",
+    "supabase/functions/photobooth-api/style-plans.ts": "70ebd0a76b37f476d842f10a4dc3d6d8a77d45651c09297b65ae7644fd32b85e",
+    "supabase/functions/photobooth-api/styles.json": "6c2ae4b4da7bb47f0d96d57e79ae0cda0ee756ac2cf0b9dd2c88540f4c73fc76"
+  },
+  "cleanup": {
+    "budget": {
+      "generation_enabled": true,
+      "id": "event",
+      "max_images": 2400,
+      "max_in_flight": 8,
+      "max_per_minute": 16,
+      "started": 1
+    },
+    "expected_synthetic_rows_deleted": 10,
+    "legacy_prompt_preserved_before_cleanup": true,
+    "new_plans_durable_before_cleanup": true,
+    "no_jobs_assets_or_metrics_created": true,
+    "residual_synthetic_sessions": 0
+  },
+  "budget_unchanged": true,
+  "security_advisors": "no issues",
+  "source_commit": "85f9f3ce5d65da73039891dfc4b36b9a01cb5e56"
+}

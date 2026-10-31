@@ -64,7 +64,7 @@ export const creativeVariations = [
   "Invente une interprétation où l’humour vient surtout des matières et des détails des tenues, sans modifier la silhouette.",
   "Invente une interprétation où l’humour vient surtout d’un décor inattendu et de ses objets, sans changer la pose des personnes.",
   "Invente une interprétation où l’humour vient surtout d’accessoires de fête surprenants, sans couvrir ni remplacer le visage.",
-  "Invente une interprétation où l’humour vient surtout d’un contraste amusant de couleurs et d’ambiance, sans modifier les personnes.",
+  "Invente une interprétation où l’humour vient surtout d’un contraste amusant de couleurs et d’ambiance, sans modifier les visages ni les corps.",
 ];
 
 export function freezePlan(choices: readonly string[], count: number): FrozenShotStyle[] {

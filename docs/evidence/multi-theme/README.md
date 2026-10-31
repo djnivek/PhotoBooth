@@ -14,3 +14,8 @@ Twenty themes belong to the test fixture, including a 48-character label, 140-ch
 [Local test receipt and screenshot hashes](local-validation.json). Full C# suites, native headless UI, Deno and Node passed. SQL constraints were verified with a real remote transaction and rollback. The narrow manual Impeccable detector returned no findings for the changed native surface. No new gallery design changes or unrelated hook suppressions were made.
 
 The chosen cream/sage/burgundy world and matte artwork are retained at Kevin's explicit request. Three generated PNGs and their exact prompts are in [Assets/Party](../../../src/PhotoBooth.App/Assets/Party/). No new animation, network polling or image download was added to the picker. Twenty is the tested UI volume, not a performance claim for an unlimited catalog. Physical camera, printer, the old i7 and exact Windows 10 host remain manual checks.
+
+
+Delivery evidence: [migration and private grants](backend-migration.json), [39 initial live API checks](backend-live.json), [final prompt revision checked in the real DB](backend-final-prompts.json), and [first Windows package execution](windows-pr.json). No generations or assets were created by these live probes. Follow-up Chromium cases use mixed themes; their Windows result and the final review are recorded in [PR24](https://github.com/djnivek/PhotoBooth/pull/24). The release's delivery receipt identifies the final main commit and exact ZIP.
+
+Impeccable context drift (old global sidecar, unset buildPath and unrecognized native Platform label) is deliberately deferred. The scoped native surface brief was updated. Refresh the global design context only when requested, without changing the approved palette.
