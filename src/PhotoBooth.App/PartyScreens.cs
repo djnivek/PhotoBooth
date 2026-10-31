@@ -52,6 +52,7 @@ public sealed partial class MainWindow
 
     private void RenderHome()
     {
+        resultReturn.Stop();
         if (pendingCatalog is not null) { ApplyCatalog(pendingCatalog); pendingCatalog = null; }
         StopProcessing(); sharingCancellation?.Cancel(); sharingCancellation?.Dispose(); sharingCancellation = null;
         screen = "home"; liveImage = null; countdown = null; pulse.Stop();
@@ -212,6 +213,7 @@ public sealed partial class MainWindow
             var next = Button("Une nouvelle séance", StartNextSessionAsync, true);
             next.Name = "ContinueOnPhone"; next.IsEnabled = ready; next.HorizontalAlignment = HorizontalAlignment.Stretch;
             follow.Children.Add(next);
+            AddProjectionNote(follow);
             var hint = Text("Vous pouvez aussi rester ici pour découvrir et imprimer votre planche.", 17); hint.Foreground = Muted; follow.Children.Add(hint);
             Grid.SetColumn(follow, 1); layout.Children.Add(follow);
         }

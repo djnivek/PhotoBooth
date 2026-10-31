@@ -75,3 +75,7 @@ Voir [SECURITY](SECURITY.md) pour les limites, la révocation, les états incert
 ## Monitoring 0.7
 
 POST `/monitoring/booth` acquitte des lots de dix mesures du client authentifié. POST `/downloads/events` accepte uniquement les compteurs d'une galerie valide et de ses fichiers disponibles. Ces routes ne génèrent aucune photo. La table `booth_metrics` est privée et aucun accès lecture n'est donné au code borne ou aux invités. Rapports opérateur via `booth_monitoring_report` et le serveur local du Mac. [Définitions et reprise](MONITORING.md), [admin local](ADMIN_LOCAL.md).
+
+## Projection de salle (0.8)
+
+`POST /viewer/settings` et `POST /sessions/{id}/viewer` demandent le bearer de la borne. Les réglages enregistrent uniquement le hash d’un code viewer distinct ; la seconde route libère une séance de manière idempotente. `POST /viewer/feed` et `POST /viewer/photos` demandent ce code de lecture dans le corps JSON, sans bearer de borne. Le feed ne contient aucune URL ni clé Storage ; un hash de révision permet une réponse compacte lorsque les métadonnées sont inchangées. La route photos signe uniquement les résultats éligibles de la séance demandée. Aucun endpoint viewer ne crée ou relance une génération. Les tables et la fonction SQL restent réservées au rôle serveur. Détails : [VIEWER](VIEWER.md).

@@ -2,6 +2,7 @@ import { Buffer } from "node:buffer";
 import catalog from "./styles.json" with { type: "json" };
 import { buildArchive } from "./archive.ts";
 import { boothMetrics, guestMetrics } from "./monitoring.ts";
+import { viewerRoute, ViewerError } from "./viewer.ts";
 
 export type Config = {
   url: string;
@@ -390,7 +391,7 @@ export class CloudApi {
         }
         return reply({
           service: "photobooth",
-          api_version: "0.7.0",
+          api_version: "0.8.0",
           stage: "rehearsal",
           production_ready: false,
           session_api_enabled: !!this.config.accessKeyHash,
@@ -448,10 +449,18 @@ export class CloudApi {
       }
       const bearer =
         request.headers.get("authorization")?.replace(/^Bearer /, "") ?? "";
+      if (['/viewer/feed','/viewer/photos'].includes(path) && request.method==='POST') {
+        try { return reply(await viewerRoute(path,await jsonBody(request),null,{rest:this.rest.bind(this),hash,signed:this.signed.bind(this)})); }
+        catch(e) { if(e instanceof ViewerError) throw new ApiError(e.status,e.code); throw e; }
+      }
       if (
         !bearer || bearer.length > 256 || !equalHash(await hash(bearer), this.config.accessKeyHash)
       ) throw new ApiError(401, "unauthorized");
       const owner = this.config.accessKeyHash;
+      if ((path==='/viewer/settings' || /^\/sessions\/[a-f0-9-]+\/viewer$/i.test(path)) && request.method==='POST') {
+        try { return reply(await viewerRoute(path,await jsonBody(request),owner,{rest:this.rest.bind(this),hash,signed:this.signed.bind(this)})); }
+        catch(e) { if(e instanceof ViewerError) throw new ApiError(e.status,e.code); throw e; }
+      }
       if (path === "/monitoring/booth" && request.method === "POST") {
         let events;
         try { events = boothMetrics(await jsonBody(request)); } catch { throw new ApiError(400,"invalid_metrics"); }

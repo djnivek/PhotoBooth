@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+  <title>Dans la salle · Colors Party by Estelle</title>
+  <link rel="stylesheet" href="viewer.css"><script type="module" src="viewer.mjs"></script>
+</head>
+<body>
+  <main id="stage" data-phase="empty">
+    <section id="invitation" aria-live="polite">
+      <img id="emblem" src="../assets/chef.png" alt="" width="220" height="220">
+      <h1 id="message">La fête prend la pose.</h1>
+      <p id="detail">Les prochains souvenirs apparaîtront ici.</p>
+      <strong id="countdown" hidden aria-label="Secondes avant les photos"></strong>
+    </section>
+    <figure id="photograph" hidden aria-describedby="caption"><img id="photo" alt=""></figure>
+    <footer>
+      <div id="brand"><img src="../assets/wordmark.png" alt="Colors Party" width="150" height="72"><span>by Estelle</span></div>
+      <p id="caption" hidden></p>
+      <p id="connection" role="status"></p>
+      <button id="retry" hidden>Réessayer la connexion</button>
+      <button id="fullscreen">Plein écran</button>
+    </footer>
+    <div id="progress" aria-hidden="true"><span></span></div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "success": true,
+  "utc": "2026-10-31T15:07:04.1029200+00:00",
+  "checks": [
+    "generation configuration preserved",
+    "unpublished sessions excluded",
+    "existing guest gallery still resolves every expected asset",
+    "unpublished sessions excluded",
+    "existing guest gallery still resolves every expected asset",
+    "fixtures excluded by default",
+    "both complete released synthetic sessions appear",
+    "feed contains no storage keys or forbidden assets",
+    "unchanged feed uses compact acknowledgement",
+    "only expected photo count is signed",
+    "signed result name is eligible",
+    "signed download preserves exact synthetic image bytes",
+    "only expected photo count is signed",
+    "signed result name is eligible",
+    "signed download preserves exact synthetic image bytes",
+    "signed result name is eligible",
+    "signed download preserves exact synthetic image bytes",
+    "signed result name is eligible",
+    "signed download preserves exact synthetic image bytes",
+    "signed result name is eligible",
+    "signed download preserves exact synthetic image bytes",
+    "production Chromium renders a real signed result"
+  ],
+  "synthetic_only": true,
+  "generation_calls": 0,
+  "viewer_disabled_after_test": true
+}

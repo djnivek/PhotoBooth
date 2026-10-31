@@ -1,6 +1,6 @@
 COLORS PARTY BY ESTELLE
 
-NOUVEAU PARCOURS 0.7.0
+NOUVEAU PARCOURS 0.8.0
    En ligne, le QR apparait pendant la preparation des metamorphoses.
    Scannez-le avant Une nouvelle seance : les photos arrivent progressivement
    dans la galerie. Comptez environ une a deux minutes, parfois davantage.
@@ -71,3 +71,6 @@ DONNEES ET REPRISE
 
 MONITORING 0.7
 Les temps de transfert et de génération, choix de séance et captures sont mesurés. Les mesures de la borne sont conservées localement pendant une coupure, puis envoyées en arrière-plan. Utiliser cette version 0.7 pour les nouveaux compteurs. Les essais caméra simulée sont identifiés séparément des prises Canon. L'administration et les rapports seront consultés depuis le Mac ; aucun serveur admin ne doit être laissé ouvert sur cette borne.
+
+PROJECTION DANS LA SALLE 0.8
+Dans Reglages, activer le diaporama puis Enregistrer la projection. Copier le lien du viewer et l ouvrir dans un navigateur sur l ecran de la salle ; choisir Plein ecran. L option est desactivee par defaut. Le bouton Une nouvelle seance revient automatiquement a l accueil apres 60 secondes, avec une taille fixe et une pause pendant l impression ou les reglages. Le depart manuel ou automatique libere la seance pour la projection, qui attend ses photos finales. Annonce de 15 secondes, puis 30 secondes pour une photo ou 15 secondes par photo pour quatre poses. Une projection en cours reste prioritaire ; les suivantes attendent. Le reste du temps, les seances autorisees defilent au hasard. Les originaux de Metamorphose et son repli en originaux sont exclus. Les seances camera simulee sont masquees, sauf si Inclure les seances avec camera simulee est coche pour les tests de ce PC.

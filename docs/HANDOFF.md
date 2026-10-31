@@ -1,5 +1,11 @@
 # Handoff actif : Colors Party by Estelle
 
+## Projection 0.8 : intégration du dernier main
+
+Le viewer de salle est ajouté sur `feat/room-viewer`, avec le main `17edd1c` et le dashboard Mac des PR19 à PR21 conservés. [Procédure complète](VIEWER.md). Option désactivée par défaut ; activer et enregistrer la projection dans les réglages de la borne, puis copier le lien de lecture vers le navigateur de la salle. Pour ce PC sans Canon, cocher aussi l’inclusion des séances simulées.
+
+Compteur de retour de 60 s à empreinte fixe, libération au départ manuel/automatique, annonce de 15 s, photo seule 30 s et quatre poses 15 s chacune. Les originaux des métamorphoses ne sont jamais projetés. API/Supabase et viewer déployés, tests synthétiques et réels terminés sans appel OpenAI. Les [preuves](evidence/viewer/README.md) incluent la revue visuelle et les limites matérielles. La release GitHub correspondante est publiée après passage de la CI Windows sur le code fusionné ; prendre la dernière version du dépôt.
+
 ## Admin Mac : connexion corrigée et dashboard livré
 
 Livraison : [PR21](https://github.com/djnivek/PhotoBooth/pull/21). Les captures et reçus de validation sont versionnés avec ce correctif.

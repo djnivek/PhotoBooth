@@ -35,10 +35,12 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Chromium installation failed" }
           node gallery.cjs
           if ($LASTEXITCODE -ne 0) { throw "Gallery browser checks failed" }
+          node viewer.cjs
+          if ($LASTEXITCODE -ne 0) { throw "Gallery browser checks failed" }
           Pop-Location
       - name: Package and execute the extracted Windows app
         shell: pwsh
-        run: ./scripts/package-windows.ps1 -Version 0.7.0
+        run: ./scripts/package-windows.ps1 -Version 0.8.0
       - name: Keep package and executable evidence
         if: always()
         uses: actions/upload-artifact@v7.0.2
@@ -53,4 +55,6 @@ jobs:
             artifacts/package/diagnostics/*error.txt
             artifacts/gallery/*.png
             artifacts/gallery/*.json
+            artifacts/viewer-0.8.0/*.json
+            .impeccable/review/viewer/*.png
             .impeccable/review/offline-original-*.png

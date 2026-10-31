@@ -20,9 +20,9 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Edge function type check failed' }
     deno lint supabase/functions/photobooth-api
     if ($LASTEXITCODE -ne 0) { throw 'Edge function lint failed' }
-    deno test supabase/functions/photobooth-api/cloud_test.ts
+    deno test supabase/functions/photobooth-api/cloud_test.ts supabase/functions/photobooth-api/viewer_test.ts
     if ($LASTEXITCODE -ne 0) { throw 'Edge function checks failed' }
-    node --test tests/gallery.test.cjs tests/admin.test.cjs tests/admin-model.test.cjs
+    node --test tests/viewer.test.mjs tests/gallery.test.cjs tests/admin.test.cjs tests/admin-model.test.cjs
     if ($LASTEXITCODE -ne 0) { throw 'Gallery checks failed' }
 }
 finally { Pop-Location }

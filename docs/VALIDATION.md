@@ -131,3 +131,7 @@ a révélé une course dans le faux serveur des tests : son `HashSet` de travaux
 pouvait ainsi rester vu comme `queued`. Les accès partagés du simulateur sont désormais verrouillés,
 et un scénario de 32 séances concurrentes vérifie résultats et comptage exacts.
 Ce correctif porte uniquement sur le simulateur de tests ; aucun code du paquet0.2.0 n’a changé.
+
+## Viewer 0.8
+
+456 assertions C#, parcours natif de compteur/partage/impression/désactivation, 30 tests Deno, 43 tests Node après intégration du main 17edd1c et essais Chromium multi-écrans réussis. SQL annulé puis migration appliquée, sécurité sans alerte. Tests réels du viewer déployé avec deux séances synthétiques, sans génération ; lien temporaire désactivé et budget conservé. Voir [preuves](evidence/viewer/README.md).

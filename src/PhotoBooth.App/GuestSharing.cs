@@ -33,17 +33,22 @@ public sealed partial class MainWindow
         return task;
     }
 
-    private Task StartNextSessionAsync()
+    private async Task StartNextSessionAsync()
     {
         var previous = controller;
         if (previous.IsBusy && (previous.Session?.Stage != SessionStage.Processing || !galleries.ContainsKey(previous.Session.Id)))
-            return Task.CompletedTask;
+            return;
+        if(startingNext)return;
+        startingNext=true;resultReturn.Stop();
+        try {
+        if(boothSettings.ViewerEnabled && projection is not null && previous.Session is { } session && !session.UsedOriginalFallback)
+            await projection.ReleaseAsync(session.Id,boothSettings.CanonCamera?"camera":"fixture");
         var previousCloud = cloud;
         detachedControllers.Add(previous);
         controller = CreateController();
         RenderHome();
         if (!previous.IsBusy) _ = CompleteDetachedAsync(previous, previousCloud);
-        return Task.CompletedTask;
+        } finally {startingNext=false;}
     }
 
     private async Task CompleteDetachedAsync(BoothController source, BoothCloudClient? client)
