@@ -1,4 +1,35 @@
-# Validation — 30 octobre 2026
+# Validation
+
+## Version 0.6 — validation locale
+
+437 assertions C# réussies (métier 26, imaging 231, runtime 54, impression 26, Canon fictif 28, cloud 72), parcours UI étendu passé ; 22 tests Deno, typecheck/lint, 18 tests galerie et OpenAPI réussis. Les tests client bloquent les résultats jusqu’aux huit départs de deux séances. Les tests serveur vérifient le 202 immédiat, le travail en arrière-plan, l'absence de nouveau POST Responses, les erreurs ambiguës sans relance, la récupération d'une sortie persistée et la lecture des anciens jobs Responses.
+
+Quatorze planches de calibration (sept thèmes × une/quatre poses) sont en 1800 × 1200, 300 dpi ; bords, ordre, dimensions, cadrage sans superposition et octets Au naturel inchangés vérifiés. Revue indépendante : ship pour les thèmes intégrés. Le ZIP extrait passe les quatre parcours simulés et l'ouverture native à 1280 × 800 et 960 × 700. Pas de DNP physique, pas de portrait IA, pas de benchmark 4G. Aperçus et [reçu local](evidence/direct-square/delivery.json) versionnés dans [direct-square](evidence/direct-square/README.md). Supabase 0.6 déployé : 48 contrôles de partage, dix assets et neuf entrées exactes du ZIP ; Chromium ordinateur/mobile vérifie l'arrivée d'un puis quatre résultats et du ZIP par polling automatique, sur le même QR. Six protections SQL vérifiées avec annulation complète, compteur de générations resté à 1, RLS et droits privés confirmés, audit sécurité sans alerte. [CI Windows réussie](https://github.com/djnivek/PhotoBooth/actions/runs/41190537146) sur b2a0e12. Statut distant consigné dans HANDOFF.
+
+
+## Historique 0.5.0 — 31 octobre 2026
+
+Paquet autonome extrait et exécuté sur ce PC Windows 11 Pro x64, build26300. Pas de Canon ni de DNP connectés. Les HTTP OpenAI restent fictifs dans les tests et aucune génération payante n’a été déclenchée. La 0.5 est un paquet local avec backend déployé, pas encore une release GitHub ou une CI publiée.
+
+| Vérification | Résultat courant |
+| --- | --- |
+| C# Release | 285 assertions : métier26, imaging94, runtime50, impression26, Canon fictif28, cloud61 |
+| Quatre générations parallèles | Faux HTTP bloqué jusqu’aux quatre départs ; résultats exacts, copies d’entrée privées, huit uploads avant publication puis seulement la planche, publication rejouée sans upload supplémentaire |
+| Images | Entrée JPEG90 bornée à 1536px, orientation/cadrage et bords conservés, pas d’agrandissement, originaux inchangés ; résultat direct vérifié par SHA sans réencodage |
+| UI native | Parcours étendu : QR anticipé, attente visible, séance suivante pendant traitement précédent, retry absent après succès, bouton principal visible |
+| API Deno | 19 tests, typecheck et lint : ZIP serveur, résultat direct, copies privées, 429 sans place bloquée, protections et absence de relance payante ambiguë |
+| Galerie | 18 contrats et 10 cas Chromium synthétiques ; pas de modification de l’interface entre 0.4 et 0.5 |
+| OpenAPI | Contrat0.5 validé avec swagger-cli |
+| Supabase réel | 47 contrôles sans génération : QR stable anticipé, progression, entrées privées, dix assets, neuf entrées exactes du ZIP serveur, publication répétable |
+| Production navigateur | Chromium 1280×900 et 390×844, vrais Vercel/Supabase, photos synthétiques, aucun appel fournisseur |
+| Paquet0.5 | SHA256 `2becf3afdacf3c05eb015fcff6bceca74c76e49141f3cdce2c94c6c90247e78f` ; quatre modes self-test et fenêtres natives1280×800/960×700 réussis après extraction |
+| Protection distante | Migration d’entrées optimisées appliquée, aucun SELECT anon/authenticated sur les assets, audit sécurité sans alerte ; compteur de générations resté à1 avant/après |
+
+Reçus ignorés par Git dans `artifacts/optimization-0.5.0/` : `delivery.json`, `transfer-benchmark.json`, `live-smoke/{receipt,browser}.json`, `package-checks/` et journaux C#. Revue de l’interface : `artifacts/progressive-0.4.0/review.json`. La correction mobile a été vérifiée après revue Impeccable.
+
+Le benchmark emploie quatre images synthétiques détaillées, pas des portraits ni des résultats IA. Copies d’entrée : −84,3 %. Estimation du volume total montant selon les deux circuits : −58,9 % (24,22→9,95 Mo). Préparation locale mesurée à341ms. Aucune durée réelle de génération/4G ou fidélité de visage n’en découle. Sortie1536×1024 et Sunburst/xhigh conservés. Les comparaisons de profil rapide restent proposées, sans activation.
+
+## Historique — 30 octobre 2026
 
 **Application et API codées ; simulation native et partage distant vérifiés. Aucun Canon,
 aucune feuille DNP, aucun lancement sur le Windows 10 cible, aucune édition OpenAI facturée.**

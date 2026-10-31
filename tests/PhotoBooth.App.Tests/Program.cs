@@ -167,7 +167,27 @@ foreach(var count in new[]{1,4})
     if(!File.ReadAllBytes(printed).SequenceEqual(File.ReadAllBytes(master)))throw new Exception("Offline print differs from the reviewed sheet.");
     Capture($"offline-original-{count}.png");window.Close();Pump(80);
 }
-Console.WriteLine("PASS UI: three home sizes, six style choices, explicit style flow, processing timer cleanup, dynamic add/remove/offline catalog, four-character code, optional protection, three-second corner hold and cancellation, print export, cloud-enabled offline originals (one/four), exact offline print bytes and camera cancellation. No network, paid API or hardware.");
+// Leaving with an early QR must keep the old session running and never steal the next guest's screen.
+var progressiveHttp = new ProgressiveUiHttp();
+window = new MainWindow((_,_)=>Task.CompletedTask, refreshCatalogOnOpen:false,
+    cloudFactory:store=>new BoothCloudClient("https://progress.invalid/api","offline-test-only",store,handler:progressiveHttp,delay:(_,token)=>Task.Delay(20,token)));
+window.Show();Pump(80);ClickLabel("Une photo");ClickLabel("Métamorphose");Click("Style_halloween");Click("StartStyledSession");
+Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);Click("TakePhotos");
+Until(()=>Find("ContinueOnPhone") is {IsEnabled:true} && progressiveHttp.GenerationWaiting,8000);
+if(!window.GetVisualDescendants().OfType<Image>().Single(i=>i.Name=="ProcessingQr").IsVisible)throw new Exception("Early QR missing during generation.");
+Capture("processing-qr-1280x800.png");window.Width=960;window.Height=700;Pump(100);Capture("processing-qr-960x700.png");
+var next=Find("ContinueOnPhone")!;var nextPoint=next.TranslatePoint(new Point(),window)!.Value;
+if(nextPoint.Y+next.Bounds.Height>window.ClientSize.Height||nextPoint.X+next.Bounds.Width>window.ClientSize.Width)throw new Exception("Continue-on-phone action clipped.");
+Click("ContinueOnPhone");Until(()=>Find("StartSession") is not null,3000);
+if(window.ProcessingAnimationRunning)throw new Exception("Processing animation leaked after leaving with QR.");
+ClickLabel("Au naturel");Click("StartSession");Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);
+progressiveHttp.Resume.TrySetResult();Until(()=>progressiveHttp.Shares==1,10000);
+if(Find("TakePhotos") is not {IsVisible:true}||Find("PrintPreview") is not null)throw new Exception("Background result replaced next guest's capture screen.");
+Click("TakePhotos");Until(()=>Find("PrintPreview") is not null&&progressiveHttp.Shares==2,10000);Pump(100);
+if(Find("ShareRetry") is {IsVisible:true})throw new Exception("Retry share visible after successful publication.");
+if(Find("NewSession") is not {IsVisible:true} newSession||!newSession.Classes.Contains("primary"))throw new Exception("New session is not the prominent primary action.");
+Capture("shared-result-960x700.png");window.Close();Pump(100);
+Console.WriteLine("PASS UI: native flows, cloud offline, early QR, visible loading and wait copy, background completion during next guest, no share retry after success, prominent new-session action. No network, paid API or hardware.");
 Directory.Delete(root,true);
 void HoldCorner(int milliseconds)
 {var p=new Point(20,window.ClientSize.Height-20);window.MouseMove(p);window.MouseDown(p,MouseButton.Left);Pump(milliseconds);window.MouseUp(p,MouseButton.Left);Pump(50);}
@@ -245,4 +265,37 @@ sealed class OfflineHttp:HttpMessageHandler
     public int Calls; public int GenerationCalls;
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)
     { Calls++;if(request.RequestUri!.AbsolutePath.Contains("/photos/"))GenerationCalls++;throw new HttpRequestException("Network disconnected"); }
+}
+
+sealed class ProgressiveUiHttp:HttpMessageHandler
+{
+    public TaskCompletionSource Resume {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
+    public bool GenerationWaiting;public int Shares;
+    private readonly HashSet<string> started=[];
+    private readonly Dictionary<string,string> galleryTokens=[];
+    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,CancellationToken token)
+    {
+        var path=request.RequestUri!.AbsolutePath;
+        HttpResponseMessage Json(object value)=>new(System.Net.HttpStatusCode.OK){Content=System.Net.Http.Json.JsonContent.Create(value)};
+        if(path.Contains("/storage/"))return new(System.Net.HttpStatusCode.OK){Content=new ByteArrayContent(FixtureCamera.CreateFixture(0))};
+        if(path.EndsWith("/sessions"))return Json(new{style="halloween"});
+        if(path.EndsWith("/gallery")||path.EndsWith("/share"))
+        {
+            using var input=System.Text.Json.JsonDocument.Parse(await request.Content!.ReadAsByteArrayAsync(token));
+            var shareToken=input.RootElement.GetProperty("token").GetString()!;var id=path.Split('/')[^2];
+            if(galleryTokens.TryGetValue(id,out var previous)&&previous!=shareToken)throw new Exception("Gallery token changed before final publication.");
+            galleryTokens[id]=shareToken;
+            if(path.EndsWith("/share"))Shares++;
+            return Json(new{gallery_url="https://gallery.invalid/#"+shareToken,expires_at=DateTimeOffset.UtcNow.AddDays(7),download_url="https://progress.invalid/storage/archive.zip"});
+        }
+        if(path.Contains("/assets/"))return Json(new{sha256=SessionStore.Hash(await request.Content!.ReadAsByteArrayAsync(token))});
+        if(path.Contains("/photos/"))
+        {
+            if(request.Method==HttpMethod.Post){started.Add(path);return Json(new{state="running"});}
+            if(!started.Contains(path))return Json(new{state="queued"});
+            GenerationWaiting=true;await Resume.Task.WaitAsync(token);
+            return Json(new{state="ready",url="https://progress.invalid/storage/photo.jpg"});
+        }
+        throw new Exception("Unexpected fake request "+path);
+    }
 }

@@ -23,6 +23,10 @@ try
         Check(ticks == count * 3 + count - 1, "Countdown per pose plus repositioning pauses");
         var sent = await controller.GetPrintBytesAsync();
         Check(SessionStore.Hash(sent) == controller.Sheet!.Sha256, "Print is exact reviewed master");
+        var finalBytes = new List<byte[]>();
+        foreach (var asset in controller.FinalAssets) finalBytes.Add(await store.ReadVerifiedAsync(asset));
+        var expectedSheet = mode == PhotoMode.Surprise ? MetamorphosisSheet.Compose(finalBytes, controller.Session.StyleId) : PhotoProcessor.Compose(finalBytes);
+        Check(sent.SequenceEqual(expectedSheet), "Only Metamorphose receives the themed square composition");
         Check(File.Exists(Path.Combine(root, controller.Session.Id.ToString("N"), "session.json")), "Durable session manifest");
     }
     {

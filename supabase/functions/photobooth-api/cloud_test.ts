@@ -12,7 +12,6 @@ const config: Config = {
   openAIKey: "fake-openai",
   galleryOrigin: "https://gallery.test",
   imageModel: "gpt-image-2.5-sunburst",
-  responseModel: "gpt-6-luna",
 };
 function assert(value: unknown, message = "Assertion failed"): asserts value {
   if (!value) throw new Error(message);
@@ -45,10 +44,12 @@ class FakeServices {
   providerCreates = 0;
   providerMode = "completed";
   providerFail = false;
+  providerRateLimited = false;
+  providerGate?: Promise<void>;
   claims = 0;
   claimError = "";
   storage = new Map<string, Uint8Array>();
-  send: typeof fetch = (input, init) => {
+  send: typeof fetch = async (input, init) => {
     const url = new URL(String(input));
     const path = url.pathname;
     const method = init?.method ?? "GET";
@@ -66,17 +67,19 @@ class FakeServices {
       if (method === "POST") {
         this.providerCreates++;
         assert(
-          body.background === true && body.tools[0].quality === "xhigh",
-          "background xhigh request",
+          path === "/v1/images/edits" && body.model === "gpt-image-2.5-sunburst" && body.quality === "medium" && body.size === "1024x1024" && body.n === 1,
+          "direct medium square edit, no mainline model or Responses call",
         );
         assert(
-          body.input[0].content[1].image_url.startsWith(
+          body.images[0].image_url.startsWith(
             config.url + "/storage/v1/",
           ),
           "OpenAI reads the already uploaded original through a signed URL",
         );
         if (this.providerFail) throw new Error("Ambiguous network failure");
-        return reply({ id: "resp_test", status: "queued" });
+        if (this.providerRateLimited) return reply({ error: "rate limited" }, 429);
+        if (this.providerGate) await this.providerGate;
+        return reply({ data: [{ b64_json: btoa(String.fromCharCode(...fixture)) }], usage: { total_tokens: 100 } });
       }
       return reply({
         id: "resp_test",
@@ -93,6 +96,10 @@ class FakeServices {
       });
     }
     if (path.includes("/storage/v1/object/")) {
+      if (method === "GET") {
+        const stored = this.storage.get(path.replace("/object/authenticated/", "/object/"));
+        return Promise.resolve(new Response(stored ? new Uint8Array(stored) : null, { status: stored ? 200 : 404 }));
+      }
       this.storage.set(path, new Uint8Array(init!.body as Uint8Array));
       return reply({});
     }
@@ -119,7 +126,7 @@ class FakeServices {
       : this.assets;
     const matches = (row: Record<string, unknown>) =>
       Array.from(url.searchParams).every(([k, v]) =>
-        k === "select" || String(row[k]) === v.replace(/^eq\./, "")
+        k === "select" || (k === "or" ? row.share_hash === null || v.includes(`share_hash.eq.${row.share_hash}`) : String(row[k]) === v.replace(/^eq\./, ""))
       );
     if (method === "GET") return reply(collection.filter(matches));
     if (method === "PATCH") {
@@ -184,6 +191,30 @@ Deno.test("session idempotency preserves style and rejects conflicting options",
   );
   assert(bad.status === 409);
   await bad.body?.cancel();
+});
+Deno.test("early gallery resolves only its available photos without authorizing generation", async () => {
+  const fake = new FakeServices(); const api = new CloudApi(config, fake.send);
+  await (await api.handle(request("/sessions", "POST", { id, photo_count: 4, mode: "surprise" }))).body?.cancel();
+  const token = "b".repeat(64);
+  const early = await api.handle(request(`/sessions/${id}/gallery`, "POST", { token }));
+  assert(early.status === 200); assert((await early.json()).gallery_url.endsWith("/#" + token));
+  assert(fake.sessions[0].share_hash === await hash(token) && fake.sessions[0].published_at === null);
+  const empty = await (await api.handle(request("/downloads/resolve", "POST", { token }, false))).json();
+  assert(empty.state === "processing" && empty.assets.length === 0 && fake.providerCreates === 0);
+  for (const name of ["original-1.jpg", "photo-1.jpg"]) {
+    const upload = await api.handle(request(`/sessions/${id}/assets/${name}`, "PUT", fixture));
+    assert(upload.status === 201); await upload.body?.cancel();
+  }
+  const partial = await (await api.handle(request("/downloads/resolve", "POST", { token }, false))).json();
+  assert(partial.state === "processing" && partial.completed_count === 1 && partial.assets.length === 2);
+  assert(!JSON.stringify(partial).includes("owner_hash") && !JSON.stringify(partial).includes("response_id"));
+  const conflict = await api.handle(request(`/sessions/${id}/gallery`, "POST", { token: "c".repeat(64) }));
+  assert(conflict.status === 409); await conflict.body?.cancel();
+  const forbidden = await api.handle(new Request(`https://local.test/photobooth-api/sessions/${id}/photos/0`, {method:"POST",headers:{Authorization:"Bearer " + token},body:"{}"}));
+  assert(forbidden.status === 401); await forbidden.body?.cancel();
+  fake.jobs.push({session_id:id,shot_index:0,state:"failed"});
+  const failed = await (await api.handle(request("/downloads/resolve", "POST", {token}, false))).json();
+  assert(failed.state === "failed" && failed.assets.length === 2 && fake.providerCreates === 0);
 });
 Deno.test("duplicate starts claim once; polling retrieves one completed image", async () => {
   const fake = new FakeServices();
@@ -294,16 +325,70 @@ Deno.test("asset hash conflict prevents replacing a reviewed photograph", async 
   assert(result.status === 409);
   await result.body?.cancel();
 });
+Deno.test("explicit fallback publishes originals without replacing a partial transformation", async () => {
+  const fake = new FakeServices(); const api = new CloudApi(config, fake.send); const token = "d".repeat(64);
+  await (await api.handle(request("/sessions", "POST", {id,photo_count:4,mode:"surprise"}))).body?.cancel();
+  await (await api.handle(request(`/sessions/${id}/gallery`, "POST", {token}))).body?.cancel();
+  for(const name of ["photo-1.jpg","original-1.jpg","original-2.jpg","original-3.jpg","original-4.jpg","sheet.jpg","archive.zip"]) {
+    const bytes=name.endsWith("zip")?new Uint8Array([80,75,3,4,0]):fixture;
+    const upload=await api.handle(request(`/sessions/${id}/assets/${name}`,"PUT",bytes));
+    assert(upload.status===201);await upload.body?.cancel();
+  }
+  const published=await api.handle(request(`/sessions/${id}/share`,"POST",{token,used_original_fallback:true}));
+  assert(published.status===200);await published.body?.cancel();
+  const resolved=await (await api.handle(request("/downloads/resolve","POST",{token},false))).json();
+  assert(resolved.state==="ready"&&resolved.used_original_fallback===true&&resolved.assets.length===6);
+  assert(resolved.assets.every((asset:{name:string})=>!asset.name.startsWith("photo-"))&&fake.providerCreates===0);
+});
+Deno.test("server assembles the complete archive without a booth ZIP upload", async () => {
+  const fake = new FakeServices(); const api = new CloudApi(config, fake.send); const token = "e".repeat(64);
+  await (await api.handle(request("/sessions", "POST", {id,photo_count:1,mode:"original"}))).body?.cancel();
+  for (const name of ["photo-1.jpg", "sheet.jpg"]) {
+    const response=await api.handle(request(`/sessions/${id}/assets/${name}`,"PUT",fixture));
+    assert(response.status===201);await response.body?.cancel();
+  }
+  const share=await api.handle(request(`/sessions/${id}/share`,"POST",{token}));
+  assert(share.status===200);await share.body?.cancel();
+  const archive=fake.storage.get(`/storage/v1/object/booth-private/${id}/archive.zip`)!;
+  assert(archive.length>fixture.length*2&&new DataView(archive.buffer).getUint32(0,true)===0x04034b50);
+  const digest=await hash(archive);
+  await (await api.handle(request(`/sessions/${id}/share`,"POST",{token}))).body?.cancel();
+  assert(await hash(fake.storage.get(`/storage/v1/object/booth-private/${id}/archive.zip`)!)===digest&&fake.providerCreates===0);
+});
+Deno.test("optimized input starts a job; direct result appears without a booth reupload", async () => {
+  const fake=new FakeServices();const api=new CloudApi(config,fake.send);const token="f".repeat(64);
+  await (await api.handle(request("/sessions","POST",{id,photo_count:1,mode:"surprise"}))).body?.cancel();
+  await (await api.handle(request(`/sessions/${id}/gallery`,"POST",{token}))).body?.cancel();
+  const input=await api.handle(request(`/sessions/${id}/assets/input-1.jpg`,"PUT",fixture));
+  assert(input.status===201);await input.body?.cancel();
+  const start=await api.handle(request(`/sessions/${id}/photos/0`,"POST",{}));
+  assert(start.status===202);await start.body?.cancel();
+  const result=await (await api.handle(request(`/sessions/${id}/photos/0?transport=direct`))).json();
+  assert(result.state==="ready"&&result.asset_stored===true&&result.sha256===await hash(fixture));
+  const gallery=await (await api.handle(request("/downloads/resolve","POST",{token},false))).json();
+  assert(gallery.assets.length===1&&gallery.assets[0].name==="photo-1.jpg"&&fake.providerCreates===1);
+  const repeated=await (await api.handle(request(`/sessions/${id}/photos/0?transport=direct`))).json();
+  assert(repeated.asset_stored===true&&repeated.sha256===result.sha256&&fake.providerCreates===1);
+});
+Deno.test("explicit provider rate rejection frees the in-flight slot without retrying a start", async () => {
+ const fake=new FakeServices();fake.providerRateLimited=true;const api=new CloudApi(config,fake.send);
+ await (await api.handle(request("/sessions","POST",{id,photo_count:1,mode:"surprise"}))).body?.cancel();
+ await (await api.handle(request(`/sessions/${id}/assets/original-1.jpg`,"PUT",fixture))).body?.cancel();
+ const response=await api.handle(request(`/sessions/${id}/photos/0`,"POST",{}));
+ assert(response.status===202);await response.body?.cancel();
+ const status=await (await api.handle(request(`/sessions/${id}/photos/0`))).json();
+ assert(status.state==="failed"&&status.code==="provider_rate_limited");
+ assert(fake.jobs[0].state==="failed"&&fake.providerCreates===1);
+});
 Deno.test("payload fixes one edit per pose and preserves original separately", () => {
   const payload = imageRequest(
     config,
     "https://test.supabase.co/storage/original.jpg?token=temporary",
     "cinema",
   );
-  assert(payload.max_tool_calls === 1 && payload.tools[0].action === "edit");
+  assert(payload.n === 1 && !("tools" in payload) && !("background" in payload));
   assert(
-    payload.tools[0].model === "gpt-image-2.5-sunburst" &&
-      payload.tools[0].quality === "xhigh",
+    payload.model === "gpt-image-2.5-sunburst" && payload.quality === "medium" && payload.size === "1024x1024",
   );
 });
 
@@ -380,7 +465,7 @@ Deno.test("explicit universe and prompt freeze across updates; rejected changes 
   assert(unknown.status === 400); await unknown.body?.cancel();
   assert(fake.providerCreates === 0);
   const payload = imageRequest(config, "https://test/image.jpg", "removed_theme", "Frozen test scene");
-  const prompt = payload.input[0].content[0].text!;
+  const prompt = payload.prompt;
   assert(prompt.includes("Frozen test scene") && prompt.includes("corpulence") && prompt.includes("aides à la mobilité"));
 });
 
@@ -414,4 +499,49 @@ Deno.test("parallel duplicate starts cannot create two provider requests", async
   const responses = await Promise.all(Array.from({length: 12}, () => api.handle(request(`/sessions/${id}/photos/0`, "POST", {}))));
   for (const response of responses) { assert(response.status === 202); await response.body?.cancel(); }
   assert(fake.providerCreates === 1);
+});
+
+Deno.test("four direct edits return immediately and complete in the Edge background", async () => {
+  const fake = new FakeServices(); let finish!: () => void;
+  fake.providerGate = new Promise<void>(resolve => { finish = resolve; });
+  const tasks: Promise<void>[] = [];
+  const api = new CloudApi(config, fake.send, task => { tasks.push(task); });
+  await (await api.handle(request("/sessions", "POST", { id, photo_count: 4, mode: "surprise" }))).body?.cancel();
+  try {
+    for (let i = 0; i < 4; i++) {
+      await (await api.handle(request(`/sessions/${id}/assets/input-${i + 1}.jpg`, "PUT", fixture))).body?.cancel();
+      const response = await api.handle(request(`/sessions/${id}/photos/${i}`, "POST", {}));
+      assert(response.status === 202); await response.body?.cancel();
+    }
+    assert(tasks.length === 4 && fake.providerCreates === 4 && fake.jobs.every(j => j.state === "running"));
+    const poll = await (await api.handle(request(`/sessions/${id}/photos/0`))).json();
+    assert(poll.state === "running" && fake.providerCreates === 4);
+    await (await api.handle(request(`/sessions/${id}/photos/0`, "POST", {}))).body?.cancel();
+    assert(fake.providerCreates === 4, "duplicate while running never creates a fifth edit");
+  } finally { finish(); await Promise.all(tasks); }
+  assert(fake.jobs.every(j => j.state === "ready" && !j.response_id));
+  assert(fake.assets.filter(a => String(a.name).startsWith("photo-") && a.uploaded).length === 4);
+});
+
+Deno.test("an interrupted direct worker is uncertain and cannot be relaunched", async () => {
+  const fake = new FakeServices(); const api = new CloudApi(config, fake.send);
+  await (await api.handle(request("/sessions", "POST", { id, photo_count: 1, mode: "surprise" }))).body?.cancel();
+  fake.jobs.push({ session_id: id, shot_index: 0, state: "running", usage: { provider: "images" }, updated_at: new Date(Date.now() - 240000).toISOString() });
+  const status = await (await api.handle(request(`/sessions/${id}/photos/0`))).json();
+  assert(status.state === "uncertain" && fake.providerCreates === 0);
+  await (await api.handle(request(`/sessions/${id}/assets/input-1.jpg`, "PUT", fixture))).body?.cancel();
+  await (await api.handle(request(`/sessions/${id}/photos/0`, "POST", {}))).body?.cancel();
+  assert(fake.providerCreates === 0 && fake.jobs[0].state === "uncertain");
+});
+
+Deno.test("stored direct output survives a lost completion update; old Responses jobs can finish", async () => {
+  const fake = new FakeServices(); const api = new CloudApi(config, fake.send);
+  await (await api.handle(request("/sessions", "POST", { id, photo_count: 4, mode: "surprise" }))).body?.cancel();
+  await (await api.handle(request(`/sessions/${id}/assets/photo-1.jpg`, "PUT", fixture))).body?.cancel();
+  fake.jobs.push({ session_id: id, shot_index: 0, state: "uncertain", usage: { provider: "images" } });
+  const restored = await (await api.handle(request(`/sessions/${id}/photos/0`))).json();
+  assert(restored.state === "ready" && restored.asset_stored && fake.providerCreates === 0);
+  fake.jobs.push({ session_id: id, shot_index: 1, state: "running", response_id: "resp_test" });
+  const legacy = await (await api.handle(request(`/sessions/${id}/photos/1?transport=direct`))).json();
+  assert(legacy.state === "ready" && legacy.asset_stored && fake.providerCreates === 0);
 });

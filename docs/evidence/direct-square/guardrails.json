@@ -1,0 +1,19 @@
+{
+  "checks": [
+    "Eight distinct claims accepted across two four-pose sessions",
+    "Duplicate claim does not consume another image",
+    "Ninth unresolved job rejected by the concurrency limit",
+    "Sixteen starts per minute enforced even after jobs finish",
+    "Operator kill switch rejects new claims",
+    "Total event budget remains enforced"
+  ],
+  "generation_calls": 0,
+  "max_images": 2400,
+  "max_in_flight": 8,
+  "max_per_minute": 16,
+  "project": "frkckrvsdsiwivdfyjau",
+  "started_after": 1,
+  "started_before": 1,
+  "success": true,
+  "transaction_rolled_back": true
+}

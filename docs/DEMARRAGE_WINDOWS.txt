@@ -1,5 +1,18 @@
 COLORS PARTY BY ESTELLE
 
+NOUVEAU PARCOURS 0.6.0
+   En ligne, le QR apparait pendant la preparation des metamorphoses.
+   Scannez-le avant Une nouvelle seance : les photos arrivent progressivement
+   dans la galerie. Comptez environ une a deux minutes, parfois davantage.
+   La borne doit rester ouverte pour terminer les seances en arriere-plan.
+   Une nouvelle seance reste bien visible en bas du resultat ; Reessayer le
+   partage apparait seulement si un envoi a echoue.
+   Serveur 0.6.0 : jusqu a huit generations simultanees, entrees optimisees privees,
+   originaux preserves et ZIP fabrique cote serveur pour limiter les transferts.
+   Metamorphose : Sunburst direct, medium, carre 1024x1024. La planche 10x15
+   conserve les photos entieres et ajoute le logo et le decor du theme.
+   Au naturel conserve sa mise en page habituelle.
+
 1. Extraire tout le ZIP, puis lancer ColorsParty.exe.
    Ne pas lancer depuis l’aperçu du ZIP. Aucun SDK .NET à installer.
 

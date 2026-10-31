@@ -13,12 +13,16 @@ public sealed record PublishedSession(string Url, DateTimeOffset ExpiresAt, stri
 
 public sealed class BoothCloudClient : IPhotoTransform, IDisposable
 {
+    private static readonly SemaphoreSlim GenerationSlots = new(8);
+    private static readonly SemaphoreSlim UploadSlots = new(2);
+    private static readonly SemaphoreSlim DownloadSlots = new(2);
     private readonly HttpClient http;
     private readonly Uri api;
     private readonly string accessKey;
     private readonly SessionStore store;
     private readonly string galleryBase;
     private readonly Func<TimeSpan, CancellationToken, Task> delay;
+    public event Action<Guid, PublishedSession>? GalleryAvailable;
 
     public BoothCloudClient(string baseUrl, string accessKey, SessionStore store, string galleryBase = "",
         HttpMessageHandler? handler = null, Func<TimeSpan,CancellationToken,Task>? delay = null)
@@ -49,16 +53,29 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
         IProgress<string> progress, CancellationToken token, string styleChoice = StyleCatalog.Chef)
     {
         var style = await EnsureSession(sessionId, originals.Count, PhotoMode.Surprise, token, styleChoice);
-        using var concurrency = new SemaphoreSlim(2);
+        var shareToken = await ShareTokenAsync(sessionId, token);
+        using (var gallery = await SendJsonAsync(HttpMethod.Post, $"sessions/{sessionId}/gallery", new { token = shareToken }, token))
+            GalleryAvailable?.Invoke(sessionId, GalleryLink(gallery.RootElement, shareToken));
+        var inputs = await Task.WhenAll(originals.Select(bytes => Task.Run(() => PhotoProcessor.PrepareGenerationInput(bytes), token)));
+        var inputsReady = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var uploadedInputs = 0;
+        async Task ArchiveOriginalsAsync()
+        {
+            await inputsReady.Task.WaitAsync(token);
+            await Task.WhenAll(originals.Select((bytes, index) => UploadOriginalAsync(sessionId, index, bytes, token)));
+        }
+        var archivalUpload = ArchiveOriginalsAsync();
         var tasks = originals.Select(async (bytes, index) =>
         {
-            await concurrency.WaitAsync(token);
+            var acquired = false;
             try
             {
-                await UploadOriginalAsync(sessionId,index,bytes,token);
+                await GenerationSlots.WaitAsync(token); acquired = true;
+                await UploadAsync(sessionId, $"input-{index + 1}.jpg", inputs[index], token);
+                if (Interlocked.Increment(ref uploadedInputs) == originals.Count) inputsReady.TrySetResult();
                 progress.Report($"Transformation de la pose {index + 1} sur {originals.Count}…");
                 var route = $"sessions/{sessionId}/photos/{index}";
-                using var initial = await SendJsonAsync(HttpMethod.Get, route, null, token);
+                using var initial = await SendJsonAsync(HttpMethod.Get, route + "?transport=direct", null, token);
                 var state = initial.RootElement.GetProperty("state").GetString();
                 var journal = Path.Combine(store.Root, sessionId.ToString("N"), $"cloud-{index}.json");
                 if (state == "queued")
@@ -80,18 +97,36 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
                 for (var attempt = 0; attempt < 240; attempt++)
                 {
                     token.ThrowIfCancellationRequested();
-                    using var status = await SendJsonAsync(HttpMethod.Get, route, null, token);
+                    using var status = await SendJsonAsync(HttpMethod.Get, route + "?transport=direct", null, token);
                     state = status.RootElement.GetProperty("state").GetString();
-                    if (state == "ready") return await DownloadAsync(status.RootElement.GetProperty("url").GetString()!, token);
+                    if (state == "ready")
+                    {
+                        // The server's generation slot is already free. Let the
+                        // next guest start while these bytes download for print.
+                        GenerationSlots.Release(); acquired = false;
+                        var image = await DownloadAsync(status.RootElement.GetProperty("url").GetString()!, token);
+                        if (status.RootElement.TryGetProperty("asset_stored", out var stored) && stored.GetBoolean())
+                        {
+                            if (!status.RootElement.TryGetProperty("sha256", out var digest) || digest.GetString() != SessionStore.Hash(image))
+                                throw new IOException("La vérification du résultat téléchargé a échoué. Les originaux sont conservés.");
+                            await RememberUploadAsync(sessionId, $"photo-{index + 1}.jpg", image, token);
+                            return image; // exact provider JPEG, already stored beside the gallery
+                        }
+                        var normalized = await Task.Run(() => PhotoProcessor.Normalize(image), token);
+                        await UploadAsync(sessionId, $"photo-{index + 1}.jpg", normalized, token);
+                        return normalized;
+                    }
                     if (state is "failed" or "uncertain" || (state == "queued" && attempt > 4))
                         throw new IOException("La transformation n’a pas abouti. Vos originaux sont conservés ; aucune nouvelle génération automatique.");
                     await delay(TimeSpan.FromSeconds(2), token);
                 }
                 throw new IOException("La génération prend trop de temps. Les originaux et l’identifiant de suivi sont conservés.");
             }
-            finally { concurrency.Release(); }
+            catch (Exception exception) { inputsReady.TrySetException(exception); throw; }
+            finally { if (acquired) GenerationSlots.Release(); }
         }).ToArray();
-        return new TransformResult(style, await Task.WhenAll(tasks));
+        await Task.WhenAll(tasks.Cast<Task>().Append(archivalUpload));
+        return new TransformResult(style, tasks.Select(task => task.Result).ToArray(), Normalized: true);
     }
 
     public async Task<PublishedSession> PublishAsync(Session session, IReadOnlyList<StoredAsset> photos, StoredAsset sheet, CancellationToken token = default)
@@ -110,23 +145,34 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
                 var bytes=await File.ReadAllBytesAsync(store.Resolve(capture.LocalAssetKey),token);
                 await UploadOriginalAsync(session.Id,originals.Count,bytes,token); originals.Add(bytes);
             }
-        var archive = BuildArchive(images, sheetBytes, originals);
-        if(archive.Length>50*1024*1024)throw new IOException("Les photos dépassent la taille maximale du téléchargement (50 Mo). Elles restent disponibles sur cet ordinateur.");
-        for (var i = 0; i < images.Count; i++) await UploadAsync(session.Id, $"photo-{i+1}.jpg", images[i], token);
+        if (!session.UsedOriginalFallback)
+            for (var i = 0; i < images.Count; i++) await UploadAsync(session.Id, $"photo-{i+1}.jpg", images[i], token);
         await UploadAsync(session.Id, "sheet.jpg", sheetBytes, token);
-        await UploadAsync(session.Id, "archive.zip", archive, token);
-        var tokenPath = Path.Combine(store.Root, session.Id.ToString("N"), "share-token.txt");
-        var shareToken = File.Exists(tokenPath) ? (await File.ReadAllTextAsync(tokenPath, token)).Trim() : Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32));
-        await SessionStore.WriteAtomicAsync(tokenPath, Encoding.ASCII.GetBytes(shareToken), token);
+        // The server assembles the archive from verified Storage assets. Sending
+        // another full copy of originals/results over mobile data is unnecessary.
+        var shareToken = await ShareTokenAsync(session.Id, token);
         using var shared = await SendJsonAsync(HttpMethod.Post, $"sessions/{session.Id}/share", new { token = shareToken, used_original_fallback = session.UsedOriginalFallback }, token);
         var downloadUrl = shared.RootElement.GetProperty("download_url").GetString()!;
-        var url = galleryBase.Length > 0 ? galleryBase.TrimEnd('/') + "/#" + shareToken :
-            shared.RootElement.TryGetProperty("gallery_url", out var gallery) ? gallery.GetString()! : downloadUrl;
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var address) || address.Scheme != "https" || address.UserInfo.Length > 0)
-            throw new IOException("Adresse de partage non reconnue.");
-        var result = new PublishedSession(url, shared.RootElement.GetProperty("expires_at").GetDateTimeOffset(), downloadUrl);
+        var result = GalleryLink(shared.RootElement, shareToken) with { DownloadUrl = downloadUrl };
         await SessionStore.WriteAtomicAsync(Path.Combine(store.Root, session.Id.ToString("N"), "share.json"), JsonSerializer.SerializeToUtf8Bytes(result), token);
         return result;
+    }
+
+    private async Task<string> ShareTokenAsync(Guid id, CancellationToken token)
+    {
+        var path = Path.Combine(store.Root, id.ToString("N"), "share-token.txt");
+        if (File.Exists(path)) return (await File.ReadAllTextAsync(path, token)).Trim();
+        var value = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32));
+        await SessionStore.WriteAtomicAsync(path, Encoding.ASCII.GetBytes(value), token);
+        return value;
+    }
+
+    private PublishedSession GalleryLink(JsonElement response, string token)
+    {
+        var url = galleryBase.Length > 0 ? galleryBase.TrimEnd('/') + "/#" + token : response.GetProperty("gallery_url").GetString()!;
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var address) || address.Scheme != "https" || address.UserInfo.Length > 0)
+            throw new IOException("Adresse de partage non reconnue.");
+        return new PublishedSession(url, response.GetProperty("expires_at").GetDateTimeOffset());
     }
 
     public static byte[] BuildArchive(IReadOnlyList<byte[]> photos, byte[] sheet,IReadOnlyList<byte[]>? originals=null)
@@ -155,17 +201,31 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
     }
     private async Task UploadAsync(Guid id, string name, byte[] bytes, CancellationToken token)
     {
+        var marker = UploadMarker(id, name); var digest = SessionStore.Hash(bytes);
+        if (File.Exists(marker) && await File.ReadAllTextAsync(marker, token) == digest) return;
+        await UploadSlots.WaitAsync(token);
+        try
+        {
         using var content = new ByteArrayContent(bytes); content.Headers.ContentType = new(name.EndsWith(".zip") ? "application/zip" : "image/jpeg");
         using var response = await SendAsync(HttpMethod.Put, $"sessions/{id}/assets/{name}", content, token);
         await EnsureSuccess(response);
         using var result = JsonDocument.Parse(await response.Content.ReadAsByteArrayAsync(token));
-        if (result.RootElement.GetProperty("sha256").GetString() != SessionStore.Hash(bytes))
+        if (result.RootElement.GetProperty("sha256").GetString() != digest)
             throw new IOException("La vérification du fichier envoyé a échoué.");
+        await RememberUploadAsync(id, name, bytes, token);
+        }
+        finally { UploadSlots.Release(); }
     }
+    private string UploadMarker(Guid id, string name) => Path.Combine(store.Root, id.ToString("N"), $"asset-upload-{name}.sha256");
+    private Task RememberUploadAsync(Guid id, string name, byte[] bytes, CancellationToken token) =>
+        SessionStore.WriteAtomicAsync(UploadMarker(id, name), Encoding.ASCII.GetBytes(SessionStore.Hash(bytes)), token);
     private async Task<byte[]> DownloadAsync(string address, CancellationToken token)
     {
         var uri = new Uri(address);
         if (uri.Scheme != "https" || uri.Host != api.Host || uri.Port != api.Port) throw new IOException("Adresse de résultat non reconnue.");
+        await DownloadSlots.WaitAsync(token);
+        try
+        {
         using var request = new HttpRequestMessage(HttpMethod.Get, uri); // No booth credential on signed storage requests.
         using var response = await http.SendAsync(request,HttpCompletionOption.ResponseHeadersRead,token);
         response.EnsureSuccessStatusCode();
@@ -175,6 +235,8 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
         while((read=await stream.ReadAsync(buffer,token))>0)
         { if(memory.Length+read>PhotoProcessor.MaxEncodedBytes)throw new IOException("Image distante trop volumineuse.");await memory.WriteAsync(buffer.AsMemory(0,read),token); }
         var bytes=memory.ToArray();using var decoded=PhotoProcessor.DecodeUpright(bytes);return bytes;
+        }
+        finally { DownloadSlots.Release(); }
     }
     private async Task<JsonDocument> SendJsonAsync(HttpMethod method,string path,object? body,CancellationToken token)
     {
@@ -201,7 +263,9 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
             "event_quota_reached"=>"La limite de métamorphoses de la soirée est atteinte. Les photos au naturel restent disponibles.",
             "generation_rate_limited"=>"Les métamorphoses vont un peu vite. Attendez une minute avant une nouvelle séance. Vos originaux sont conservés.",
             "generation_busy"=>"Des métamorphoses sont encore en cours. Vos originaux sont conservés. Prévenez la personne qui s’occupe de la borne.",
+            "provider_rate_limited"=>"OpenAI reçoit trop de demandes pour le moment. Vos originaux sont conservés. Attendez une minute avant une nouvelle séance.",
             "generation_uncertain_no_auto_retry"=>"La génération est incertaine. Aucun nouvel appel payant n’a été relancé automatiquement.",
+            "archive_too_large"=>"Le téléchargement complet dépasse 50 Mo. Vos photos restent disponibles individuellement et sur cet ordinateur.",
             _=>$"Service momentanément indisponible ({(int)response.StatusCode}, {code??"réseau"}). Les photos restent enregistrées localement."
         });
     }

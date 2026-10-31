@@ -129,7 +129,7 @@ public sealed partial class MainWindow : Window
         {
             if (kioskLocked) { e.Cancel = true; _ = RequestOperatorAsync(true); }
         };
-        Closed += async (_, _) => { pulse.Stop(); flashTimer.Stop(); StopProcessing(); cornerTimer.Stop(); lifetime.Cancel(); sharingCancellation?.Cancel(); await controller.DisposeAsync(); currentBitmap?.Dispose(); resultBitmap?.Dispose(); foreach (var bitmap in artwork.Values) bitmap.Dispose(); lifetime.Dispose(); };
+        Closed += async (_, _) => { pulse.Stop(); flashTimer.Stop(); StopProcessing(); cornerTimer.Stop(); lifetime.Cancel(); sharingCancellation?.Cancel(); await controller.DisposeAsync(); foreach (var pending in detachedControllers.ToArray()) await pending.DisposeAsync(); currentBitmap?.Dispose(); resultBitmap?.Dispose(); foreach (var bitmap in artwork.Values) bitmap.Dispose(); lifetime.Dispose(); };
         KeyDown += (_, e) =>
         {
             if (e.Key == Key.F11 || (e.Key == Key.Escape && kioskLocked))
@@ -144,7 +144,17 @@ public sealed partial class MainWindow : Window
         var result = new BoothController(store, () => cameraFactoryOverride is not null ? cameraFactoryOverride(store) : boothSettings.CanonCamera ?
             (boothSettings.CanonUseOfficialSdk ? new CanonCamera(store, boothSettings.CanonManualFocusConfirmed) : new CanonWpdCamera(store, manualFocusConfirmed: boothSettings.CanonManualFocusConfirmed)) : new FixtureCamera(store, fixtureFiles),
             transformFactoryOverride?.Invoke() ?? (IPhotoTransform?)cloud ?? new RehearsalTransform(), rehearsalDelay);
-        result.Changed += () => Dispatcher.UIThread.Post(UpdateSession);
+        var client = cloud;
+        result.Changed += () => Dispatcher.UIThread.Post(() =>
+        {
+            if (controller == result) UpdateSession();
+            else if (detachedControllers.Contains(result) && !result.IsBusy) _ = CompleteDetachedAsync(result, client);
+        });
+        if (client is not null) client.GalleryAvailable += (id, link) => Dispatcher.UIThread.Post(() =>
+        {
+            galleries[id] = link;
+            if (controller == result && controller.Session?.Id == id && screen == "processing") RenderProcessing();
+        });
         result.Frame += bytes =>
         {
             Interlocked.Exchange(ref pendingFrame, bytes);
@@ -228,7 +238,11 @@ public sealed partial class MainWindow : Window
     private void RenderResult()
     {
         StopProcessing(); screen = "result"; pulse.Stop();
+        var resultRoot = new Grid { RowDefinitions = new RowDefinitions("*,Auto") };
+        var footer = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*"), Margin = new Thickness(0,18,0,0) };
+        Grid.SetRow(footer,1); resultRoot.Children.Add(footer);
         var layout = new Grid { ColumnDefinitions = new ColumnDefinitions("7*,4*") };
+        resultRoot.Children.Add(layout);
         var left = new StackPanel { Spacing = 22, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 30, 0) };
         left.Children.Add(Text("Ça, c’est un souvenir.", 38, FontWeight.SemiBold));
         resultBitmap?.Dispose(); resultBitmap = new Bitmap(store.Resolve(controller.Sheet!.Key));
@@ -239,7 +253,7 @@ public sealed partial class MainWindow : Window
             "Votre métamorphose est prête." : "Tout simplement vous.", 30, FontWeight.SemiBold));
         var note = Text(controller.Session.UsedOriginalFallback ? "Vous avez choisi de garder les photos originales." :
             "Votre planche est enregistrée sur cet ordinateur.", 19);
-        note.Foreground = Muted; actions.Children.Add(note);
+        note.Foreground = Muted; left.Children.Add(note);
         var printState = Text("", 18);
         var print = Button("Imprimer", async () =>
         {
@@ -254,23 +268,25 @@ public sealed partial class MainWindow : Window
             var target = Path.Combine(store.Root, sessionId.ToString("N"), "print-preview.jpg");
             await SessionStore.WriteAtomicAsync(target, bytes);
             printState.Text = "Votre planche est enregistrée.";
-        }, primary: true); print.Name = "PrintPreview"; actions.Children.Add(print); actions.Children.Add(printState);
+        }); print.Name = "PrintPreview"; footer.Children.Add(print); left.Children.Add(printState);
         var folder = Path.GetDirectoryName(store.Resolve(controller.Sheet.Key))!;
         var files = Button("Voir les fichiers", async () =>
         {
             if (kioskLocked) await RequestOperatorAsync(true);
             if (!kioskLocked) openFolder(folder);
         });
-        files.Name = "OpenFiles"; actions.Children.Add(files);
+        files.Name = "OpenFiles"; files.Margin = new Thickness(12,0,12,0); Grid.SetColumn(files,1); footer.Children.Add(files);
         var shareStatus = Text(cloud is null ? "Partage en ligne désactivé dans les réglages." : "Préparation de votre lien…", 17); shareStatus.Name = "ShareStatus";
         var qr = new Image { Name = "ShareQr", Width = 230, Height = 230, IsVisible = false, HorizontalAlignment = HorizontalAlignment.Left };
-        var retry = Button("Réessayer le partage", () => ShareAsync(qr, shareStatus)); retry.IsVisible = cloud is not null;
+        Button? retry = null;
+        retry = Button("Réessayer le partage", () => ShareAsync(qr, shareStatus, retry!)); retry.Name = "ShareRetry"; retry.IsVisible = false;
         actions.Children.Add(qr); actions.Children.Add(shareStatus); actions.Children.Add(retry);
-        var again = Button("Une nouvelle séance", () => { RenderHome(); return Task.CompletedTask; });
-        again.Name = "NewSession"; actions.Children.Add(again);
+        var again = Button("Une nouvelle séance", StartNextSessionAsync, primary: true);
+        again.Name = "NewSession"; again.HorizontalAlignment = HorizontalAlignment.Stretch;
+        Grid.SetColumn(again, 2); footer.Children.Add(again);
         var scrollingActions = new ScrollViewer { Content = actions };
-        Grid.SetColumn(scrollingActions, 1); layout.Children.Add(scrollingActions); body.Content = layout;
-        if (cloud is not null) _ = ShareAsync(qr, shareStatus);
+        Grid.SetColumn(scrollingActions, 1); layout.Children.Add(scrollingActions); body.Content = resultRoot;
+        if (cloud is not null) _ = ShareAsync(qr, shareStatus, retry);
     }
 
     private void RenderError(string message)
@@ -391,31 +407,36 @@ public sealed partial class MainWindow : Window
 
     private Task SaveKioskAsync() => SessionStore.WriteAtomicAsync(settingsPath, JsonSerializer.SerializeToUtf8Bytes(exitGate!.Export()));
 
-    private bool sharing;
-    private async Task ShareAsync(Image qr, TextBlock label)
+    private readonly HashSet<Guid> sharingSessions = [];
+    private async Task ShareAsync(Image qr, TextBlock label, Button retry)
     {
-        if (sharing || cloud is null || controller.Session is null || controller.Sheet is null) return;
-        sharing=true; sharingCancellation?.Dispose(); sharingCancellation=new();
-        var token=sharingCancellation.Token;var session=controller.Session;var client=cloud;
+        if (cloud is null || controller.Session is null || controller.Sheet is null) return;
+        var source = controller; var session = source.Session; var client = cloud;
+        if (!sharingSessions.Add(session.Id)) return;
+        sharingCancellation?.Dispose(); sharingCancellation=new();
+        var token=sharingCancellation.Token; retry.IsVisible=false;
+        if (galleries.TryGetValue(session.Id, out var existing)) ShowQr(qr, existing);
         try
         {
             label.Text="Envoi de vos souvenirs…";
-            var result=await client.PublishAsync(session,controller.FinalAssets,controller.Sheet,token);
+            var result=await PublishOnceAsync(source, client);
             if (token.IsCancellationRequested || screen!="result" || controller.Session?.Id!=session.Id) return;
-            using var generator=new QRCodeGenerator();using var data=generator.CreateQrCode(result.Url,QRCodeGenerator.ECCLevel.M);
-            using var code=new PngByteQRCode(data);qr.Source=Bitmap(code.GetGraphic(3));
-            qr.Width=qr.Height=data.ModuleMatrix.Count*3;qr.IsVisible=true;
+            ShowQr(qr, result); retry.IsVisible=false;
             label.Text=$"Scannez pour retrouver vos photos. Lien valable jusqu’au {result.ExpiresAt.LocalDateTime:dd/MM}.";
         }
         catch (OperationCanceledException) when(token.IsCancellationRequested) { }
         catch (Exception exception)
         {
+            if (publications.TryGetValue(session.Id, out var attempt) && attempt.IsFaulted) publications.Remove(session.Id);
             if (screen == "result" && controller.Session?.Id == session.Id && !token.IsCancellationRequested)
+            {
+                retry.IsVisible=true;
                 label.Text=exception is HttpRequestException or OperationCanceledException
                     ? "Le partage attend la connexion. Vous pouvez imprimer vos photos et réessayer le partage ici."
                     : exception.Message;
+            }
         }
-        finally { sharing=false; }
+        finally { sharingSessions.Remove(session.Id); }
     }
 
     private Window Dialog(string title, double width, double height) => new()

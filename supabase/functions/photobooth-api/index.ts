@@ -1,5 +1,7 @@
 import { CloudApi } from "./cloud.ts";
 
+declare const EdgeRuntime: { waitUntil(task: Promise<unknown>): void };
+
 const api = new CloudApi({
   url: Deno.env.get("SUPABASE_URL") ?? "",
   serviceKey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -7,6 +9,5 @@ const api = new CloudApi({
   openAIKey: Deno.env.get("OPENAI_API_KEY") ?? "",
   galleryOrigin: Deno.env.get("GALLERY_ORIGIN") ?? "https://colors-party-estelle.vercel.app",
   imageModel: Deno.env.get("OPENAI_IMAGE_MODEL") ?? "gpt-image-2.5-sunburst",
-  responseModel: Deno.env.get("OPENAI_RESPONSE_MODEL") ?? "gpt-6-luna",
-});
+}, fetch, task => EdgeRuntime.waitUntil(task));
 Deno.serve((request) => api.handle(request));

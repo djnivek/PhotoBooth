@@ -180,18 +180,42 @@ public sealed partial class MainWindow
 
     private void RenderProcessing()
     {
+        StopProcessing();
         screen = "processing"; pulse.Stop(); currentBitmap?.Dispose(); currentBitmap = null; liveImage = null;
-        var panel = new StackPanel { Spacing = 20, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, MaxWidth = 760 };
-        cookingImage = Art(sessionStyle?.Asset ?? "colors_party", 200, 200); cookingImage.RenderTransform = cookingMove;
+        var layout = new Grid { ColumnDefinitions = new ColumnDefinitions(cloud is null ? "*" : "3*,2*"), RowDefinitions = new RowDefinitions("*,Auto") };
+        var panel = new StackPanel { Spacing = 16, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, MaxWidth = 620, Margin = new Thickness(0, 0, cloud is null ? 0 : 36, 0) };
+        cookingImage = Art(sessionStyle?.Asset ?? "colors_party", 150, 150); cookingImage.RenderTransform = cookingMove;
         panel.Children.Add(cookingImage);
-        var heading = Text(mode == PhotoMode.Original ? "On prépare vos souvenirs." : "Ça se prépare en cuisine.", 38, FontWeight.SemiBold);
+        var heading = Text(mode == PhotoMode.Original ? "On prépare vos souvenirs." : "Ça se prépare en cuisine.", 34, FontWeight.SemiBold);
         heading.TextAlignment = TextAlignment.Center; panel.Children.Add(heading);
-        cookingPhrase = Text("", 25); cookingPhrase.TextAlignment = TextAlignment.Center; panel.Children.Add(cookingPhrase);
+        cookingPhrase = Text("", 22); cookingPhrase.TextAlignment = TextAlignment.Center; panel.Children.Add(cookingPhrase);
+        var loader = new ProgressBar { Name = "ProcessingLoader", Foreground = Brush.Parse("#742C3F"), IsIndeterminate = !boothSettings.ReducedMotion, Minimum = 0, Maximum = 1, Value = 0, Height = 6, Width = 220 };
+        panel.Children.Add(loader);
+        var wait = Text("Comptez environ une à deux minutes pour les métamorphoses. Elles peuvent prendre un peu plus de temps.", 19);
+        wait.TextAlignment = TextAlignment.Center; wait.IsVisible = mode == PhotoMode.Surprise; panel.Children.Add(wait);
         processingProgress = Text(controller.Message, 18); processingProgress.Foreground = Muted; processingProgress.TextAlignment = TextAlignment.Center;
         panel.Children.Add(processingProgress);
         var cancel = Button("Annuler", async () => { await controller.CancelAsync(); if (!controller.IsBusy) RenderHome(); }); cancel.Name = "CancelSession";
         cancel.HorizontalAlignment = HorizontalAlignment.Center; panel.Children.Add(cancel);
-        body.Content = panel; phraseIndex = -1; cookingClock.Restart();
+        cancel.IsVisible = cloud is null || controller.Session is null || !galleries.ContainsKey(controller.Session.Id);
+        layout.Children.Add(panel);
+        if (cloud is not null)
+        {
+            var follow = new StackPanel { Spacing = 14, VerticalAlignment = VerticalAlignment.Center };
+            follow.Children.Add(Text("La suite sur votre téléphone.", 30, FontWeight.SemiBold));
+            var qr = new Image { Name = "ProcessingQr", IsVisible = false, HorizontalAlignment = HorizontalAlignment.Left };
+            var ready = controller.Session is { } session && galleries.TryGetValue(session.Id, out var link);
+            if (ready) ShowQr(qr, galleries[controller.Session!.Id]);
+            follow.Children.Add(qr);
+            var explanation = Text(ready ? "Scannez maintenant. Vos photos apparaîtront ici au fur et à mesure, même si vous quittez la borne." : "Votre galerie se prépare. Le QR apparaîtra ici dans un instant.", 20);
+            explanation.Name = "ProcessingShareStatus"; follow.Children.Add(explanation);
+            var next = Button("Une nouvelle séance", StartNextSessionAsync, true);
+            next.Name = "ContinueOnPhone"; next.IsEnabled = ready; next.HorizontalAlignment = HorizontalAlignment.Stretch;
+            follow.Children.Add(next);
+            var hint = Text("Vous pouvez aussi rester ici pour découvrir et imprimer votre planche.", 17); hint.Foreground = Muted; follow.Children.Add(hint);
+            Grid.SetColumn(follow, 1); layout.Children.Add(follow);
+        }
+        body.Content = layout; phraseIndex = -1; cookingClock.Restart();
         cooking.Tick -= AnimateCooking; cooking.Tick += AnimateCooking;
         cooking.Interval = TimeSpan.FromMilliseconds(boothSettings.ReducedMotion ? 1000 : 80);
         AnimateCooking(null, EventArgs.Empty); cooking.Start();

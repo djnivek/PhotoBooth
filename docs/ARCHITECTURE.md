@@ -8,7 +8,7 @@ flowchart LR
   APP --> LOCAL[JPEG et journaux atomiques locaux]
   APP -->|Original envoyé une fois| API[API Supabase authentifiée]
   API --> STORAGE[Storage privé]
-  API -->|URL signée de l’original| AI[OpenAI Responses en arrière-plan]
+  API -->|URL signée de l’original| AI[OpenAI Images edits, Sunburst medium]
   AI --> API
   API --> APP
   APP --> SHEET[Planche JPEG 1800×1200 · 300 dpi]
@@ -84,16 +84,14 @@ un secret aléatoire distinct de la clé OpenAI, vérifié par hash côté serve
 par DPAPI sous Windows. Les tables sont sous RLS, sans droit anon/authenticated.
 Usage personnel sur une borne : pas de multi-comptes visiteurs ni de flotte de terminaux.
 
-Les originaux des séances IA sont envoyés avant génération et référencés par URL signée
-30 minutes dans OpenAI Responses. Pas de double upload de l’original lors d’une reprise.
-Le modèle de contrôle `gpt-6-luna` force un seul outil image `gpt-image-2.5-sunburst`,
-`action=edit`, `quality=xhigh`, `1536×1024`, JPEG. Un style est tiré au sort une fois par séance.
-Le travail distant utilise `background=true` ; chaque requête Edge reste courte et le PC
-interroge l’état toutes les deux secondes, avec deux générations simultanées au maximum.
-Ce montage évite d’attendre tout le calcul dans les 150 secondes d’une fonction Free.
+Les copies de génération privées sont préparées en JPEG90, côté long1536px sans crop ni upscale. Les originaux restent distincts et sont archivés pendant le calcul. Chaque pose appelle directement Sunburst via Images edits, medium, 1024×1024, JPEG95. Le prompt carré demande d'étendre le décor autour des personnes pour conserver tous les corps visibles.
+
+Le serveur réserve un travail, démarre l'appel direct dans EdgeRuntime.waitUntil et renvoie202. La borne interroge uniquement l'état serveur toutes les deux secondes. Huit places sont partagées entre séances, avec deux uploads et deux téléchargements à la fois. Le résultat JPEG devient directement un asset de galerie ; la borne vérifie son SHA sans second encodage ni réenvoi. L'archive est construite côté serveur. Une réponse perdue ne déclenche jamais une nouvelle génération.
+
+La planche Métamorphose reste1800×1200 à300dpi : un carré1080 ou quatre carrés528, marges60px et gouttières24px, bande de marque à droite. Le logo et les emblèmes approuvés sont embarqués ; rien ne recouvre les photos. Au naturel et le repli explicite sur les originaux utilisent la composition historique. Les résultats individuels restent séparés de la planche décorée.
 
 Une réservation Postgres transactionnelle bloque les démarrages répétés et limite l’événement
-à 2400 images, huit départs par minute et quatre travaux non résolus simultanés. Un interrupteur en base arrête les nouvelles générations. C’est un plafond de nombre, pas une garantie de coût en dollars. Une réponse
+à 2400 images, seize départs par minute et huit travaux non résolus simultanés. Un interrupteur en base arrête les nouvelles générations. C’est un plafond de nombre, pas une garantie de coût en dollars. Une réponse
 perdue après lancement laisse un travail incertain : aucune génération automatique supplémentaire.
 Les originaux peuvent être récupérés explicitement si l’IA échoue. Aucun résultat IA n’est
 remplacé silencieusement par un original.

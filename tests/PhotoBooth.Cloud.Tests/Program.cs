@@ -49,7 +49,10 @@ try
     {
         var handler=new FakeHttp(originals[0]){DropStartResponse=networkDrop};
         using var cloud=new BoothCloudClient("https://test.supabase.co/functions/v1/photobooth-api","fake-booth",new(root),handler:handler,delay:(_,_)=>Task.CompletedTask);
+        var early=false;
+        cloud.GalleryAvailable += (_,link)=> {Check(handler.Starts==0,"QR is available before the first paid start");Check(link.Url.StartsWith("https://gallery.test/#"),"Early QR uses the guest gallery");early=true;};
         var transformed=await cloud.TransformAsync(Guid.NewGuid(),[originals[0]],new Progress<string>(),default);
+        Check(early&&transformed.Normalized,"Cloud results are normalized exactly once before progressive upload");
         Check(transformed.Photos.Count==1&&transformed.Style=="cinema","One result for one pose");
         Check(handler.Starts==1,"Ambiguous start response never causes another POST");
         Check(!handler.CredentialSentToStorage,"Booth secret excluded from image download requests");
@@ -60,20 +63,21 @@ try
         var id=Guid.NewGuid();
         var result=await cloud.TransformAsync(id,originals,new Progress<string>(),default);
         Check(result.Photos.Count==4&&result.Style=="cinema","Four edited poses use one stable session style");
-        for(var i=0;i<4;i++) Check(result.Photos[i].SequenceEqual(originals[i]),"Parallel results preserve pose order");
+        for(var i=0;i<4;i++) Check(result.Photos[i].SequenceEqual(PhotoProcessor.Normalize(originals[i])),"Progressive normalized results preserve pose order and preview bytes");
         Check(handler.Starts==4,"Four distinct poses start exactly four edits");
         await cloud.TransformAsync(id,originals,new Progress<string>(),default);
         Check(handler.Starts==4,"Resuming completed edits never starts another billable call");
-        Check(handler.UploadCalls==4,"Each original uploaded only once across generation retries");
+        Check(handler.UploadCalls==12,"Originals upload once and final uploads are idempotent across generation resume");
     }
     {
         var handler=new FakeHttp(originals[0]);
         using var cloud=new BoothCloudClient("https://test.supabase.co/functions/v1/photobooth-api","fake-booth",new(root),handler:handler,delay:(_,_)=>Task.CompletedTask);
         var results=await Task.WhenAll(Enumerable.Range(0,32).Select(_=>Task.Run(()=>
             cloud.TransformAsync(Guid.NewGuid(),[originals[0]],new Progress<string>(),default))));
-        Check(results.All(r=>r.Photos.Count==1&&r.Photos[0].SequenceEqual(originals[0])),"Concurrent fake requests preserve every accepted job and result");
+        var normalized=PhotoProcessor.Normalize(originals[0]);
+        Check(results.All(r=>r.Photos.Count==1&&r.Photos[0].SequenceEqual(normalized)),"Concurrent fake requests preserve every accepted job and normalized result");
         Check(handler.Starts==32,"Concurrent start accounting is exact");
-        Check(handler.UploadCalls==32,"Concurrent upload accounting is exact");
+        Check(handler.UploadCalls==96,"Concurrent optimized inputs, originals and legacy result upload accounting is exact");
     }
     {
         var handler=new FakeHttp(originals[0]);var store=new SessionStore(root);
@@ -85,8 +89,23 @@ try
         Check(first.Url==second.Url,"Share retry preserves download URL");
         Check(first.Url.StartsWith("https://gallery.test/#") && first.DownloadUrl!.EndsWith("archive.zip"),"Server gallery is the default QR target; ZIP remains separately available");
         Check(handler.ShareTokens.Distinct().Count()==1,"Share capability persists across retries");
-        Check(handler.Uploads.Count==6,"Four photos, sheet and archive uploaded");
+        Check(handler.Uploads.Count==5,"Only four photos and sheet uploaded; server creates archive");
         Check(handler.Starts==0,"Original sharing cannot invoke generation");
+    }
+    {
+        var handler=new FakeHttp(originals[0]){Fixtures=originals,DirectStored=true,ExpectedParallelStarts=4};
+        var store=new SessionStore(root);
+        using var cloud=new BoothCloudClient("https://test.supabase.co/functions/v1/photobooth-api","fake-booth",store,handler:handler,delay:(_,_)=>Task.CompletedTask);
+        await using var controller=new BoothController(store,()=>new FixtureCamera(store),cloud,(_,_)=>Task.CompletedTask);
+        await controller.BeginAsync(new SessionOptions(4,PhotoMode.Surprise));
+        await controller.TakeAsync().WaitAsync(TimeSpan.FromSeconds(8));
+        Check(controller.Session!.Stage==SessionStage.Ready&&handler.Starts==4,"All four generation requests start before any result is released");
+        for(var i=0;i<4;i++)Check((await store.ReadVerifiedAsync(controller.FinalAssets[i])).SequenceEqual(originals[i]),"Direct generated JPEG is retained without a second lossy encoding");
+        Check(handler.UploadCalls==8,"Only four optimized inputs and four preserved originals cross uplink during generation");
+        await cloud.PublishAsync(controller.Session,controller.FinalAssets,controller.Sheet!);
+        Check(handler.UploadCalls==9,"Final publication sends only the sheet; no result reuploads and no ZIP upload");
+        await cloud.PublishAsync(controller.Session,controller.FinalAssets,controller.Sheet!);
+        Check(handler.UploadCalls==9,"Repeated publication sends no photograph or sheet bytes again");
     }
     {
         var store=new SessionStore(root);
@@ -100,6 +119,19 @@ try
         Check(SessionStore.Hash(printBytes)==controller.Sheet!.Sha256,"Original fallback passes the verified print-sheet guard");
         await controller.PrintAsync(new FallbackPrinter());
         Check(controller.Session.PrintStage==PrintStage.Submitted,"Original fallback remains explicitly printable after AI failure");
+    }
+    {
+        var handler=new FakeHttp(originals[0]) { Fixtures=originals, DirectStored=true, ExpectedParallelStarts=8 };
+        using var first=new BoothCloudClient("https://test.supabase.co/functions/v1/photobooth-api","fake-booth",new(root),handler:handler);
+        using var second=new BoothCloudClient("https://test.supabase.co/functions/v1/photobooth-api","fake-booth",new(root),handler:handler);
+        using var deadline=new CancellationTokenSource(TimeSpan.FromSeconds(12));
+        var results=await Task.WhenAll(first.TransformAsync(Guid.NewGuid(),originals,new Progress<string>(),deadline.Token),
+            second.TransformAsync(Guid.NewGuid(),originals,new Progress<string>(),deadline.Token));
+        Check(handler.Starts==8,"Both four-pose sessions start before any result is released");
+        Check(results.All(r=>r.Photos.Count==4&&r.Normalized),"Eight parallel results finish with direct storage");
+        for(var session=0;session<2;session++)for(var pose=0;pose<4;pose++)
+            Check(results[session].Photos[pose].SequenceEqual(originals[pose]),"Overlapping sessions keep exact photo order and bytes");
+        Check(handler.UploadCalls==16,"Two sessions upload only eight optimized inputs and eight originals");
     }
     {
         var secret=Path.Combine(root,"credential");await CredentialStore.SaveAsync(secret,"test-only-credential");
@@ -122,6 +154,8 @@ sealed class FakeHttp(byte[] fixture):HttpMessageHandler
 {
     public int Starts;public int UploadCalls;public bool DropStartResponse;public bool CredentialSentToStorage;
     public byte[][]? Fixtures;
+    public bool DirectStored;public int ExpectedParallelStarts;
+    private readonly TaskCompletionSource allStarted=new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly object gate=new();
     private readonly HashSet<string> started=[];
     public Dictionary<string,string> Uploads=new();public List<string> ShareTokens=[];
@@ -135,13 +169,23 @@ sealed class FakeHttp(byte[] fixture):HttpMessageHandler
             return new(HttpStatusCode.OK){Content=new ByteArrayContent(Fixtures?[index]??fixture)};}
         if(request.Headers.Authorization?.Parameter!="fake-booth")throw new Exception("Missing booth auth");
         if(path.EndsWith("/sessions"))return Json(new{style="cinema"});
+        if(path.EndsWith("/gallery"))
+        {
+            using var input=JsonDocument.Parse(await request.Content!.ReadAsByteArrayAsync(token));
+            return Json(new{gallery_url="https://gallery.test/#"+input.RootElement.GetProperty("token").GetString(),expires_at=DateTimeOffset.UtcNow.AddDays(7)});
+        }
         if(path.Contains("/photos/"))
         {
+            bool exists;
             lock(gate)
             {
-                if(request.Method==HttpMethod.Post){Starts++;started.Add(path);if(DropStartResponse)throw new HttpRequestException("Response lost after accept");return Json(new{state="running"});}
-                return !started.Contains(path)?Json(new{state="queued"}):Json(new{state="ready",url=$"https://test.supabase.co/storage/{path.Split('/').Last()}.jpg"});
+                if(request.Method==HttpMethod.Post){Starts++;started.Add(path);if(Starts==ExpectedParallelStarts)allStarted.TrySetResult();if(DropStartResponse)throw new HttpRequestException("Response lost after accept");return Json(new{state="running"});}
+                exists=started.Contains(path);
             }
+            if(!exists)return Json(new{state="queued"});
+            if(ExpectedParallelStarts>0)await allStarted.Task.WaitAsync(token);
+            var index=int.Parse(path.Split('/').Last());
+            return Json(new{state="ready",url=$"https://test.supabase.co/storage/{index}.jpg",asset_stored=DirectStored,sha256=SessionStore.Hash(Fixtures?[index]??fixture)});
         }
         if(path.Contains("/assets/"))
         {

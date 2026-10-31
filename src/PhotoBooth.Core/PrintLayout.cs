@@ -5,6 +5,17 @@ public sealed record SheetLayout(int Width, int Height, int Dpi, IReadOnlyList<P
 
 public static class PrintLayout
 {
+    // Same landscape 6x4 master and 5mm safe margin. Squares are never cropped;
+    // the remaining right-hand area belongs to the party artwork, not the photo.
+    public static SheetLayout Metamorphosis(int count)
+    {
+        if (count is not (1 or 4)) throw new ArgumentOutOfRangeException(nameof(count));
+        var side = count == 1 ? 1080 : 528;
+        var cells = Enumerable.Range(0, count).Select(i => new PixelRect(
+            60 + (i % 2) * (side + 24), 60 + (i / 2) * (side + 24), side, side)).ToArray();
+        return new SheetLayout(1800, 1200, 300, Array.AsReadOnly(cells));
+    }
+
     // Logical 6 x 4 inch landscape master. Driver bleed/imageable area is calibrated on Windows.
     public static SheetLayout FourBySix(int count, int safeMargin = 60, int gutter = 24)
     {

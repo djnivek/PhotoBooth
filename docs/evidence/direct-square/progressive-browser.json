@@ -1,0 +1,38 @@
+{
+  "utc": "2026-10-31T10:09:10.356Z",
+  "production_gallery": true,
+  "production_api": true,
+  "synthetic_photos": true,
+  "openai_calls": 0,
+  "cases": [
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "initial_results": 1,
+      "final_results": 4,
+      "final_originals": 4,
+      "automatic_refresh": true,
+      "stable_url": true,
+      "overflow": false,
+      "script_errors": 0,
+      "success": true
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "initial_results": 1,
+      "final_results": 4,
+      "final_originals": 4,
+      "automatic_refresh": true,
+      "stable_url": true,
+      "overflow": false,
+      "script_errors": 0,
+      "success": true
+    }
+  ],
+  "success": true
+}

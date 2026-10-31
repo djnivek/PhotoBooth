@@ -46,9 +46,10 @@ public static class PhotoProcessor
         return result;
     }
 
-    public static byte[] Normalize(ReadOnlySpan<byte> encoded, int longestSide = 2560)
+    public static byte[] Normalize(ReadOnlySpan<byte> encoded, int longestSide = 2560, int jpegQuality = 96)
     {
         if (longestSide is < 600 or > 6000) throw new ArgumentOutOfRangeException(nameof(longestSide));
+        if (jpegQuality is < 75 or > 100) throw new ArgumentOutOfRangeException(nameof(jpegQuality));
         using var upright = DecodeUpright(encoded);
         var ratio = Math.Min(1d, (double)longestSide / Math.Max(upright.Width, upright.Height));
         using var target = new SKBitmap(Math.Max(1, (int)Math.Round(upright.Width * ratio)),
@@ -58,8 +59,12 @@ public static class PhotoProcessor
         using var image = SKImage.FromBitmap(upright);
         canvas.DrawImage(image, new SKRect(0, 0, target.Width, target.Height),
             new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear));
-        return Jpeg(target);
+        return Jpeg(target, jpegQuality);
     }
+
+    // Separate working copy for generation. Preserve framing and every edge;
+    // never upscale. The archived original keeps its existing resolution/bytes.
+    public static byte[] PrepareGenerationInput(ReadOnlySpan<byte> encoded) => Normalize(encoded, 1536, 90);
 
     // Every input is one distinct final photograph, in capture order. No stretching.
     // Contain (rather than crop) protects faces at the edges of a group photograph.
@@ -84,10 +89,10 @@ public static class PhotoProcessor
         return Jpeg(bitmap);
     }
 
-    public static byte[] Jpeg(SKBitmap bitmap)
+    public static byte[] Jpeg(SKBitmap bitmap, int quality = 96)
     {
         using var image = SKImage.FromBitmap(bitmap);
-        using var encoded = image.Encode(SKEncodedImageFormat.Jpeg, 96);
+        using var encoded = image.Encode(SKEncodedImageFormat.Jpeg, quality);
         return WithDpi(encoded.ToArray(), 300);
     }
 

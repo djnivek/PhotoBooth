@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "PhotoBooth API",
-    "version": "0.3.1",
+    "version": "0.6.0",
     "description": "Personal booth API. Server-only OpenAI key, background xhigh edits, one durable claim per pose, private storage. No paid automated tests. Printing is local."
   },
   "servers": [
@@ -119,7 +119,7 @@
     "/sessions/{id}/photos/{index}": {
       "post": {
         "operationId": "startEdit",
-        "summary": "Start one edit of an already uploaded original; never retry an ambiguous claim",
+        "summary": "Start one edit from its optimized private input, falling back to the archived original for older clients",
         "security": [
           {
             "boothKey": []
@@ -226,6 +226,18 @@
               "minimum": 0,
               "maximum": 3
             }
+          },
+          {
+            "name": "transport",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "direct"
+              ]
+            },
+            "description": "Store the provider JPEG directly as the gallery result; avoids re-encoding and booth reupload."
           }
         ]
       }
@@ -240,6 +252,16 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Digest"
+                }
+              }
+            }
+          },
           "201": {
             "description": "Success",
             "content": {
@@ -256,16 +278,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Digest"
                 }
               }
             }
@@ -287,7 +299,7 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^((photo|original)-[1-4]\\.jpg|sheet\\.jpg|archive\\.zip)$"
+              "pattern": "^((photo|original|input)-[1-4]\\.jpg|sheet\\.jpg|archive\\.zip)$"
             }
           }
         ],
@@ -313,7 +325,7 @@
     "/sessions/{id}/share": {
       "post": {
         "operationId": "publishShare",
-        "summary": "Require all final photos, originals for AI, sheet and archive",
+        "summary": "Build archive beside Storage when missing, then publish the complete session; no booth ZIP upload required",
         "security": [
           {
             "boothKey": []
@@ -367,7 +379,7 @@
     "/downloads/resolve": {
       "post": {
         "operationId": "resolveShare",
-        "summary": "Resolve one unexpired capability to signed assets",
+        "summary": "Read available photographs and session state; never starts or polls a provider job",
         "security": [],
         "responses": {
           "200": {
@@ -420,6 +432,60 @@
             }
           }
         }
+      }
+    },
+    "/sessions/{id}/gallery": {
+      "post": {
+        "operationId": "prepareGallery",
+        "summary": "Create a stable read-only gallery before photographs are ready; never starts generation",
+        "security": [
+          {
+            "boothKey": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EarlyGallery"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Structured error; no provider secret or automatic paid retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShareInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     }
   },
@@ -540,6 +606,13 @@
           "url": {
             "type": "string",
             "format": "uri"
+          },
+          "asset_stored": {
+            "type": "boolean"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
           }
         }
       },
@@ -623,6 +696,23 @@
           },
           "used_original_fallback": {
             "type": "boolean"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "processing",
+              "ready",
+              "failed",
+              "delayed"
+            ]
+          },
+          "style": {
+            "type": "string"
+          },
+          "completed_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 4
           }
         },
         "required": [
@@ -653,6 +743,27 @@
           },
           "image_generation_enabled": {
             "type": "boolean"
+          },
+          "image_model": {
+            "type": "string"
+          },
+          "image_quality": {
+            "type": "string",
+            "enum": [
+              "medium"
+            ]
+          },
+          "image_size": {
+            "type": "string",
+            "enum": [
+              "1024x1024"
+            ]
+          },
+          "generation_api": {
+            "type": "string",
+            "enum": [
+              "images/edits"
+            ]
           }
         }
       },
@@ -708,6 +819,23 @@
                 }
               }
             }
+          }
+        }
+      },
+      "EarlyGallery": {
+        "type": "object",
+        "required": [
+          "gallery_url",
+          "expires_at"
+        ],
+        "properties": {
+          "gallery_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       }

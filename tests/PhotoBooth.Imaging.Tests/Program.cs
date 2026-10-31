@@ -47,6 +47,56 @@ using (var single = PhotoProcessor.DecodeUpright(PhotoProcessor.Compose([fixture
 Reject(() => PhotoProcessor.Compose([fixtures[0], fixtures[1]]));
 Reject(() => PhotoProcessor.DecodeUpright([1,2,3]));
 Reject(() => PhotoProcessor.DecodeUpright(fixtures[0][..100]));
+using (var large = new SKBitmap(2560, 1706))
+{
+    using var canvas = new SKCanvas(large); canvas.Clear(SKColors.White);
+    using var paint = new SKPaint { Color = SKColors.DarkBlue };
+    canvas.DrawRect(0, 0, 200, 1706, paint); paint.Color = SKColors.DarkRed; canvas.DrawRect(2360, 0, 200, 1706, paint);
+    var original = PhotoProcessor.Jpeg(large); var before = SessionStore.Hash(original);
+    var optimized = PhotoProcessor.PrepareGenerationInput(original);
+    using var small = PhotoProcessor.DecodeUpright(optimized);
+    Check(small.Width == 1536 && small.Height == 1024, "Generation input keeps landscape proportion without crop");
+    Check(small.GetPixel(25,500).Blue > small.GetPixel(25,500).Red, "Left edge preserved in generation input");
+    Check(small.GetPixel(1510,500).Red > small.GetPixel(1510,500).Blue, "Right edge preserved in generation input");
+    Check(optimized.Length < original.Length && SessionStore.Hash(original) == before, "Input transfer reduced without modifying archived original bytes");
+}
+using (var small = PhotoProcessor.DecodeUpright(PhotoProcessor.PrepareGenerationInput(fixtures[0])))
+    Check(small.Width == 1200 && small.Height == 800, "Generation preparation never upscales smaller inputs");
+
+// Print-ready square output fixtures: asymmetric corner marks prove no crop,
+// rotation or overlay, and four distinct fills prove pose order.
+var printEvidence = Path.Combine(Environment.CurrentDirectory, "artifacts", "direct-square-0.6.0", "prints");
+Directory.CreateDirectory(printEvidence);
+var squares = Enumerable.Range(0, 4).Select(i => {
+    using var bitmap = new SKBitmap(1024, 1024); using var canvas = new SKCanvas(bitmap);
+    canvas.Clear(new[] { SKColor.Parse("#CBA0D6"), SKColor.Parse("#EEC66A"), SKColor.Parse("#97CBBB"), SKColor.Parse("#DB8D80") }[i]);
+    using var paint = new SKPaint { Color = SKColor.Parse("#302342"), IsAntialias = true };
+    canvas.DrawRect(0, 0, 80, 80, paint); canvas.DrawRect(944, 944, 80, 80, paint);
+    for (var mark = 0; mark <= i; mark++) canvas.DrawCircle(365 + mark * 100, 512, 30, paint);
+    return PhotoProcessor.Jpeg(bitmap);
+}).ToArray();
+var hashes = squares.Select(bytes => SessionStore.Hash(bytes)).ToArray();
+foreach (var style in StyleCatalog.BuiltIn.Styles.Append(StyleCatalog.Surprise))
+foreach (var count in new[] { 1, 4 })
+{
+    var printed = MetamorphosisSheet.Compose(squares.Take(count).ToArray(), style.Id);
+    using var decoded = PhotoProcessor.DecodeUpright(printed);
+    Check(decoded.Width == 1800 && decoded.Height == 1200, "Square photos keep physical 6x4 master");
+    Check(printed[13] == 1 && printed[14] == 1 && printed[15] == 44 && printed[16] == 1 && printed[17] == 44, "Themed sheet remains 300dpi");
+    var layout = PrintLayout.Metamorphosis(count);
+    foreach (var (cell, i) in layout.Photos.Select((cell, i) => (cell, i)))
+    {
+        Check(cell.Width == cell.Height && cell.X >= 60 && cell.Y >= 60 && cell.X + cell.Width <= 1140 && cell.Y + cell.Height <= 1140, "Square cells stay inside safe print area");
+        using var input = PhotoProcessor.DecodeUpright(squares[i]);
+        Check(Distance(decoded.GetPixel(cell.X + cell.Width / 2, cell.Y + cell.Height / 4), input.GetPixel(512, 256)) < 15, "Pose order and color preserved");
+        Check(decoded.GetPixel(cell.X + 10, cell.Y + 10).Red < 80 && decoded.GetPixel(cell.X + cell.Width - 10, cell.Y + cell.Height - 10).Red < 80, "Opposite image edges intact, no decorative overlay");
+    }
+    await File.WriteAllBytesAsync(Path.Combine(printEvidence, $"{style.Id}-{count}.jpg"), printed);
+}
+Check(hashes.SequenceEqual(squares.Select(bytes => SessionStore.Hash(bytes))), "Print composition never changes source photos");
+Check(MetamorphosisSheet.Compose([squares[0]], "unknown_style").SequenceEqual(MetamorphosisSheet.Compose([squares[0]], StyleCatalog.Chef)), "Unknown theme has a deterministic bundled fallback");
+Check(PhotoProcessor.Compose(fixtures).SequenceEqual(sheet), "Au naturel master remains byte-for-byte unchanged");
+Reject(() => MetamorphosisSheet.Compose([squares[0], squares[1]], "halloween"));
 
 var root = Path.Combine(Path.GetTempPath(), "photobooth-imaging-tests-" + Guid.NewGuid().ToString("N"));
 try

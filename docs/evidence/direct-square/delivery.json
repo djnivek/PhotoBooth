@@ -1,0 +1,211 @@
+{
+  "version": "0.6.0",
+  "verified_utc": "2026-10-31T09:53:06.696Z",
+  "branch": "feat/direct-square-metamorphosis",
+  "source_base": "9c518036b5b9b3b6278c13320233885ce75dca03",
+  "package": {
+    "name": "ColorsParty-0.6.0-win-x64.zip",
+    "bytes": 91746416,
+    "sha256": "9da77f589bca34f7bdf1ecfd7f5ed1f41a13531f15eaab78581a81320398dd55",
+    "extracted_self_test": true,
+    "native_viewports": [
+      [
+        1280,
+        800
+      ],
+      [
+        960,
+        700
+      ]
+    ]
+  },
+  "local_checks": {
+    "csharp_assertions": 437,
+    "csharp_suites": {
+      "core": 26,
+      "imaging": 231,
+      "runtime": 54,
+      "printing": 26,
+      "canon_fake": 28,
+      "cloud": 72
+    },
+    "extended_native_ui": true,
+    "deno_tests": 22,
+    "deno_typecheck": true,
+    "deno_lint": true,
+    "gallery_tests": 18,
+    "openapi_valid": true,
+    "parallel_barrier": "Two four-pose sessions must start all eight requests before the fake provider returns any result."
+  },
+  "image_request": {
+    "api": "images/edits",
+    "model": "gpt-image-2.5-sunburst",
+    "quality": "medium",
+    "size": "1024x1024",
+    "output_format": "jpeg",
+    "output_compression": 95,
+    "n": 1
+  },
+  "concurrency": {
+    "client_generation": 8,
+    "uploads": 2,
+    "downloads": 2,
+    "event_budget": 2400,
+    "server_in_flight": 8,
+    "server_starts_per_minute": 16
+  },
+  "print": {
+    "master": [
+      1800,
+      1200
+    ],
+    "dpi": 300,
+    "paper_inches": [
+      6,
+      4
+    ],
+    "variants": 14,
+    "independently_visually_reviewed": 7,
+    "review_disposition": "ship for bundled-theme composition only",
+    "proofs": [
+      {
+        "name": "halloween-4.jpg",
+        "sha256": "4b5307f248c249781d7b26f3283737dd36dc5cdee7d75f9bf606f56eb51970f7"
+      },
+      {
+        "name": "space-1.jpg",
+        "sha256": "7e06ddf06d814593bbf990a6622b3112423aa5e96e871a7bf7e22347d615fe60"
+      }
+    ],
+    "approved_by_user": true
+  },
+  "deployment": {
+    "backend": "0.6.0 deployed and verified",
+    "project": "frkckrvsdsiwivdfyjau",
+    "function": "photobooth-api",
+    "migration": "20261031094041_direct_image_concurrency.sql applied; remote migrations up to date",
+    "gallery": "https://colors-party-estelle.vercel.app",
+    "github_release": "No 0.6 release published",
+    "subscription_changed": false,
+    "security_advisors": "No issues found"
+  },
+  "paid_openai_calls": 0,
+  "physical_canon_test": false,
+  "physical_dnp_test": false,
+  "real_4g_benchmark": false,
+  "git": {
+    "commit": "b2a0e12ed164c70b474aa0276177adc569c11100",
+    "pull_request": "https://github.com/djnivek/PhotoBooth/pull/17",
+    "merged": false
+  },
+  "ci": {
+    "url": "https://github.com/djnivek/PhotoBooth/actions/runs/41190537146",
+    "conclusion": "success",
+    "csharp_deno_gallery": true,
+    "chromium": true,
+    "extracted_windows_package": true,
+    "artifact_id": 13038812106,
+    "artifact_digest": "sha256:8d3f19ace4e4724fc046b2098943b139348b69f997da26292d20a24493e3bbf8"
+  },
+  "activation_verified_utc": "2026-10-31T10:11:38.470Z",
+  "live_checks": {
+    "checks": 48,
+    "exact_assets": 10,
+    "zip_entries": 9,
+    "early_gallery": true,
+    "progressive_photo_arrival": true,
+    "stable_qr": true,
+    "repeat_publication": true,
+    "production_browser": {
+      "utc": "2026-10-31T10:09:10.356Z",
+      "production_gallery": true,
+      "production_api": true,
+      "synthetic_photos": true,
+      "openai_calls": 0,
+      "cases": [
+        {
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "initial_results": 1,
+          "final_results": 4,
+          "final_originals": 4,
+          "automatic_refresh": true,
+          "stable_url": true,
+          "overflow": false,
+          "script_errors": 0,
+          "success": true
+        },
+        {
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "initial_results": 1,
+          "final_results": 4,
+          "final_originals": 4,
+          "automatic_refresh": true,
+          "stable_url": true,
+          "overflow": false,
+          "script_errors": 0,
+          "success": true
+        }
+      ],
+      "success": true
+    },
+    "guardrails": {
+      "checks": [
+        "Eight distinct claims accepted across two four-pose sessions",
+        "Duplicate claim does not consume another image",
+        "Ninth unresolved job rejected by the concurrency limit",
+        "Sixteen starts per minute enforced even after jobs finish",
+        "Operator kill switch rejects new claims",
+        "Total event budget remains enforced"
+      ],
+      "generation_calls": 0,
+      "max_images": 2400,
+      "max_in_flight": 8,
+      "max_per_minute": 16,
+      "project": "frkckrvsdsiwivdfyjau",
+      "started_after": 1,
+      "started_before": 1,
+      "success": true,
+      "transaction_rolled_back": true
+    },
+    "inspection": {
+      "anon_assets_select": false,
+      "asset_bytes": 3557468,
+      "authenticated_assets_select": false,
+      "budget": {
+        "generation_enabled": true,
+        "id": "event",
+        "max_images": 2400,
+        "max_in_flight": 8,
+        "max_per_minute": 16,
+        "started": 1
+      },
+      "rls_tables": [
+        {
+          "rls": true,
+          "table": "booth_sessions"
+        },
+        {
+          "rls": true,
+          "table": "booth_jobs"
+        },
+        {
+          "rls": true,
+          "table": "booth_assets"
+        },
+        {
+          "rls": true,
+          "table": "booth_budget"
+        }
+      ],
+      "storage_bytes": 3664513,
+      "stored_objects": 87,
+      "uploaded_assets": 86
+    }
+  }
+}
