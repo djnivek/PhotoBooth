@@ -14,7 +14,7 @@ La source serveur est `supabase/functions/photobooth-api/styles.json`. Le tablea
 }
 ```
 
-1. Modifier le fichier, incrémenter `version`, garder un identifiant stable en minuscules avec chiffres ou underscore. Ne pas réutiliser `chef` ni `mix`.
+1. Modifier le fichier, incrémenter `version`, garder un identifiant stable en minuscules avec chiffres ou underscore. Ne pas réutiliser `chef` ni `mix` ; éviter aussi `original`, déjà utilisé par le mode Au naturel.
 2. Exécuter les tests backend et vérifier `GET /styles`. Les libellés font au plus 48 caractères, descriptions 140, phrases 120 ; aucun tiret ni mention AI, IA ou OpenAI dans ces textes invités. Maximum 200 univers et 256 Kio de métadonnées. Choisir un fond pastel lisible avec le texte bordeaux. Si le contraste reçu est inférieur à 4,5:1, la borne utilise automatiquement le fond sauge local.
 3. Ouvrir et fusionner la PR, déployer la fonction `photobooth-api` sur le seul projet `frkckrvsdsiwivdfyjau`.
 4. Sur la borne : réglages → **Actualiser les univers**. Aucun redémarrage ni nouvel exécutable nécessaire. Une modification de prompt ne demande pas d’actualiser la liste.

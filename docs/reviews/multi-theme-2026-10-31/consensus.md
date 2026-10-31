@@ -14,7 +14,7 @@ Accepted and implemented:
 
 Resolution of the proposed animal allowlist:
 
-Kevin explicitly asks the model to choose costumes freely, without prescribing particular examples. Therefore no closed animal/species list is imposed. The prompt instead requires gentle, respectful animal-inspired fabric costumes, human faces/anatomy, and choices independent of physical appearance, age or origin. This preserves the review's intention while respecting the user's creative-freedom requirement. The implementation review agrees with declining a positive allowlist and recommends explicitly excluding animals commonly used as personal insults. That negative exclusion is now included, without prescribing any actual costume. The final focused review checks these amendments.
+Kevin explicitly asks the model to choose costumes freely, without prescribing particular examples. Therefore no closed animal/species list is imposed. The prompt instead requires gentle, respectful animal-inspired fabric costumes, human faces/anatomy, and choices independent of physical appearance, age or origin. This preserves the review's intention while respecting the user's creative-freedom requirement. The implementation review agrees with declining a positive allowlist and recommends explicitly excluding animals commonly used as personal insults. That negative exclusion is now included, without prescribing any actual costume. The final focused review confirms all four amendments and closes the earlier disagreement; product and prompt consensus is reached.
 
 Nine bundled and server themes: Colors Party, Halloween, Dans les étoiles, Pays imaginaire, Petits lutins, Disco velours, Drôles de bêtes, Sous cloche and À croquer. Chef is a separate option. Public catalog metadata contains no prompts. The 20-theme test catalog is test-only, not twenty invented production themes.
 
@@ -26,3 +26,5 @@ Implementation-review follow-up:
 - Keep the existing unicorn guest copy accurate by including unicorns as background scenery, never costumes or replacements for people.
 - Replace the server test's fixed count with source-relative metadata checks and catalog constraints, so adding a valid theme does not break the test.
 - Cover mixed and future themes in the gallery DOM test and in Chromium's four-photo/progressive fixtures. The public gallery pairs assets by capture index; unknown themes use existing generic artwork and never authorize generation.
+
+Final sign-off: SHIP conditional on the final Chromium and Windows CI checks. The remaining hardware and real-portrait gates are not presented as completed. See `claude-final-signoff.md` and its receipt.

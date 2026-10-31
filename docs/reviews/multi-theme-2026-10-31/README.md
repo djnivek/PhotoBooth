@@ -6,7 +6,7 @@ The change lets a guest choose one to four universes before an uninterrupted fou
 
 - [Product consultation](claude-product-review.md), [actual model receipt](claude-product-receipt.json) and [implemented consensus](consensus.md).
 - The first broader consultation produced no verdict after hitting an output limit. Its [incomplete receipt](initial-consultation-incomplete.json) is retained rather than represented as successful.
-- [Implementation review](claude-implementation-review.md) and [actual model/source receipt](claude-implementation-receipt.json): SHIP, with four prompt/catalog observations. All four are addressed in the follow-up. A final bounded Opus review checks their resolution. The reviews receive sanitized source and test reports only, without secrets/photos or execution rights.
+- [Implementation review](claude-implementation-review.md) and [actual model/source receipt](claude-implementation-receipt.json): SHIP, with four prompt/catalog observations. All four are addressed in the follow-up. [Final focused sign-off](claude-final-signoff.md), with [actual receipt](claude-final-signoff-receipt.json): all four findings resolved, product/prompt consensus reached, SHIP once final Chromium and Windows CI pass. The reviews receive sanitized source and test reports only, without secrets/photos or execution rights.
 
 ## Validation and delivery state
 
@@ -24,3 +24,10 @@ The change lets a guest choose one to four universes before an uninterrupted fou
 3. At the booth, close DSLR Booth/EOS Utility, confirm MF on the Canon, then verify four distinct sharp JPEGs and live-view recovery. Check one DS620 4×6 sheet and the four-frame placement. A spool acknowledgment is not proof of paper output.
 
 The generation model/quality, rate limits, quota, Supabase plan, offline original mode, Canon command sequence and print safety guards are unchanged. The previous [technical readiness review](../technical-readiness-2026-10-31/README.md) still applies.
+
+
+## Deferred non-blocking observations
+
+The final review noted an inherited guest-copy heuristic: case-insensitive AI detection also rejects French contractions such as « j’ai ». None of the shipped guest phrases is affected. When adding copy with such a contraction, update the shared intent in both C# catalog parsing and its backend validation test, with a targeted regression; do not weaken the no-provider-branding rule by changing only one side. Also avoid the identifier `original` for a future universe because it already names the original-mode summary. Neither observation changes existing sessions or the nine delivered themes.
+
+The final reviewer did not execute tests. Its final physical/provider gates remain explicit above. The first paid animal render must be checked for respectful associations and identity retention; prompt wording cannot guarantee either. No paid automated test was introduced.
