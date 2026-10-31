@@ -1,6 +1,6 @@
 # Monitoring PhotoBooth 0.7
 
-Les logs techniques Supabase restent disponibles pour le diagnostic. Les statistiques métier sont conservées séparément dans `public.booth_metrics`, une table privée avec RLS, sans accès anon/authenticated. Aucun service de suivi tiers ni cookie n'est ajouté.
+Les logs techniques Supabase restent disponibles pour le diagnostic. Les statistiques métier sont conservées séparément dans `public.booth_metrics`, une table privée avec RLS, sans accès anon/authenticated. Aucun service de suivi tiers ni cookie visiteur n'est ajouté. L’admin privé utilise uniquement un cookie de session de connexion.
 
 ## Mesures et définitions
 
@@ -35,4 +35,4 @@ La conservation est durable : pas de purge automatique de cette table, ni de sup
 - `POST /downloads/events` : jeton de galerie dans le corps, aucun accès aux copies privées ou aux autres séances.
 - `public.booth_monitoring_report(days, include_fixtures)` : fonction de lecture réservée au serveur/opérateur.
 
-L'admin local est documenté dans [ADMIN_LOCAL.md](ADMIN_LOCAL.md). Le dashboard visuel sera ajouté sur le Mac. La commande de vérification de production publie une séance synthétique, observe la progression dans Chromium et vérifie des clics de téléchargement : `node scripts/verify-production-gallery.cjs`. Elle ne demande pas de génération OpenAI. Les tests SQL de moyenne, p95, dédoublonnage, filtrage et permissions sont dans [les preuves](evidence/monitoring/monitoring-assertions.sql), exécutés dans une transaction annulée avant application de la migration.
+Le dashboard privé sur le Mac est disponible via Tailscale et documenté dans [ADMIN_LOCAL.md](ADMIN_LOCAL.md). Il présente ces mesures avec filtres, export et état actuel des limites, traitements et stockage. La commande de vérification de production publie une séance synthétique, observe la progression dans Chromium et vérifie des clics de téléchargement : `node scripts/verify-production-gallery.cjs`. Elle ne demande pas de génération OpenAI. Les tests SQL de moyenne, p95, dédoublonnage, filtrage et permissions sont dans [les preuves](evidence/monitoring/monitoring-assertions.sql), exécutés dans une transaction annulée avant application de la migration.

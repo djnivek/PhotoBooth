@@ -1,12 +1,14 @@
 # Handoff actif : Colors Party by Estelle
 
-## Admin Mac accessible via Tailscale
+## Admin Mac : connexion corrigée et dashboard livré
 
-Le 31 octobre, le checkout Mac a été actualisé sur main `e602b40`, puis le service utilisateur `local.kevin.photobooth-admin` a été installé sur `127.0.0.1:8787`. [Rapport privé](https://macmini-de-kevin.tail8f2f33.ts.net/photobooth/api/report?days=7&fixtures=0) : identifiant `admin`, mot de passe dans `artifacts/admin-local/access-token` sur ce Mac. Ce jeton admin distinct change au redémarrage ; ne pas publier sa valeur. [Procédure, arrêt et redémarrage](ADMIN_LOCAL.md).
+Livraison : [PR21](https://github.com/djnivek/PhotoBooth/pull/21). Les captures et reçus de validation sont versionnés avec ce correctif.
 
-Correctifs nécessaires au vrai Mac : CLI `db query --linked` sans l'option non reconnue `--project-ref`, vérification du projet lié avant exécution, et prise en charge du tableau JSON renvoyé par la CLI. Connexion HTTP Basic ajoutée au navigateur en conservant Bearer, les restrictions d'hôte/origine et la lecture seule. Cinq tests admin réussis ; vraie lecture du rapport par le service et par HTTPS Tailscale, certificat et refus d'accès vérifiés. Les autres routes privées sont intactes. Aucun changement de l'app Windows, du backend déployé ou du budget OpenAI. [Reçu](evidence/mac-admin/service.json).
+Le 31 octobre, le rapport JSON protégé par une boîte HTTP Basic a été remplacé par [un véritable dashboard privé](https://macmini-de-kevin.tail8f2f33.ts.net/photobooth/). L’ancien lien de rapport redirige les navigateurs vers cette interface. Le code dans `artifacts/admin-local/access-token` reste stable ; connexion par formulaire, session HttpOnly de douze heures et déconnexion explicite. Ce code est distinct du code borne et ne doit jamais être publié.
 
-L'admin actuel est un rapport JSON. Le tableau de bord visuel et le test depuis un autre appareil du tailnet restent distincts de cette activation.
+Statistiques par période, activité, temps moyens/médiane/p95, modes, univers, consultations, téléchargements ; état actuel du budget d’images, des traitements et du stockage. Une panne garde les chiffres précédents et leur période. Les mesures absentes ne deviennent pas des zéros. La borne 0.7 reste nécessaire pour compter précisément les départs, captures et transferts. L’admin ne mesure pas la connexion physique Canon/DS620.
+
+Le service utilisateur `local.kevin.photobooth-admin` écoute `127.0.0.1:8787`, avec base `/photobooth`, via la route Tailscale privée existante. Lecture Supabase seulement, sans migration, appel OpenAI ni changement de quota. [Procédure et cycle de vie](ADMIN_LOCAL.md), [preuves navigateur et HTTP](evidence/admin-dashboard/README.md), [revue Impeccable : ship](reviews/admin-dashboard/impeccable.md). Les autres routes Tailscale sont préservées. Un autre appareil physique du tailnet n’a pas encore été vérifié.
 
 ## Version 0.7 — monitoring et admin local
 

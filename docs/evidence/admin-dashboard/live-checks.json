@@ -1,0 +1,24 @@
+{
+  "verified_at": "2026-10-31T13:37:58.293940+00:00",
+  "url": "https://macmini-de-kevin.tail8f2f33.ts.net/photobooth/",
+  "checks": [
+    "Login HTML reachable over verified TLS",
+    "No admin code in the page",
+    "No browser Basic challenge",
+    "Anonymous report denied",
+    "Foreign origin denied",
+    "Form sign-in accepted",
+    "Secure scoped HttpOnly session",
+    "Authenticated real report",
+    "Operational aggregates present",
+    "Report prevents caching",
+    "Export stays JSON with correct filters",
+    "Business writes denied",
+    "Logout accepted",
+    "Logout revokes report access"
+  ],
+  "count": 14,
+  "layer": "Serving Mac through private Tailscale HTTPS; no other physical tailnet device tested",
+  "paid_calls": 0,
+  "business_writes": 0
+}
