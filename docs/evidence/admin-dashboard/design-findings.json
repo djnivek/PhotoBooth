@@ -1,0 +1,121 @@
+[
+  {
+    "antipattern": "design-system-color",
+    "name": "Color outside DESIGN.md",
+    "description": "A literal color is outside the DESIGN.md palette and sidecar tonal ramps. This may be legitimate, but it should be an intentional design-system addition rather than drift.",
+    "severity": "advisory",
+    "category": "quality",
+    "file": "/Users/kevinmachado/PhotoBooth/web/admin/index.html",
+    "line": 0,
+    "snippet": "text color rgb(0, 0, 0) on a \"Aller au contenu\" is outside DESIGN.md colors",
+    "advisory": true,
+    "ignoreValue": "rgb(0, 0, 0)"
+  },
+  {
+    "antipattern": "design-system-font",
+    "name": "Font outside DESIGN.md",
+    "description": "A font is used that is not declared in DESIGN.md typography. Use the documented type system or update DESIGN.md if this is an intentional brand addition.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "/Users/kevinmachado/PhotoBooth/web/admin/style.css",
+    "line": 1,
+    "snippet": "font-family: Bricolage is not declared in DESIGN.md typography",
+    "ignoreValue": "Bricolage"
+  },
+  {
+    "antipattern": "design-system-font-size",
+    "name": "Font size outside DESIGN.md",
+    "description": "A literal font-size is off the type ramp documented in DESIGN.md typography. Use a documented size step or update the design system if the new step is intentional.",
+    "severity": "advisory",
+    "category": "quality",
+    "file": "/Users/kevinmachado/PhotoBooth/web/admin/style.css",
+    "line": 2,
+    "snippet": "font-size: 16px is off the DESIGN.md type ramp",
+    "advisory": true,
+    "ignoreValue": "16px"
+  },
+  {
+    "antipattern": "design-system-font-size",
+    "name": "Font size outside DESIGN.md",
+    "description": "A literal font-size is off the type ramp documented in DESIGN.md typography. Use a documented size step or update the design system if the new step is intentional.",
+    "severity": "advisory",
+    "category": "quality",
+    "file": "/Users/kevinmachado/PhotoBooth/web/admin/style.css",
+    "line": 4,
+    "snippet": "font-size: .8125rem is off the DESIGN.md type ramp",
+    "advisory": true,
+    "ignoreValue": ".8125rem"
+  },
+  {
+    "antipattern": "design-system-font-size",
+    "name": "Font size outside DESIGN.md",
+    "description": "A literal font-size is off the type ramp documented in DESIGN.md typography. Use a documented size step or update the design system if the new step is intentional.",
+    "severity": "advisory",
+    "category": "quality",
+    "file": "/Users/kevinmachado/PhotoBooth/web/admin/style.css",
+    "line": 7,
+    "snippet": "font-size: 18px is off the DESIGN.md type ramp",
+    "advisory": true,
+    "ignoreValue": "18px"
+  },
+  {
+    "antipattern": "design-system-font-size",
+    "name": "Font size outside DESIGN.md",
+    "description": "A literal font-size is off the type ramp documented in DESIGN.md typography. Use a documented size step or update the design system if the new step is intentional.",
+    "severity": "advisory",
+    "category": "quality",
+    "file": "/Users/kevinmachado/PhotoBooth/web/admin/style.css",
+    "line": 7,
+    "snippet": "font-size: 1.75rem is off the DESIGN.md type ramp",
+    "advisory": true,
+    "ignoreValue": "1.75rem"
+  },
+  {
+    "antipattern": "design-system-font-size",
+    "name": "Font size outside DESIGN.md",
+    "description": "A literal font-size is off the type ramp documented in DESIGN.md typography. Use a documented size step or update the design system if the new step is intentional.",
+    "severity": "advisory",
+    "category": "quality",
+    "file": "/Users/kevinmachado/PhotoBooth/web/admin/style.css",
+    "line": 7,
+    "snippet": "font-size: .8125rem is off the DESIGN.md type ramp",
+    "advisory": true,
+    "ignoreValue": ".8125rem"
+  },
+  {
+    "antipattern": "design-system-font-size",
+    "name": "Font size outside DESIGN.md",
+    "description": "A literal font-size is off the type ramp documented in DESIGN.md typography. Use a documented size step or update the design system if the new step is intentional.",
+    "severity": "advisory",
+    "category": "quality",
+    "file": "/Users/kevinmachado/PhotoBooth/web/admin/style.css",
+    "line": 7,
+    "snippet": "font-size: 1rem is off the DESIGN.md type ramp",
+    "advisory": true,
+    "ignoreValue": "1rem"
+  },
+  {
+    "antipattern": "design-system-font-size",
+    "name": "Font size outside DESIGN.md",
+    "description": "A literal font-size is off the type ramp documented in DESIGN.md typography. Use a documented size step or update the design system if the new step is intentional.",
+    "severity": "advisory",
+    "category": "quality",
+    "file": "/Users/kevinmachado/PhotoBooth/web/admin/style.css",
+    "line": 7,
+    "snippet": "font-size: .75rem is off the DESIGN.md type ramp",
+    "advisory": true,
+    "ignoreValue": ".75rem"
+  },
+  {
+    "antipattern": "design-system-font-size",
+    "name": "Font size outside DESIGN.md",
+    "description": "A literal font-size is off the type ramp documented in DESIGN.md typography. Use a documented size step or update the design system if the new step is intentional.",
+    "severity": "advisory",
+    "category": "quality",
+    "file": "/Users/kevinmachado/PhotoBooth/web/admin/style.css",
+    "line": 8,
+    "snippet": "font-size: 1.1875rem is off the DESIGN.md type ramp",
+    "advisory": true,
+    "ignoreValue": "1.1875rem"
+  }
+]

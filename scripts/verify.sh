@@ -13,4 +13,4 @@ dotnet_command="${PHOTOBOOTH_DOTNET:-dotnet}"
 deno check supabase/functions/photobooth-api/index.ts
 deno lint supabase/functions/photobooth-api
 deno test supabase/functions/photobooth-api/cloud_test.ts
-node --test tests/gallery.test.cjs
+node --test tests/gallery.test.cjs tests/admin.test.cjs tests/admin-model.test.cjs

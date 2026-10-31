@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="admin-base" content="__BASE__">
+  <title>Le suivi de la soirée · Colors Party</title>
+  <link rel="icon" href="__BASE__/assets/wordmark.png">
+  <link rel="stylesheet" href="__BASE__/style.css">
+  <script src="__BASE__/report-model.js" defer></script>
+  <script src="__BASE__/dashboard.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Aller au contenu</a>
+  <header class="masthead">
+    <div class="brand"><img src="__BASE__/assets/wordmark.png" alt="Colors Party" width="94" height="70"><span>by Estelle<span class="brand-detail">L’espace admin</span></span></div>
+    <div class="header-actions"><span class="private-label">Accès privé</span><button id="logout" class="quiet" hidden>Se déconnecter</button></div>
+  </header>
+  <main id="main">
+    <section id="login" class="login-panel" aria-labelledby="login-title" hidden>
+      <h1 id="login-title">La soirée, côté coulisses.</h1>
+      <p>Retrouvez les photos comptées, les temps de préparation et le suivi du photomaton.</p>
+      <form id="login-form">
+        <label for="code">Code admin</label>
+        <div class="password-row"><input id="code" name="password" type="password" autocomplete="current-password" maxlength="128" required spellcheck="false"><button id="reveal" class="quiet" type="button" aria-pressed="false" aria-label="Afficher le code admin">Afficher</button></div>
+        <p id="login-error" class="error-text" role="alert" hidden></p>
+        <button id="login-button" class="primary" type="submit">Ouvrir le tableau de bord</button>
+      </form>
+      <details class="login-help"><summary>Où trouver mon code ?</summary><p>Utilisez le code admin conservé sur le Mac dans <code>artifacts/admin-local/access-token</code>. Il reste identique après un redémarrage.</p><p>Ce code est distinct du code de la borne et de la clé OpenAI.</p><label class="file-label" for="code-file">Ou sélectionnez ce fichier sur le Mac</label><input id="code-file" type="file" aria-describedby="file-help"><small id="file-help">Le code est lu uniquement pour cette connexion.</small></details>
+    </section>
+    <div id="boot" class="boot" role="status"><h1>Le suivi de la soirée</h1><p>Vérification de votre accès…</p></div>
+    <section id="dashboard" aria-labelledby="dashboard-title" hidden>
+      <div class="page-title"><div><h1 id="dashboard-title" tabindex="-1">Le suivi de la soirée</h1><p id="freshness" role="status">Lecture des statistiques…</p></div><a class="quiet export" id="export" href="__BASE__/api/report?days=7&amp;fixtures=0" download="colors-party-rapport.json" hidden>Exporter le rapport</a></div>
+      <form id="filters" class="toolbar"><div class="period-field"><label for="period">Période</label><select id="period"><option value="1">Dernières 24 heures</option><option value="7" selected>7 derniers jours</option><option value="30">30 derniers jours</option></select></div><label class="check"><input id="fixtures" type="checkbox"> Inclure les essais</label><button id="refresh" class="primary" type="submit">Actualiser</button><span class="refresh-note">Actualisation toutes les 30 s</span></form>
+      <p id="report-error" class="notice failure" role="alert" hidden></p>
+      <div id="loading" class="loading" role="status"><p>Lecture de l’activité et du stockage…</p><div class="skeleton" aria-hidden="true"></div></div>
+      <div id="report" hidden>
+        <p id="coverage" class="notice" hidden></p>
+        <dl class="headline-stats"><div><dt>Séances démarrées</dt><dd id="stat-sessions"></dd><small>Départs enregistrés</small></div><div><dt>Photos prises</dt><dd id="stat-captured"></dd><small>Captures sauvegardées</small></div><div><dt>Métamorphoses</dt><dd id="stat-generated"></dd><small>Images générées</small></div><div><dt>Téléchargements</dt><dd id="stat-download_requests"></dd><small>Clics enregistrés</small></div></dl>
+        <div class="overview-grid">
+          <section class="panel activity-panel" aria-labelledby="activity-title"><div class="section-heading"><h2 id="activity-title">Le rythme de la soirée</h2><span id="activity-unit"></span></div><p id="range" class="section-note"></p><div class="legend"><span class="sessions-key">Séances</span><span class="captures-key">Photos prises</span><span class="generated-key">Métamorphoses</span></div><p id="activity-empty" class="empty" hidden>Aucune activité enregistrée sur cette période. Les prochaines mesures apparaîtront ici.</p><div id="chart" class="chart" role="img" aria-label="Activité dans le temps. Valeurs détaillées disponibles ci-dessous."></div><details class="data-details"><summary>Voir les valeurs</summary><div class="table-scroll" tabindex="0" role="region" aria-label="Valeurs de l’activité"><table><thead><tr><th scope="col">Moment</th><th scope="col">Séances</th><th scope="col">Photos</th><th scope="col">Métamorphoses</th></tr></thead><tbody id="activity-rows"></tbody></table></div></details></section>
+          <section class="panel operations" aria-labelledby="operations-title"><div class="section-heading"><h2 id="operations-title">Côté serveur</h2><span class="scope-label">État actuel</span></div><p class="section-note">Toutes les séances, essais inclus</p><p id="operations-unavailable" class="empty" hidden>État serveur non disponible dans ce rapport.</p><div id="operations-data"><p id="generation-state" class="state"></p><div class="budget-line"><span>Départs de génération</span><strong id="budget-count"></strong></div><progress id="budget" max="1" value="0" aria-label="Départs réservés sur le plafond de l’événement"></progress><p class="fine">Places réservées sur le plafond de l’événement, pas un montant facturé.</p><dl class="compact-list"><div><dt>En préparation</dt><dd id="jobs-active"></dd></div><div><dt>Résultat incertain</dt><dd id="jobs-uncertain"></dd></div><div><dt>Fichiers stockés</dt><dd id="storage-files"></dd></div><div><dt>Volume connu</dt><dd id="storage-bytes"></dd></div></dl><p id="operations-warning" class="warning" hidden></p><p id="storage-note" class="fine"></p><details><summary>Limites et traitements</summary><dl class="compact-list" id="operation-details"></dl></details></div></section>
+        </div>
+        <section class="section timing-section" aria-labelledby="timing-title"><div class="section-heading"><div><h2 id="timing-title">Où passe le temps ?</h2><p class="section-note">Durées des opérations réussies. L’attente d’une place de transfert n’est pas incluse.</p></div></div><p class="scroll-hint">Faites glisser le tableau pour voir toutes les colonnes.</p><div class="table-scroll" tabindex="0" role="region" aria-label="Durées et transferts"><table class="timing-table"><thead><tr><th scope="col">Opération</th><th scope="col">Moyenne</th><th scope="col">Médiane</th><th scope="col"><abbr title="95 % des durées mesurées sont inférieures ou égales à cette valeur">P95</abbr></th><th scope="col">Mesurées / réussies</th><th scope="col">Non réussies</th><th scope="col">Volume</th></tr></thead><tbody id="timing-rows"></tbody></table></div><p class="fine">Une durée absente reste « Non mesuré ». La génération mesure la réponse OpenAI complète, avant son stockage. Les non réussies comprennent les échecs et les résultats incertains.</p></section>
+        <div class="detail-grid">
+          <section class="section" aria-labelledby="session-title"><h2 id="session-title">Les séances</h2><div id="modes" class="breakdown"></div><dl class="compact-list" id="session-details"></dl><p class="fine">Les résultats et les départs sont comptés dans la période, même si une séance a commencé avant.</p></section>
+          <section class="section" aria-labelledby="sharing-title"><h2 id="sharing-title">Les souvenirs partagés</h2><dl class="compact-list" id="sharing-details"></dl><h3>Clics de téléchargement</h3><div id="downloads" class="breakdown"></div><p class="fine">Les ouvertures ne sont pas des visiteurs uniques. Un clic ne confirme pas la fin du téléchargement.</p></section>
+        </div>
+        <section class="section" aria-labelledby="themes-title"><h2 id="themes-title">Les univers de la soirée</h2><p class="section-note">Le choix du Chef reste distinct de l’univers réellement généré.</p><div class="detail-grid themes"><div><h3>Choisis au départ</h3><p class="fine">Nombre de séances Métamorphose</p><div id="chosen-themes" class="breakdown"></div></div><div><h3>Présents sur les photos</h3><p class="fine">Nombre d’images générées</p><div id="resolved-themes" class="breakdown"></div></div></div></section>
+        <footer class="report-footer"><p id="collection"></p><p id="last-event"></p><p>Lecture seule. La connexion du Canon et l’impression physique ne sont pas mesurées ici.</p></footer>
+      </div>
+    </section>
+    <noscript><p class="notice">Activez JavaScript pour vous connecter et consulter les statistiques.</p></noscript>
+  </main>
+</body>
+</html>

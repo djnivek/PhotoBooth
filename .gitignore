@@ -20,3 +20,6 @@ supabase/.branches/
 *.log
 
 **/node_modules/
+
+# Working browser captures; immutable delivery copies live in docs/evidence.
+.impeccable/review/admin/
