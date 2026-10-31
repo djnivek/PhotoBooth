@@ -167,7 +167,7 @@ var many = new StyleCatalog("twenty.1", Enumerable.Range(0,20).Select(i => new P
 foreach(var size in new[]{new Size(1280,800),new Size(960,700)})
 {
     var requests=0; var multiTransform=new DelayedTransform();
-    window=new MainWindow((_,_)=>Task.CompletedTask,catalogLoader:_=>{requests++;return Task.FromResult(many);},transformFactory:()=>multiTransform);
+    window=new MainWindow((_,_)=>Task.CompletedTask,catalogLoader:async _=>{requests++;await Task.Delay(300);return many;},transformFactory:()=>multiTransform);
     window.Width=size.Width;window.Height=size.Height;window.Show();
     Until(()=>requests==1&&window.CatalogCount==many.Styles.Length,3000);
     ClickLabel("Métamorphose");AssertStylesFit();
