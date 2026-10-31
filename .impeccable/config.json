@@ -11,6 +11,15 @@
         ],
         "createdAt": "2026-10-30T22:52:41.480Z",
         "reason": "Kevin approved the existing Colors Party artwork and palette and asked to preserve it. DESIGN.md names Cream Paper #FBF5E8 as the approved ground; .impeccable/surfaces/web-gallery.md explicitly carries that identity into this gallery. This exception applies only to this rule on this gallery file."
+      },
+      {
+        "rule": "marquee",
+        "value": "*",
+        "files": [
+          "web/gallery/index.html"
+        ],
+        "createdAt": "2026-10-31T12:09:22.912Z",
+        "reason": "Agent: the finding matches the empty .loader span using party-load in web/gallery/style.css, an indeterminate progress indicator rather than scrolling content. gallery.js shows it only while preparation is active and hides it on completion/error/timeout. The gallery surface brief documents this state, and prefers-reduced-motion disables its animation. No text or photo scrolls or is hidden by this indicator."
       }
     ]
   }
