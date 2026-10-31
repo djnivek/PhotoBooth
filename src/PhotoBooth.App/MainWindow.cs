@@ -123,11 +123,11 @@ public sealed partial class MainWindow : Window
         {
             ConstrainLayout();
             if (boothSettings.FullscreenEnabled || Program.ForceKiosk) EnterFullscreen();
+            if (refreshCatalogOnOpen) _ = RefreshCatalogAsync();
             // Persist the one-time hardware migration without changing the code or cloud credential.
             try { await boothSettings.SaveAsync(boothSettingsPath); }
             catch (IOException) { /* Settings remain usable; an explicit save will report any write failure. */ }
             catch (UnauthorizedAccessException) { /* A read-only profile must not prevent the home screen. */ }
-            if (refreshCatalogOnOpen) _ = RefreshCatalogAsync();
         };
         Resized += (_, _) => ConstrainLayout();
         pulse.Tick += (_, _) =>
