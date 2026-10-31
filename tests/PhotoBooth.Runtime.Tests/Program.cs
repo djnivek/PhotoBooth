@@ -111,6 +111,30 @@ try
         var valid = KioskExitGate.Restore(KioskExitGate.Create("E629").Export());
         Check(valid.TryAuthorizeExit("E629"), "Salted credential survives restart");
     }
+    {
+        var path = Path.Combine(root, "booth-settings.json");
+        var fresh = BoothSettings.Load(path);
+        Check(fresh.CanonCamera && fresh.PhysicalPrinting, "A fresh installation uses real Canon capture and physical printing");
+        Check(!fresh.CanonUseOfficialSdk && !fresh.CanonManualFocusConfirmed, "Default hardware never claims an installed SDK or verified manual focus");
+        await File.WriteAllTextAsync(path, """
+            {"CanonCamera":false,"PhysicalPrinting":false,"PrinterName":"DNP DS620",
+             "CloudEnabled":true,"FullscreenEnabled":true,"ViewerEnabled":true,
+             "ApiBaseUrl":"https://booth.invalid/api","GalleryBaseUrl":"https://gallery.invalid",
+             "CanonManualFocusConfirmed":true,"ReducedMotion":true}
+            """);
+        var upgraded = BoothSettings.Load(path);
+        Check(upgraded.CanonCamera && upgraded.PhysicalPrinting, "An older demo profile upgrades to real hardware");
+        Check(upgraded.CloudEnabled && upgraded.FullscreenEnabled && upgraded.ViewerEnabled && upgraded.ReducedMotion,
+            "Hardware migration preserves cloud, kiosk, projection and accessibility preferences");
+        Check(upgraded.PrinterName == "DNP DS620" && upgraded.CanonManualFocusConfirmed &&
+            upgraded.ApiBaseUrl == "https://booth.invalid/api" && upgraded.GalleryBaseUrl == "https://gallery.invalid",
+            "Migration preserves the configured printer, verified focus and service endpoints");
+        await upgraded.SaveAsync(path);
+        Check(File.ReadAllText(path).Contains("HardwareDefaultsVersion"), "The migrated profile records its version");
+        await (upgraded with { CanonCamera = false, PhysicalPrinting = false }).SaveAsync(path);
+        var rehearsal = BoothSettings.Load(path);
+        Check(!rehearsal.CanonCamera && !rehearsal.PhysicalPrinting, "An explicit later rehearsal choice survives restart");
+    }
 }
 finally { Directory.Delete(root, recursive: true); }
 Console.WriteLine($"PASS {passed} runtime checks; full rehearsal flow, no paid API.");

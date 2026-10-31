@@ -6,6 +6,15 @@ using System.Text.Json;
 
 var passed = 0;
 void Check(bool condition, string label) { if (!condition) throw new Exception(label); passed++; }
+Check(WindowsPhotoPrinter.SelectPrinter("", ["Microsoft Print to PDF", "DNP DS620"]) == "DNP DS620", "Automatically choose the installed DNP rather than the Windows PDF printer");
+Check(WindowsPhotoPrinter.SelectPrinter("", ["DP-DS620 (Copy 1)"]) == "DP-DS620 (Copy 1)", "Recognize a renamed DS620 driver queue");
+Check(WindowsPhotoPrinter.SelectPrinter("", ["DNP DS-620A"]) == "DNP DS-620A", "Recognize the DS620A driver name");
+Check(WindowsPhotoPrinter.SelectPrinter("custom queue", ["custom queue", "DNP DS620"]) == "custom queue", "Preserve an explicitly installed printer choice");
+Check(WindowsPhotoPrinter.SelectPrinter("dnp ds620", ["DNP DS620"]) == "DNP DS620", "Use the installed queue's canonical case");
+Check(WindowsPhotoPrinter.SelectPrinter("", ["DNP DS620", "DNP DS620 (Copy 1)"]) == "", "Require an operator choice when two DNP queues are ambiguous");
+Check(WindowsPhotoPrinter.SelectPrinter("", ["Microsoft Print to PDF", "DS6200", "DNP DS-RX1"]) == "", "Never substitute an unrelated printer when the DNP is absent");
+Check(WindowsPhotoPrinter.SelectPrinter("old offline queue", ["DNP DS620"]) == "DNP DS620", "Discover the available DNP after a queue change");
+Check(WindowsPhotoPrinter.SelectPrinter("", []) == "", "Missing drivers do not invent a printer");
 foreach (var key in new uint[] { 0x5B, 0x5C, 0x7A })
     Check(WindowsKioskGuard.Blocks(key, false, false), "Windows keys and F11 cannot leave guest mode");
 foreach (var key in new uint[] { 0x09, 0x1B, 0x20, 0x73 })

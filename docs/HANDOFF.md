@@ -1,5 +1,13 @@
 # Handoff actif : Colors Party by Estelle
 
+## Correctif 0.10.1 : accès opérateur et matériel par défaut
+
+L’accueil affiche une roue crantée tactile de 56×56 en bas à gauche, également en plein écran. Un seul clic passe par le code existant s’il est configuré ; sinon les réglages s’ouvrent directement. Le bouton Réglages du mode fenêtre demande aussi le code enregistré. L’authentification n’enlève pas automatiquement le plein écran.
+
+Les nouvelles installations utilisent Canon USB par WPD et l’impression réelle. Les anciens profils sans version de réglages matériel passent une fois à ces valeurs ; l’application conserve connexion, code, préférence plein écran, focus vérifié et projection. Une file DS620/DS620A unique et installée est présélectionnée au démarrage, à l’ouverture des réglages et au clic Imprimer. Plusieurs files demandent un choix explicite ; aucune file PDF n’est sélectionnée automatiquement. Une répétition volontairement enregistrée après cette mise à jour reste possible.
+
+La connexion OpenAI, Sunburst medium 1024×1024, les 17 thèmes, le viewer et les limites de concurrence ne changent pas. Aucun déploiement Supabase n’est nécessaire. Le pilote DNP installé, le Canon branché et la mise au point réelle restent des prérequis matériels ; la confirmation MF n’est jamais inventée. La validation du paquet est attachée à la release.
+
 ## Métamorphose 0.9 : plusieurs univers avant les poses
 
 Évolution préparée depuis main `b53731e`, dans [PR24](https://github.com/djnivek/PhotoBooth/pull/24). Le dernier état fusion/publication et les reçus du paquet figurent dans cette PR et dans [la release 0.9.0](https://github.com/djnivek/PhotoBooth/releases/tag/v0.9.0). Neuf univers embarqués et serveur, dont Drôles de bêtes, Sous cloche et À croquer. Choix de un à quatre univers pour quatre poses ; distribution équilibrée et répétitions en diagonale. Chef choisit quatre univers distincts si possible. Catalogue de vingt univers testé sur les deux formats de fenêtre, actions fixes et aucun appel réseau à l’ouverture du sélecteur.

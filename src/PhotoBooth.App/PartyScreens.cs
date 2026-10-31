@@ -94,7 +94,19 @@ public sealed partial class MainWindow
         start.IsEnabled = mode == PhotoMode.Original || (catalog.Styles.Length > 0 && selectedStyles.Count > 0);
         start.HorizontalAlignment = HorizontalAlignment.Stretch; choices.Children.Add(start);
         var note = Text("À télécharger, à imprimer, à garder.", 17); note.Foreground = Muted; choices.Children.Add(note);
-        Grid.SetColumn(choices, 1); grid.Children.Add(choices); body.Content = grid;
+        Grid.SetColumn(choices, 1); grid.Children.Add(choices);
+        var settings = Button("Réglages", RequestOperatorAsync);
+        settings.Name = "HomeSettings";
+        settings.Width = settings.Height = settings.MinWidth = settings.MinHeight = 56;
+        settings.Padding = new Thickness(14);
+        settings.HorizontalAlignment = HorizontalAlignment.Left;
+        settings.VerticalAlignment = VerticalAlignment.Bottom;
+        settings.Content = new PathIcon { Width = 26, Height = 26, Data = Geometry.Parse(
+            "F0 M9,1 L15,1 L15.5,4 L17,5 L20,4 L23,9 L20.5,11 L20.5,13 L23,15 L20,20 L17,19 L15.5,20 L15,23 L9,23 L8.5,20 L7,19 L4,20 L1,15 L3.5,13 L3.5,11 L1,9 L4,4 L7,5 L8.5,4 Z M12,8 A4,4 0 1 0 12,16 A4,4 0 1 0 12,8 Z") };
+        AutomationProperties.SetName(settings, "Réglages");
+        ToolTip.SetTip(settings, "Réglages");
+        grid.Children.Add(settings);
+        body.Content = grid;
     }
 
     private async Task BeginChosenSessionAsync()

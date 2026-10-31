@@ -8,17 +8,17 @@ avec un compte ayant accès au dépôt privé. Extraire **tout** le ZIP dans un 
 Le ZIP est accompagné de son SHA-256. Le pipeline extrait le paquet et l'exécute sur Windows Server 2022 ;
 [revue et reçus 0.9.0](reviews/technical-readiness-2026-10-31/README.md). Le lancement sur le Windows 10 cible reste à vérifier.
 
-1. Lancer en répétition (défaut). Tester 1/4 poses, Au naturel/Métamorphose, placement,
+1. Le démarrage utilise le matériel réel par défaut. Pour cet essai sans matériel, ouvrir la roue crantée en bas à gauche de l’accueil, désactiver Canon USB et l’envoi à l’imprimante, puis enregistrer. Tester 1/4 poses, Au naturel/Métamorphose, placement,
    décompte 3 secondes, effet de capture, aperçu. Aucun appareil ni Internet requis pour ce parcours.
 2. Réglages → choisir des photos locales autorisées ; elles sont lues dans l’ordre et répétées
    si le jeu contient moins de photos que la séance. Ce n’est pas une capture Canon.
 3. Appuyer sur « Imprimer » avec l’envoi à l’imprimante désactivé : export `print-preview.jpg`, aucun envoi à une imprimante. Comparer à
    l’aperçu et au JPEG de planche ; quatre photos distinctes et correctement orientées.
 4. Définir un code facultatif de quatre caractères, activer le plein écran puis fermer les réglages.
-   Maintenir trois secondes en bas à gauche : mauvais/bon code, accès direct si aucun code. Tester F11,
+   Cliquer la roue crantée de l’accueil : annulation, mauvais/bon code, accès direct si aucun code. Tester F11,
    Échap et fermeture : aucun ne doit sortir ni ouvrir le code. Tester Alt+Tab, Alt+F4 et Ctrl+Maj+Échap. Pour restreindre Windows lui-même, suivre KIOSQUE_WINDOWS.md sur un compte standard dédié.
-   « Voir les fichiers » demande aussi ce code. Après un code correct, la borne reste déverrouillée :
-   retourner dans Réglages → Activer le plein écran avant de la rendre aux invités.
+   « Voir les fichiers » est masqué en plein écran. Après un code correct, les réglages s’ouvrent
+   sans quitter le plein écran ; les fermer suffit pour revenir aux invités.
 5. Ajouter la clé OpenAI dans Supabase, puis le code borne distinct dans les Réglages de l’app.
    Activer la connexion vérifie seulement l’authentification ; cela ne génère aucune image.
 6. Faire volontairement un premier essai Métamorphose : **cet essai sera facturé**. Vérifier attente,
@@ -39,7 +39,7 @@ Matériel demandé : Windows 10 Pro 22H2, EOS4000D USB, DNP DS620, papier PR4×6
 Relever l’architecture x64, version DSLR Booth, firmware, ports, écran et éclairage.
 Le script `scripts/windows-preflight.ps1` effectue des lectures ; il ne remplace pas un essai.
 
-Canon : cocher « Utiliser le Canon USB » et laisser la connexion avancée SDK décochée.
+Canon : « Utiliser le Canon USB » est déjà coché ; laisser la connexion avancée SDK décochée.
 Cette voie utilise le pilote Windows existant via WPD/PTP ; pas de téléchargement Canon requis.
 Fermer DSLR Booth/EOS Utility avant la connexion ; ne pas changer le pilote USB avec Zadig.
 La compatibilité EOS4000D n’est pas encore prouvée : tester placement réel, visée, décompte,

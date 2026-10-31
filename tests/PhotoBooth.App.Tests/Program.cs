@@ -13,6 +13,8 @@ using PhotoBooth.Runtime;
 
 var root = Path.Combine(Path.GetTempPath(), "colors-party-ui-" + Guid.NewGuid().ToString("N"));
 Environment.SetEnvironmentVariable("PHOTOBOOTH_DATA_DIR", root);
+// Rehearsal is an explicit test-profile choice, never the shipping default.
+new BoothSettings { CanonCamera=false, PhysicalPrinting=false }.SaveAsync(Path.Combine(root,"booth-settings.json")).GetAwaiter().GetResult();
 AppBuilder.Configure<App>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).SetupWithoutStarting();
 var screenshots = Path.Combine(Environment.CurrentDirectory, ".impeccable", "review");
 Directory.CreateDirectory(screenshots);
@@ -101,7 +103,10 @@ Until(()=>window.OwnedWindows.Any(w=>w.Title=="Réglages de la borne"),3000);set
 DialogClick(settings,"Quitter le plein écran");Until(()=>window.WindowState==WindowState.Normal&&Find("OpenFiles")!.IsVisible,2000);
 DialogClick(settings,"Fermer les réglages");Click("OpenFiles");
 Until(()=>openedFolders.Count==1&&window.WindowState==WindowState.Normal,2000);
-Click("Settings");Until(()=>window.OwnedWindows.Count==1,2000);settings=window.OwnedWindows.Single();
+Click("Settings");Until(()=>window.OwnedWindows.Count==1,2000);unlock=window.OwnedWindows.Single();
+if(unlock.Title!="Code des réglages")throw new Exception("Windowed settings bypassed the saved operator code.");
+unlock.GetVisualDescendants().OfType<TextBox>().Single().Text="E629";DialogClick(unlock,"Déverrouiller");
+Until(()=>window.OwnedWindows.Any(w=>w.Title=="Réglages de la borne"),3000);settings=window.OwnedWindows.Single();
 DialogClick(settings,"Activer le plein écran");Until(()=>window.WindowState==WindowState.FullScreen,2000);
 DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);
 Click("NewSession");ClickLabel("Métamorphose");Pump(80);
@@ -130,8 +135,28 @@ var saveRestart = restartSettings.SaveAsync(Path.Combine(root,"booth-settings.js
 Until(()=>saveRestart.IsCompleted,2000);saveRestart.GetAwaiter().GetResult();
 window=new MainWindow(refreshCatalogOnOpen:false);window.Show();Pump(80);
 if(window.WindowState!=WindowState.FullScreen)throw new Exception("Saved fullscreen preference was ignored at startup.");
-HoldCorner(3150);Until(()=>window.OwnedWindows.Count==1,2000);settings=window.OwnedWindows.Single();
-if(settings.Title!="Réglages de la borne")throw new Exception("No-code hold did not open settings after restart.");
+AssertHomeFits();TapHomeSettings();Until(()=>window.OwnedWindows.Count==1,2000);settings=window.OwnedWindows.Single();
+if(settings.Title!="Réglages de la borne")throw new Exception("The home gear did not open settings directly without a code after restart.");
+settings.GetVisualDescendants().OfType<CheckBox>().Single(t=>t.Name=="ProtectSettings").IsChecked=true;
+settings.GetVisualDescendants().OfType<TextBox>().Single(t=>t.Name=="ExitPin").Text="E629";
+DialogClick(settings,"Enregistrer le code");Until(()=>File.Exists(Path.Combine(root,"kiosk.json")),2000);
+DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);
+foreach(var size in new[]{new Size(1280,800),new Size(960,700)})
+{
+    window.Width=size.Width;window.Height=size.Height;Pump(80);AssertHomeFits();
+    Capture($"home-settings-fullscreen-{size.Width}.png");
+}
+TapHomeSettings();Until(()=>window.OwnedWindows.Count==1,2000);unlock=window.OwnedWindows.Single();
+if(unlock.Title!="Code des réglages")throw new Exception("A single home-gear tap bypassed the saved code.");
+unlock.GetVisualDescendants().OfType<TextBox>().Single().Text="0000";DialogClick(unlock,"Déverrouiller");Pump(100);
+if(window.OwnedWindows.Single()!=unlock||window.WindowState!=WindowState.FullScreen)throw new Exception("Wrong code from the gear unlocked the booth.");
+DialogClick(unlock,"Retour à la fête");Until(()=>window.OwnedWindows.Count==0,2000);
+TapHomeSettings();Until(()=>window.OwnedWindows.Count==1,2000);unlock=window.OwnedWindows.Single();
+unlock.GetVisualDescendants().OfType<TextBox>().Single().Text="E629";DialogClick(unlock,"Déverrouiller");
+Until(()=>window.OwnedWindows.Any(w=>w.Title=="Réglages de la borne"),3000);settings=window.OwnedWindows.Single();
+if(window.WindowState!=WindowState.FullScreen)throw new Exception("The home gear must keep fullscreen until an authorized operator leaves it.");
+settings.GetVisualDescendants().OfType<CheckBox>().Single(t=>t.Name=="ProtectSettings").IsChecked=false;
+DialogClick(settings,"Enregistrer le code");Until(()=>!File.Exists(Path.Combine(root,"kiosk.json")),2000);
 DialogClick(settings,"Quitter le plein écran");Until(()=>window.WindowState==WindowState.Normal,2000);
 DialogClick(settings,"Fermer les réglages");window.Close();Pump(80);
 // A large dynamic catalog remains selectable by touch without rebuilding or losing scroll/focus.
@@ -241,7 +266,7 @@ foreach(var driverError in new[]{false,true})
     window.Close();Pump(80);
 }
 // Standard capture and its exact print master remain usable with cloud enabled and no network.
-var cloudSettingsTask = new BoothSettings { CloudEnabled=true }.SaveAsync(Path.Combine(root,"booth-settings.json"));
+var cloudSettingsTask = new BoothSettings { CanonCamera=false, PhysicalPrinting=false, CloudEnabled=true }.SaveAsync(Path.Combine(root,"booth-settings.json"));
 Until(()=>cloudSettingsTask.IsCompleted,3000);cloudSettingsTask.GetAwaiter().GetResult();
 var credentialTask = CredentialStore.SaveAsync(Path.Combine(root,"cloud-credential"),"offline-test-only");
 Until(()=>credentialTask.IsCompleted,3000);credentialTask.GetAwaiter().GetResult();
@@ -294,7 +319,7 @@ if(Find("NewSession") is not {IsVisible:true} newSession||!newSession.Classes.Co
 Capture("shared-result-960x700.png");window.Close();Pump(100);
 
 // Projection enabled: fixed button footprint, pause for settings, automatic release, disable restores manual flow.
-var viewerSettings=new BoothSettings {CloudEnabled=true,ViewerEnabled=true,ViewerIncludeTests=true};
+var viewerSettings=new BoothSettings {CanonCamera=false,PhysicalPrinting=false,CloudEnabled=true,ViewerEnabled=true,ViewerIncludeTests=true};
 var saveViewer=viewerSettings.SaveAsync(Path.Combine(root,"booth-settings.json"));Until(()=>saveViewer.IsCompleted,3000);saveViewer.GetAwaiter().GetResult();
 var viewerClock=DateTimeOffset.UtcNow;var shareGate=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);var viewerHttp=new ProgressiveUiHttp {ShareGate=shareGate.Task};
 window=new MainWindow((_,_)=>Task.CompletedTask,refreshCatalogOnOpen:false,clock:()=>viewerClock,
@@ -337,6 +362,15 @@ ClickLabel("Une photo");Click("StartSession");Until(()=>Find("TakePhotos") is {I
 Until(()=>Find("PrintPreview") is not null,10000);
 if(localCameraStarts!=1)throw new Exception("Original capture must remain available without the cloud.");
 window.Close();Pump(100);
+// Shipping defaults are visible in the actual settings UI, without connecting hardware.
+Environment.SetEnvironmentVariable("PHOTOBOOTH_DATA_DIR",Path.Combine(root,"production-defaults"));
+window=new MainWindow(refreshCatalogOnOpen:false);window.Show();Pump(100);
+TapHomeSettings();Until(()=>window.OwnedWindows.Count==1,2000);settings=window.OwnedWindows.Single();
+if(settings.GetVisualDescendants().OfType<CheckBox>().Single(c=>c.Name=="CanonCamera").IsChecked!=true||
+   settings.GetVisualDescendants().OfType<CheckBox>().Single(c=>c.Name=="PhysicalPrinting").IsChecked!=true)
+    throw new Exception("A fresh shipping profile does not select Canon and physical printing.");
+CaptureDialog(settings,"production-default-settings.png");
+DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);window.Close();Pump(100);
 Console.WriteLine("PASS UI: native flows, cloud offline, early QR, visible loading and wait copy, background completion during next guest, no share retry after success, prominent new-session action. No network, paid API or hardware.");
 Directory.Delete(root,true);
 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
@@ -345,6 +379,12 @@ static WeakReference TrackCurrentController(MainWindow owner) => new(typeof(Main
 
 void HoldCorner(int milliseconds)
 {var p=new Point(20,window.ClientSize.Height-20);window.MouseMove(p);window.MouseDown(p,MouseButton.Left);Pump(milliseconds);window.MouseUp(p,MouseButton.Left);Pump(50);}
+void TapHomeSettings()
+{
+    var gear=Find("HomeSettings")??throw new Exception("Missing home settings gear");
+    var point=gear.TranslatePoint(new Point(gear.Bounds.Width/2,gear.Bounds.Height/2),window)!.Value;
+    window.MouseMove(point);window.MouseDown(point,MouseButton.Left);window.MouseUp(point,MouseButton.Left);Pump(50);
+}
 void DialogClick(Window dialog,string label)=>dialog.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,label)).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 void ClickLabel(string label){Pump(50);window.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,label)).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));Pump(50);}
 void CaptureDialog(Window dialog,string name)
@@ -394,9 +434,10 @@ void Capture(string name)
 }
 void AssertHomeFits()
 {
-    foreach(var name in new[]{"Settings","StartSession","HomeSheet"})
+    foreach(var name in new[]{"Settings","HomeSettings","StartSession","HomeSheet"})
     {
         var control=window.GetVisualDescendants().OfType<Control>().Single(c=>c.Name==name);
+        if(!control.IsVisible)continue;
         var point=control.TranslatePoint(new Point(0,0),window)??throw new Exception("Detached control "+name);
         if(point.X<0||point.Y<0||point.X+control.Bounds.Width>window.ClientSize.Width+1||point.Y+control.Bounds.Height>window.ClientSize.Height+1)
             throw new Exception($"{name} exceeds {window.ClientSize}: {point}, {control.Bounds.Size}");

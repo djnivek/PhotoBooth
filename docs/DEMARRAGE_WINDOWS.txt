@@ -1,6 +1,14 @@
 COLORS PARTY BY ESTELLE
 
-VERSION 0.10.0
+VERSION 0.10.1
+   Roue crantee en bas a gauche de l accueil : un clic ouvre les reglages,
+   meme en plein ecran, avec le code enregistre s il existe.
+   Canon USB et impression reelle actives par defaut, egalement a la premiere
+   ouverture d un ancien profil. Code, connexion et plein ecran conserves.
+   Une file DNP DS620 installee est preselectionnee ; jamais une imprimante PDF.
+   Si plusieurs files DNP sont installees, choisir la bonne dans les reglages.
+
+THEMES 0.10.0 CONSERVES
    by Estelle : Le Saphir, La Lavande, Le Cachemire, L Olivier, Le Citron,
    Le Velour, Le Sunset et Les Marmots, avec huit illustrations propres.
    Les incontournables : Colors Party, Halloween et Sous cloche.
@@ -13,7 +21,7 @@ VERSION 0.10.0
 
 PLEIN ECRAN 0.9.1 CONSERVE
    Plein ecran protege : fermeture et raccourcis courants bloques.
-   Retour aux reglages uniquement par maintien trois secondes en bas a gauche.
+   Retour aux reglages par la roue crantee de l accueil, sans maintien.
    Code demande si enregistre ; acces direct sans protection configuree.
    Le plein ecran est conserve au prochain lancement.
    Lire KIOSQUE_WINDOWS.md pour restreindre aussi Windows sur un compte dedie.
@@ -54,10 +62,13 @@ NOUVEAU PARCOURS 0.8
 1. Extraire tout le ZIP, puis lancer ColorsParty.exe.
    Ne pas lancer depuis l’aperçu du ZIP. Aucun SDK .NET à installer.
 
-2. ESSAI SANS MATERIEL
-   Par défaut : caméra locale, effet local, impression vers fichier, aucun appel payant.
+2. DEMARRAGE ET ESSAI SANS MATERIEL
+   Par defaut : Canon USB et impression reelle. Pour repeter sans materiel,
+   ouvrir la roue crantee, decocher Canon USB et Envoyer a l imprimante,
+   puis Enregistrer le materiel. Ce choix explicite est conserve.
+   Sans connexion en ligne, ce parcours local ne fait aucun appel payant.
    Choisir une ou quatre poses, Au naturel ou Métamorphose.
-   Métamorphose propose neuf univers et La Surprise du Chef.
+   Métamorphose propose dix sept univers et La Surprise du Chef.
    Démarrer, se placer dans la visée, puis On est prêts ! Chaque pose suit 3, 2, 1.
    Réglages permet de choisir vos propres photos locales.
    Imprimer écrit print-preview.jpg tant que l’envoi à l’imprimante reste désactivé.
@@ -76,13 +87,14 @@ NOUVEAU PARCOURS 0.8
 
 4. CANON ET DNP
    Fermer DSLR Booth et EOS Utility sans les désinstaller. Canon allumé, USB, JPEG.
-   Cocher Utiliser le Canon USB ; laisser SDK officiel décoché par défaut.
+   Utiliser le Canon USB est deja coche ; laisser SDK officiel decoche par defaut.
    Le pilote WPD actuel ne confirme pas de façon fiable l’autofocus du 4000D.
    Pour le premier essai : régler l’objectif en MF, faire la netteté à la distance
    des invités, puis cocher Mise au point manuelle vérifiée et enregistrer le matériel.
    Sans cette préparation, la capture WPD est bloquée. Tester la netteté sur le boîtier.
    Ne pas remplacer le pilote USB. Compatibilité 4000D encore à vérifier physiquement.
-   Choisir la file DNP DS620, papier 4x6, une copie, puis activer l’envoi réel.
+   La file DNP DS620 est choisie automatiquement si elle est unique et installee.
+   L envoi reel est deja actif. Verifier la file, le papier 4x6 et une copie.
    Vérifier une mire et une planche de quatre sur le papier avant la fête.
    Accepté par le spooler ne signifie pas encore imprimé. Pas de renvoi automatique.
 
@@ -90,7 +102,7 @@ NOUVEAU PARCOURS 0.8
    Reglages est visible en mode fenetre. Le code est facultatif, quatre caracteres.
    Cocher Protéger les réglages avec un code, saisir le code puis l’enregistrer.
    Activer le plein écran laisse les réglages ouverts ; les fermer pour les invités.
-   Maintenir trois secondes en bas à gauche pour les retrouver.
+   Sur l accueil, cliquer la roue crantee en bas a gauche pour les retrouver.
    Avec un code, il est demandé ; sans code, ouverture directe.
    F11, Echap et fermeture sont refuses, sans afficher le code.
    Alt+Tab, Alt+F4, Alt+Espace, les touches Windows et Ctrl+Maj+Echap sont bloques.
