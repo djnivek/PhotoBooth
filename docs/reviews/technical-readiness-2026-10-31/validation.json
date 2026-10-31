@@ -43,9 +43,40 @@
   },
   "final_local_suite": {
     "exit_code": 0,
-    "duration_seconds": 54.7,
-    "log_sha256": "17a011870ce116c6b9590b6abc0c34ad372a044ad0c39394f30479a854bfafbc",
+    "duration_seconds": 61.22,
+    "log_sha256": "0d23ed6f9a68f37124b1b161a9c0f72c5d87c92fc87eb81715eb1c5bb2019a16",
     "paid_api_calls": 0,
-    "hardware_used": false
+    "hardware_used": false,
+    "core_checks": 26,
+    "imaging_assertions": 231,
+    "runtime_checks": 72,
+    "print_preparation_checks": 36,
+    "canon_fake_transport_checks": 34,
+    "cloud_fake_http_checks": 91,
+    "headless_ui": "passed",
+    "deno_tests": 30,
+    "node_tests": 43
+  },
+  "cloud_guard_regression": {
+    "before": "failed: Canon without cloud exposes a silent rehearsal transformation",
+    "after": "passed: disabled with explanation; offline original capture reaches preview",
+    "photos_or_hardware_used": false
+  },
+  "impeccable": {
+    "changed_surface": "src/PhotoBooth.App/PartyScreens.cs",
+    "detector_findings": [],
+    "native_sizes": [
+      "1280x800",
+      "960x700"
+    ],
+    "review_scope": "cloud unavailable state only",
+    "visual_result": "ship",
+    "context_drift_repaired": false
+  },
+  "evidence_sha256": {
+    "docs/evidence/technical-readiness/after-1280x800.png": "9a6beafbc60bc915a345e26a338361eddb06fec812e216b4d1515d7aba8e2098",
+    "docs/evidence/technical-readiness/after-960x700.png": "7f97117dc9beec236acf2611fe34d40069fd36b785d94c8bc26255adeaef9157",
+    "docs/evidence/technical-readiness/before-1280x800.png": "084eb10a52132c10fcf18627da4a29996c309087e5dcf2849d6dbb62690f9f51",
+    "docs/evidence/technical-readiness/before-960x700.png": "6a397ba74367c6a7f57ddf57183f92d83a3c25cf5cd92e0ce84ab27b95977b40"
   }
 }

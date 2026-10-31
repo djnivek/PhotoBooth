@@ -88,6 +88,21 @@ try
         await controller.CancelAsync(); controlled.FocusReady.TrySetResult(); await run;
         Check(controlled.Shots == 0 && controller.Session!.Stage == SessionStage.Cancelled, "Cancellation during autofocus never fires the shutter");
     }
+    foreach(var (failStop,failPrepare) in new[]{(false,false),(true,false),(true,true)})
+    {
+        var store=new SessionStore(root);var faulty=new CleanupFailureCamera(store,failStop,failPrepare);var created=0;
+        await using var controller=new BoothController(store,()=>created++==0?faulty:new FixtureCamera(store),new RehearsalTransform(),(_,_)=>Task.CompletedTask);
+        await controller.BeginAsync(new(1,PhotoMode.Original));await controller.TakeAsync();
+        Check(controller.Session!.Stage==SessionStage.Failed,"Cleanup failure cannot escape the failure handler");
+        Check(controller.Message.Contains(failPrepare?"Primary focus failure":failStop?"visée":"Primary capture failure"),"Cleanup preserves the original guest-facing failure");
+        Check(!failStop || faulty.Shots==0,"A failed preview stop prevents the controller from asking for a shutter");
+        var path=Path.Combine(root,controller.Session.Id.ToString("N"),"session.json");var before=await File.ReadAllTextAsync(path);
+        using(var manifest=System.Text.Json.JsonDocument.Parse(before))
+            Check(manifest.RootElement.GetProperty("state").GetString()=="failed" && manifest.RootElement.GetProperty("cameraCleanupError").GetString()=="Camera close failure","Failure manifest retains the secondary cleanup diagnostic");
+        await controller.BeginAsync(new(1,PhotoMode.Original));
+        Check(controller.Session.Stage==SessionStage.Positioning && faulty.Disposals==1,"Next session starts after a failed close without disposing the old link twice");
+        Check(await File.ReadAllTextAsync(path)==before,"Starting again never rewrites the prior failure manifest");
+    }
     {
         var gate = KioskExitGate.Create("E629");
         for (var i = 0; i < 5; i++) gate.TryAuthorizeExit("0000");
@@ -130,6 +145,22 @@ sealed class DelayedConnectionCamera(bool failsAfterCancel):IPhotoCamera
     {await Task.Delay(Timeout.Infinite,token);yield break;}
     public Task<CapturedPhoto> CaptureAsync(Guid session,int shot,CancellationToken token)=>throw new InvalidOperationException("Unexpected shutter");
     public ValueTask DisposeAsync(){DisposedWhileConnecting|=connecting;Disposed=true;return ValueTask.CompletedTask;}
+}
+
+sealed class CleanupFailureCamera(SessionStore store,bool failStop,bool failPrepare):IPhotoCamera
+{
+    private readonly FixtureCamera inner=new(store);
+    public int Shots,Disposals;
+    public Task<CameraStatus> ConnectAsync(CancellationToken token)=>inner.ConnectAsync(token);
+    public async IAsyncEnumerable<LiveViewFrame> LiveViewAsync([System.Runtime.CompilerServices.EnumeratorCancellation]CancellationToken token)
+    {
+        try {await foreach(var frame in inner.LiveViewAsync(token))yield return frame;}
+        finally {if(failStop)throw new IOException("Preview stop failure");}
+    }
+    public Task<CapturedPhoto> CaptureAsync(Guid id,int shot,CancellationToken token)
+    {Shots++;throw new IOException("Primary capture failure");}
+    public Task PrepareCaptureAsync(CancellationToken token)=>failPrepare?Task.FromException(new IOException("Primary focus failure")):Task.CompletedTask;
+    public ValueTask DisposeAsync(){Disposals++;return ValueTask.FromException(new IOException("Camera close failure"));}
 }
 
 sealed class PreparationCamera(SessionStore store) : IPhotoCamera

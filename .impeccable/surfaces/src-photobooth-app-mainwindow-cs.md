@@ -79,4 +79,6 @@ Windows 0.3.0 package CI completed successfully on main d217c000d0cc6efce73c965d
 
 ## Delivery status
 
+Readiness 0.8.1 adds one local unavailable state: with Canon selected and cloud disabled, Au naturel is selected, Métamorphose uses the existing disabled control style, and the existing detail line reads « Métamorphose demande une connexion. ». Offline standard capture remains available. Local rehearsal still offers both choices. No palette, art, typography, spacing or motion changes. Native headless captures at 1280×800 and 960×700 are in `docs/evidence/technical-readiness/`; the new UI regression fails before the guard and passes afterward. The whole design context is not refreshed by this narrow hardening task.
+
 Current visual system remains in DESIGN.md and its schema-2 sidecar; this brief records the implemented sharing extension. Both system files are preserved. Context reported pre-existing sidecar drift, which is not repaired in this task; the explicitly requested approximate wait is recorded here as a scoped override of the older no-estimate wording. No code change or Git commit belongs to this documentation pass. Preserve the hardware, deployment and package distinctions above in release claims.

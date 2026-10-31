@@ -114,7 +114,7 @@ forfait non relu via MCP restreint. Aucun upgrade ni appel OpenAI pendant les v�
 ## Auto-test du paquet
 
 `ColorsParty.exe --self-test <dossier>` exerce les quatre combinaisons avec des dépendances
-fictives imposées : capture, montage, raster GDI, journal d’impression, ZIP avec originaux,
+fictives imposées : capture, montage, préparation du raster pour GDI (sans appel au spooler), journal d’impression, ZIP avec originaux,
 QR, PIN et stockage des credentials. Il ignore les réglages utilisateur pour ne jamais
 activer un appareil ni une API. Version et OS sont consignés dans `self-test.json`.
 

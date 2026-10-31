@@ -222,6 +222,22 @@ DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count
 Click("StartSession");Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);Click("TakePhotos");Until(()=>Find("NewSession") is not null,10000);
 viewerClock=viewerClock.AddMinutes(2);Pump(300);if(window.ResultReturnRunning||Find("NewSession") is null||window.GetVisualDescendants().Any(c=>c.Name=="NewSessionCountdown"))throw new Exception("Disabled mode regressed manual result flow");
 Click("PrintPreview");Click("NewSession");Until(()=>Find("StartSession") is not null,3000);window.Close();Pump(100);
+// A real-camera configuration must never silently select the rehearsal effect.
+var canonOffline=new BoothSettings {CanonCamera=true,CloudEnabled=false};
+var saveCanon=canonOffline.SaveAsync(Path.Combine(root,"booth-settings.json"));Until(()=>saveCanon.IsCompleted,3000);saveCanon.GetAwaiter().GetResult();
+var localCameraStarts=0;
+window=new MainWindow((_,_)=>Task.CompletedTask,refreshCatalogOnOpen:false,
+    cameraFactory:store=>{localCameraStarts++;return new FixtureCamera(store);});
+window.Show();Pump(100);Capture("canon-offline-home-1280x800.png");
+window.Width=960;window.Height=700;Pump(100);Capture("canon-offline-home-960x700.png");AssertHomeFits();
+if(window.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,"Métamorphose")).IsEnabled)
+    throw new Exception("Canon without cloud exposes a silent rehearsal transformation.");
+if(!window.GetVisualDescendants().OfType<TextBlock>().Any(t=>t.Text=="Métamorphose demande une connexion."))
+    throw new Exception("Unavailable transformation needs an honest explanation.");
+ClickLabel("Une photo");Click("StartSession");Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);Click("TakePhotos");
+Until(()=>Find("PrintPreview") is not null,10000);
+if(localCameraStarts!=1)throw new Exception("Original capture must remain available without the cloud.");
+window.Close();Pump(100);
 Console.WriteLine("PASS UI: native flows, cloud offline, early QR, visible loading and wait copy, background completion during next guest, no share retry after success, prominent new-session action. No network, paid API or hardware.");
 Directory.Delete(root,true);
 [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]

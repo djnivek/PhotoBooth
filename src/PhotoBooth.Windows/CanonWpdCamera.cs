@@ -63,7 +63,13 @@ public sealed class CanonWpdCamera(SessionStore store,ICanonConnection? connecti
         finally
         {
             using var stop=new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            try {await link.StopPreviewAsync(stop.Token);} finally {preview=false;}
+            try {await link.StopPreviewAsync(stop.Token);}
+            catch(Exception exception)
+            {
+                prepared=false;
+                throw new IOException("Le Canon n’a pas confirmé l’arrêt de la visée. Aucun déclenchement n’a été envoyé.",exception);
+            }
+            finally {preview=false;}
         }
     }
 
@@ -97,7 +103,7 @@ public sealed class CanonWpdCamera(SessionStore store,ICanonConnection? connecti
                 try
                 {
                     var jpeg=await link.DownloadAsync(handle,deadline.Token);
-                    var bytes=PhotoProcessor.Normalize(jpeg);
+                    var bytes=await Task.Run(()=>PhotoProcessor.Normalize(jpeg),deadline.Token);
                     var asset=await store.SavePhotoAsync(sessionId,bytes,deadline.Token);
                     await link.CompleteAsync(handle,deadline.Token);
                     return new(Guid.NewGuid(),asset.Key);

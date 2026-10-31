@@ -50,8 +50,11 @@ public sealed partial class MainWindow
         return new Image { Source = bitmap, Width = width, Height = height, Stretch = Stretch.Uniform };
     }
 
+    private bool MetamorphosisAvailable => !boothSettings.CanonCamera || cloud is not null;
+
     private void RenderHome()
     {
+        if (!MetamorphosisAvailable) mode = PhotoMode.Original;
         resultReturn.Stop();
         if (pendingCatalog is not null) { ApplyCatalog(pendingCatalog); pendingCatalog = null; }
         StopProcessing(); sharingCancellation?.Cancel(); sharingCancellation?.Dispose(); sharingCancellation = null;
@@ -72,9 +75,14 @@ public sealed partial class MainWindow
         choices.Children.Add(ChoiceRow(("Une photo", photoCount == 1, () => { photoCount = 1; RenderHome(); }),
             ("Quatre photos", photoCount == 4, () => { photoCount = 4; RenderHome(); })));
         choices.Children.Add(Text("À votre façon", 20, FontWeight.SemiBold));
-        choices.Children.Add(ChoiceRow(("Au naturel", mode == PhotoMode.Original, () => { mode = PhotoMode.Original; RenderHome(); }),
-            ("Métamorphose", mode == PhotoMode.Surprise, () => { mode = PhotoMode.Surprise; RenderStyles(); })));
-        var detail = Text(mode == PhotoMode.Original ? "Vos photos, telles quelles." : catalog.Find(styleChoice).Label, 18);
+        var modes = ChoiceRow(("Au naturel", mode == PhotoMode.Original, () => { mode = PhotoMode.Original; RenderHome(); }),
+            ("Métamorphose", mode == PhotoMode.Surprise, () => { mode = PhotoMode.Surprise; RenderStyles(); }));
+        var metamorphosis = (Button)modes.Children[1];
+        metamorphosis.IsEnabled = MetamorphosisAvailable;
+        if (!MetamorphosisAvailable) ToolTip.SetTip(metamorphosis,"Activez la connexion en ligne dans les réglages.");
+        choices.Children.Add(modes);
+        var detail = Text(!MetamorphosisAvailable ? "Métamorphose demande une connexion." :
+            mode == PhotoMode.Original ? "Vos photos, telles quelles." : catalog.Find(styleChoice).Label, 18);
         detail.Foreground = Muted; choices.Children.Add(detail);
         var start = Button("Démarrer", BeginChosenSessionAsync, primary: true); start.Name = "StartSession";
         start.IsEnabled = mode == PhotoMode.Original || catalog.Styles.Length > 0;
@@ -85,12 +93,15 @@ public sealed partial class MainWindow
 
     private async Task BeginChosenSessionAsync()
     {
+        if (mode == PhotoMode.Surprise && !MetamorphosisAvailable)
+            throw new InvalidOperationException("Activez la connexion en ligne dans les réglages pour utiliser Métamorphose avec le Canon.");
         sessionStyle = catalog.Find(styleChoice);
         await controller.BeginAsync(new SessionOptions(photoCount, mode, styleChoice: styleChoice));
     }
 
     private void RenderStyles()
     {
+        if (!MetamorphosisAvailable) {mode = PhotoMode.Original; RenderHome(); return;}
         StopProcessing(); screen = "styles";
         var layout = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
         var title = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 0, 18) };

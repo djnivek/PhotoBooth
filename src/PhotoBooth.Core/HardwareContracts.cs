@@ -19,6 +19,11 @@ public interface IPhotoCamera : IAsyncDisposable
 
 public sealed record PrintSubmission(string SpoolJobId);
 
+// Only adapters that can prove no spool submission was attempted may use this.
+// An ambiguous StartDoc or later failure must remain an ordinary exception.
+public sealed class PrintNotSubmittedException(string message, Exception? inner = null)
+    : IOException($"Aucune impression n’a été envoyée. {message} Corrigez le réglage, puis appuyez à nouveau sur Imprimer.", inner);
+
 /// <summary>
 /// Windows adapter. Resolve a trusted asset reference, one page, named printer, 4x6 media.
 /// A successful submission means accepted by the spooler, not a physical print.

@@ -32,6 +32,19 @@ internal static class CanonChecks
                 Check(connection.Stops==4,"Live view stopped between each capture");
             }
             Check(connection.Disposed,"Camera released after session");
+            foreach(var hang in new[]{false,true})
+            {
+                var failedStop=new FakeCanon {FailStop=!hang,HangStop=hang};
+                await using var camera=new CanonWpdCamera(store,failedStop);
+                await camera.ConnectAsync(default);
+                var frames=camera.LiveViewAsync(default).GetAsyncEnumerator();
+                await frames.MoveNextAsync();await camera.PrepareCaptureAsync(default);
+                try {await frames.DisposeAsync();throw new Exception("Failed preview stop accepted");}
+                catch(IOException) {passed++;}
+                try {await camera.CaptureAsync(Guid.NewGuid(),0,default);throw new Exception("Shutter accepted after failed preview stop");}
+                catch(InvalidOperationException) {passed++;}
+                Check(failedStop.Triggers==0,"Preview failure or stop deadline prevents every shutter request");
+            }
             var focusFailure = new FakeCanon { FailFocus = true };
             await using (var camera = new CanonWpdCamera(store, focusFailure))
             {
@@ -79,11 +92,17 @@ internal static class CanonChecks
     private sealed class FakeCanon:ICanonConnection
     {
         public event Action<uint>? ObjectReady;
-        public int Triggers,Completed,Stops,Cancelled;public bool Disposed,Silent,FailTrigger,RawFirst,FailFocus;
+        public int Triggers,Completed,Stops,Cancelled;public bool Disposed,Silent,FailTrigger,RawFirst,FailFocus,FailStop,HangStop;
         private bool live;
         public Task<string> OpenAsync(CancellationToken token)=>Task.FromResult("Fake Canon");
         public Task StartPreviewAsync(CancellationToken token){live=true;return Task.CompletedTask;}
-        public Task StopPreviewAsync(CancellationToken token){live=false;Stops++;return Task.CompletedTask;}
+        public async Task StopPreviewAsync(CancellationToken token)
+        {
+            Stops++;
+            if(FailStop)throw new IOException("Preview stop rejected");
+            if(HangStop)await Task.Delay(Timeout.Infinite,token);
+            live=false;
+        }
         public Task<byte[]?> ReadPreviewAsync(CancellationToken token)=>Task.FromResult<byte[]?>(FixtureCamera.CreateFixture(3));
         public Task PrepareFocusAsync(bool manualFocusConfirmed,CancellationToken token) { if(!live)throw new Exception("Focus requires live view"); if(FailFocus)throw new IOException("Focus not confirmed"); return Task.CompletedTask; }
         public Task TriggerAsync(CancellationToken token)

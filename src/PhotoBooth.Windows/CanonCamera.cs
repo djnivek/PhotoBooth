@@ -91,6 +91,7 @@ public sealed class CanonCamera : IPhotoCamera
         var completion = new TaskCompletionSource<byte[]>(TaskCreationOptions.RunContinuationsAsynchronously);
         await Invoke(() =>
         {
+            if (!sessionOpen || live) throw new InvalidOperationException("La visée Canon doit être arrêtée avant la photo.");
             if (pendingCapture is not null) throw new InvalidOperationException("Une capture Canon est déjà en attente.");
             pendingCapture = completion;
             try { Check(Native.EdsSendCommand(camera, 0, 0), "Déclencher la photo"); }
@@ -101,7 +102,8 @@ public sealed class CanonCamera : IPhotoCamera
         try { jpeg = await completion.Task.WaitAsync(TimeSpan.FromSeconds(35), token); }
         catch (TimeoutException) { throw new IOException("Photo non reçue après 35 secondes. Vérifiez mise au point, batterie, câble et mode JPEG. Aucun second déclenchement automatique."); }
         finally { await Invoke(() => { if (pendingCapture == completion) pendingCapture = null; return true; }, CancellationToken.None); }
-        var asset = await store.SavePhotoAsync(sessionId, PhotoProcessor.Normalize(jpeg), token);
+        var normalized = await Task.Run(() => PhotoProcessor.Normalize(jpeg), token);
+        var asset = await store.SavePhotoAsync(sessionId, normalized, token);
         return new CapturedPhoto(Guid.NewGuid(), asset.Key);
     }
 

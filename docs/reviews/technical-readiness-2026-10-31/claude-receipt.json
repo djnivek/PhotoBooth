@@ -1,0 +1,29 @@
+{
+  "cli_version": "2.1.283",
+  "model_requested": "claude-opus-5-5",
+  "models_observed": [
+    "claude-opus-5-5"
+  ],
+  "effort": "max",
+  "max_output_tokens": 128000,
+  "exit_code": 0,
+  "result_received": true,
+  "is_error": false,
+  "duration_ms": 1204768,
+  "num_turns": 81,
+  "reviewed_commit": "0b447de67d4d692965a778726e99369688a30165",
+  "review_scope_sha256": "81211f0e10ef62cbbbfc483d733d33f0b8cfd24d9cc516286a6fc4ecc2ad8cca",
+  "snapshot_manifest_sha256": "c82b9fa4a911fc43cf9abac3690c8df7d9f2cef5ebf4254f3ef4484376130ec1",
+  "read_only_tools": {
+    "Glob": 3,
+    "Read": 48,
+    "Grep": 6,
+    "WebFetch": 23
+  },
+  "shell_or_mutation_tools": false,
+  "credentials_included": false,
+  "personal_photos_included": false,
+  "tests_run_by_reviewer": false,
+  "hardware_seen_by_reviewer": false,
+  "report_sha256": "0034bc5d3d23c96222f173720874df16567fa8285d6a76fb450059bd37b0a273"
+}

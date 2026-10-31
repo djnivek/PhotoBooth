@@ -43,6 +43,7 @@ public sealed class BoothController : IAsyncDisposable
     private TaskCompletionSource? firstLiveFrame;
     private long lastLiveTicks;
     private Exception? liveFailure;
+    private Exception? cameraCleanupFailure;
     private bool taking;
     private bool connecting;
     public Session? Session { get; private set; }
@@ -71,6 +72,7 @@ public sealed class BoothController : IAsyncDisposable
             await CloseCameraAsync();
             sessionCancellation?.Dispose(); sessionCancellation = new();
             Session = new Session(options); Sheet = null; FinalAssets = [];
+            cameraCleanupFailure = null;
             await ObserveAsync("session_started");
             Message = "Connexion à la caméra…"; Notify();
             camera = cameraFactory();
@@ -112,6 +114,8 @@ public sealed class BoothController : IAsyncDisposable
                 EnsureLiveViewFresh();
                 // Release the preview stream before issuing the shutter command.
                 await StopLiveViewAsync();
+                if (liveFailure is not null)
+                    throw new IOException("L’arrêt de la visée a échoué. Vérifiez le Canon avant de recommencer.", liveFailure);
                 Message = "Gardez la pose…"; Notify();
                 var capture = await camera.CaptureAsync(Session.Id, Session.Captures.Count, token);
                 token.ThrowIfCancellationRequested();
@@ -186,7 +190,12 @@ public sealed class BoothController : IAsyncDisposable
         var sheet = Sheet ?? throw new InvalidOperationException("La planche n’est pas prête.");
         await ReadPrintBytesAsync(session, sheet, token);
         var journalPath = Path.Combine(store.Root, session.Id.ToString("N"), "print.json");
-        if (File.Exists(journalPath)) throw new InvalidOperationException("Une impression a déjà été demandée. Vérifiez la file Windows avant toute nouvelle tentative.");
+        if (File.Exists(journalPath))
+        {
+            var previous = System.Text.Json.JsonSerializer.Deserialize<PrintJournal>(await File.ReadAllBytesAsync(journalPath, token));
+            if (previous is not {State:"not_submitted"} || previous.SheetKey != sheet.Key || previous.Sha256 != sheet.Sha256)
+                throw new InvalidOperationException("Une impression a déjà été demandée. Vérifiez la file Windows avant toute nouvelle tentative.");
+        }
         var request = session.RequestPrint(); // guards concurrent clicks before the first await
         await store.WritePrintJournalAsync(session.Id, new(request.Id, sheet.Key, sheet.Sha256, "requested", DateTimeOffset.UtcNow), token);
         try
@@ -195,6 +204,12 @@ public sealed class BoothController : IAsyncDisposable
             await store.WritePrintJournalAsync(session.Id, new(request.Id, sheet.Key, sheet.Sha256, "submitted", DateTimeOffset.UtcNow, submission.SpoolJobId));
             session.MarkPrintSubmitted(request.Id, submission.SpoolJobId); Notify();
             return submission;
+        }
+        catch (PrintNotSubmittedException)
+        {
+            // Persist proof of no submission before permitting a new explicit click.
+            await store.WritePrintJournalAsync(session.Id, new(request.Id, sheet.Key, sheet.Sha256, "not_submitted", DateTimeOffset.UtcNow));
+            session.MarkPrintNotSubmitted(request.Id); Notify(); throw;
         }
         catch
         {
@@ -272,11 +287,17 @@ public sealed class BoothController : IAsyncDisposable
         liveTask = null; liveCancellation?.Dispose(); liveCancellation = null;
     }
     private async Task CloseCameraAsync()
-    { await StopLiveViewAsync(); if (camera is not null) { await camera.DisposeAsync(); camera = null; } }
+    {
+        await StopLiveViewAsync();
+        var closing = camera; camera = null;
+        if (closing is null) return;
+        try { await closing.DisposeAsync(); }
+        catch (Exception exception) { cameraCleanupFailure = exception; }
+    }
     private async Task FailAsync(Exception exception)
     {
         if (Session is { Stage: not (SessionStage.Ready or SessionStage.Failed or SessionStage.Cancelled) }) Session.Fail(exception.GetType().Name);
-        Message = exception.Message; await CloseCameraAsync();
+        await CloseCameraAsync(); Message = exception.Message;
         await SaveManifestAsync("failed", CancellationToken.None); await ObserveAsync("session_failed"); Notify();
     }
     private Task ObserveAsync(string kind,int shot=-1) => telemetry is null || Session is null ? Task.CompletedTask :
@@ -284,7 +305,7 @@ public sealed class BoothController : IAsyncDisposable
     private Task SaveManifestAsync(string state, CancellationToken token) => Session is null ? Task.CompletedTask :
         store.WriteManifestAsync(Session.Id, new { schema = 1, state, Session.Id, Session.Options,
             Session.StyleId, Session.UsedOriginalFallback, captures = Session.Captures, final = FinalAssets, sheet = Sheet,
-            updatedAt = DateTimeOffset.UtcNow }, token);
+            cameraCleanupError = cameraCleanupFailure?.Message, updatedAt = DateTimeOffset.UtcNow }, token);
     private void Notify() => Changed?.Invoke();
     public async ValueTask DisposeAsync() { await CancelAsync(); await CloseCameraAsync(); sessionCancellation?.Dispose(); if (transform is IDisposable disposable) disposable.Dispose(); }
 }

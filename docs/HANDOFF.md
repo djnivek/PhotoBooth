@@ -4,7 +4,7 @@
 
 Main 0.8.0 récupéré sur `0b447de`, admin persistant redémarré et accès HTTPS Tailscale authentifié vérifié. Le code admin reste identique. La revue technique porte sur Canon, DNP, impression, réseau, projection et performances ; [dossier et recette de branchement](reviews/technical-readiness-2026-10-31/README.md).
 
-Correctif 0.8.1 : les contrôleurs de séances terminées ne restent plus conservés en mémoire. La régression a été reproduite avant correction et le parcours UI avec génération en arrière-plan passe après correction. Ni appel OpenAI payant ni modification du stockage/quota. Le Canon 4000D en MF confirmé, la sortie papier DS620 et le lancement sur le Windows 10 exact restent des validations physiques à faire. Les sections de versions ci-dessous sont un historique ; les commandes de reprise utilisent la version courante.
+Correctifs 0.8.1 : aucun déclenchement après une erreur d’arrêt de visée, précontrôle d’impression récupérable sans doublon, fermeture caméra robuste, normalisation hors interface, Métamorphose bloqué avec Canon sans cloud, contrôleurs terminés libérés de la mémoire. La régression a été reproduite avant correction et le parcours UI avec génération en arrière-plan passe après correction. Ni appel OpenAI payant ni modification du stockage/quota. Le Canon 4000D en MF confirmé, la sortie papier DS620 et le lancement sur le Windows 10 exact restent des validations physiques à faire. Les sections de versions ci-dessous sont un historique ; les commandes de reprise utilisent la version courante.
 
 ## Projection 0.8 : intégration du dernier main
 

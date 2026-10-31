@@ -152,6 +152,13 @@ public sealed class Session
         PrintStage = PrintStage.NeedsOperator;
     }
 
+    public void MarkPrintNotSubmitted(Guid requestId)
+    {
+        RequirePrintRequest(requestId);
+        PrintRequest = null;
+        PrintStage = PrintStage.NotRequested;
+    }
+
     public void Fail(string code)
     {
         if (Stage is SessionStage.Ready or SessionStage.Cancelled or SessionStage.Failed)

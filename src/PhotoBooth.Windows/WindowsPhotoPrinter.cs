@@ -10,11 +10,16 @@ public sealed class WindowsPhotoPrinter(SessionStore store, StoredAsset sheet, s
 {
     public async Task<PrintSubmission> SubmitAsync(PrintRequest request, CancellationToken token)
     {
-        if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("L’impression réelle demande Windows.");
-        if (sheet.Key != request.SheetAssetKey) throw new InvalidDataException("Planche différente de l’aperçu.");
-        var jpeg = await store.ReadVerifiedAsync(sheet, token);
-        var pixels = PrintRaster.ToBgra(jpeg);
-        token.ThrowIfCancellationRequested();
+        byte[] pixels;
+        try
+        {
+            if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("L’impression réelle demande Windows.");
+            if (sheet.Key != request.SheetAssetKey) throw new InvalidDataException("Planche différente de l’aperçu.");
+            var jpeg = await store.ReadVerifiedAsync(sheet, token);
+            pixels = await Task.Run(() => PrintRaster.ToBgra(jpeg), token);
+            token.ThrowIfCancellationRequested();
+        }
+        catch (Exception exception) { throw new PrintNotSubmittedException(exception.Message, exception); }
         // Once GDI starts, cancellation cannot establish whether paper was emitted.
         return await Task.Run(() => Submit(request, pixels), CancellationToken.None);
     }
@@ -41,12 +46,12 @@ public sealed class WindowsPhotoPrinter(SessionStore store, StoredAsset sheet, s
 
     private PrintSubmission Submit(PrintRequest request, byte[] pixels)
     {
-        if (string.IsNullOrWhiteSpace(printerName) || !ListPrinters().Contains(printerName))
-            throw new InvalidOperationException("Sélectionnez une imprimante installée dans les réglages.");
-        if (!Native.OpenPrinter(printerName, out var printer, IntPtr.Zero)) throw new Win32Exception();
-        IntPtr devmode = IntPtr.Zero, dc = IntPtr.Zero; var started = false;
+        IntPtr printer = IntPtr.Zero, devmode = IntPtr.Zero, dc = IntPtr.Zero; var started = false; var submissionAttempted = false;
         try
         {
+            if (string.IsNullOrWhiteSpace(printerName) || !ListPrinters().Contains(printerName))
+                throw new InvalidOperationException("Sélectionnez une imprimante installée dans les réglages.");
+            if (!Native.OpenPrinter(printerName, out printer, IntPtr.Zero)) throw new Win32Exception();
             var size = Native.DocumentProperties(IntPtr.Zero, printer, printerName, IntPtr.Zero, IntPtr.Zero, 0);
             if (size < Marshal.SizeOf<Native.DevMode>()) throw new InvalidDataException("DEVMODE invalide.");
             devmode = Marshal.AllocHGlobal(size);
@@ -71,6 +76,7 @@ public sealed class WindowsPhotoPrinter(SessionStore store, StoredAsset sheet, s
                 throw new InvalidDataException($"Le pilote annonce {physicalWidth:F2}×{physicalHeight:F2} pouces. Vérifiez le papier 4×6.");
             var place = PrintRaster.Fit(geometry);
             var info = new Native.DocInfo { Size = Marshal.SizeOf<Native.DocInfo>(), Name = $"EstellArt {request.Id:N}" };
+            submissionAttempted = true; // From this boundary onward, never classify failure as safe to resubmit.
             var job = Native.StartDoc(dc, ref info);
             if (job <= 0) throw new Win32Exception(); started = true;
             if (Native.StartPage(dc) <= 0) throw new Win32Exception();
@@ -83,12 +89,14 @@ public sealed class WindowsPhotoPrinter(SessionStore store, StoredAsset sheet, s
             started = false;
             return new PrintSubmission(job.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
+        catch (Exception exception) when (!submissionAttempted)
+        { throw new PrintNotSubmittedException(exception.Message, exception); }
         finally
         {
             if (started && dc != IntPtr.Zero) Native.AbortDoc(dc);
             if (dc != IntPtr.Zero) Native.DeleteDC(dc);
             if (devmode != IntPtr.Zero) Marshal.FreeHGlobal(devmode);
-            Native.ClosePrinter(printer);
+            if (printer != IntPtr.Zero) Native.ClosePrinter(printer);
         }
     }
 
