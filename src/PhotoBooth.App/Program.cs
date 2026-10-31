@@ -5,11 +5,13 @@ namespace PhotoBooth.App;
 internal static class Program
 {
     internal static string? SmokeOutput { get; private set; }
+    internal static bool ForceKiosk { get; private set; }
     [STAThread]
     public static int Main(string[] args)
     {
         try
         {
+            ForceKiosk = args.Contains("--kiosk");
             if(args.FirstOrDefault()=="--self-test")
             {
                 if(args.Length!=2)throw new ArgumentException("Usage: ColorsParty.exe --self-test <output-directory>");

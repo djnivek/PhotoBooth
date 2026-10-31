@@ -1,6 +1,6 @@
 # Colors Party by Estelle · PhotoBooth
 
-Photomaton personnel pour l’anniversaire d’Estelle, le 31 octobre 2026. Dépôt privé.
+Photomaton personnel pour l’anniversaire d’Estelle, le 31 octobre 2026.
 
 **Paquet Windows disponible.** 1 ou 4 poses, visée, décompte animé de 3 secondes,
 Au naturel ou Métamorphose, aperçu, une planche 4×6, impression facultative et QR de téléchargement.
@@ -8,17 +8,17 @@ Le matériel cible est un Canon EOS 4000D et une DNP DS620 sous Windows 10 Pro 2
 
 ## Commencer
 
-- [Télécharger Colors Party by Estelle pour Windows](https://github.com/djnivek/PhotoBooth/releases/tag/v0.3.1) : extraire le ZIP puis lancer `ColorsParty.exe` ; dépôt privé, connexion GitHub requise.
+- [Télécharger Colors Party by Estelle pour Windows](https://github.com/djnivek/PhotoBooth/releases/latest) : extraire le ZIP puis lancer `ColorsParty.exe` ; une connexion GitHub reste nécessaire tant que le dépôt est privé.
 - [Captures de l’interface](docs/evidence/colors-party/README.md), [galerie avant/après et preuves0.3.1](docs/evidence/offline-gallery/README.md).
 - [Handoff actif](docs/HANDOFF.md) : état exact, reprise sur PC et éléments manquants.
 - [Progression et PR](docs/PROGRESS.md) : lots fusionnés et portes restantes.
-- [Recette Windows](docs/REPRISE_WINDOWS.md) : répétition ce soir, matériel demain.
+- [Recette Windows](docs/REPRISE_WINDOWS.md) : installation et essais sur le PC de la salle.
 - [Validation](docs/VALIDATION.md) : preuves, commandes, limites.
 
 Par défaut, tout est simulé : aucune caméra, aucune impression et aucun appel payant.
 Dans Réglages, on peut sélectionner des photos locales pour répéter le vrai parcours.
 Le bouton « Imprimer » exporte ce même JPEG tant que l’envoi à l’imprimante est désactivé.
-Métamorphose propose six univers illustrés et La Surprise du Chef. Les réglages actualisent le catalogue depuis le serveur sans reconstruire l’application.
+Métamorphose propose neuf univers illustrés et La Surprise du Chef. Pour quatre photos, sélectionner de un à quatre univers répartis de façon équilibrée. Les catégories sont by Estelle, Les incontournables et Autres ; les sept tables attendent leurs vrais noms. Les réglages actualisent le catalogue depuis le serveur sans reconstruire l’application.
 Voir [la gestion des univers](docs/UNIVERS.md).
 
 ```sh
@@ -33,9 +33,11 @@ Ces essais ne remplacent pas le lancement sur Windows 10 ni les périphériques 
 ## En ligne
 
 La clé `OPENAI_API_KEY` appartient aux secrets du projet Supabase, jamais à l’application.
-La borne utilise un code distinct, protégé avec DPAPI sur Windows. OpenAI est appelé par le serveur
-en arrière-plan, avec `gpt-image-2.5-sunburst`, qualité `xhigh`, une édition par pose et deux en parallèle.
-L’original est envoyé une fois et fourni au modèle par une URL signée temporaire.
+La borne utilise un code distinct, protégé avec DPAPI sur Windows. Le serveur appelle directement
+Images Edits avec `gpt-image-2.5-sunburst`, qualité `medium`, sortie `1024x1024` et une édition par pose.
+Jusqu’à huit générations sont partagées entre les séances, avec deux uploads et deux downloads simultanés.
+Une copie privée limitée à 1536 pixels, JPEG90 sans recadrage ni agrandissement, est fournie au modèle
+par une URL signée temporaire ; les originaux sont archivés séparément.
 Le ZIP contient les résultats, la planche et les originaux des séances IA.
 
 Le QR ouvre une galerie hébergée sur Vercel, avec les originaux et métamorphoses réunis par pose, un téléchargement individuel et le ZIP complet. Les photos restent privées dans Supabase. Le partage réel et les dix fichiers signés ont été vérifiés avec des mires, sans génération. Aucun abonnement supplémentaire n’a été activé.
@@ -44,9 +46,9 @@ Sans réseau, Au naturel prend les photos, prépare la planche et imprime locale
 
 L’API exige le secret de la borne pour créer une image. Les jetons QR ne permettent que la lecture. Plafond de soirée, cadence, travaux simultanés et arrêt administrateur sont imposés en base, avant tout appel fournisseur. Voir [la sécurité et les procédures opérateur](docs/SECURITY.md).
 
-**Encore nécessaires :** clé OpenAI et essai manuel payant, exécution Windows 10 et vraies
+**À valider dans la salle :** portrait Métamorphose, QR, verrouillage Windows 10 et vraies
 liaisons caméra/imprimante. La connexion Canon utilise le pilote Windows existant sans SDK
-propriétaire par défaut ; sa compatibilité EOS4000D doit être vérifiée sur l’appareil. Le plein écran utilise un code facultatif de quatre caractères et un maintien de trois secondes dans le coin inférieur gauche pour les réglages. Il ne neutralise pas les commandes système Windows.
+propriétaire par défaut ; sa compatibilité EOS4000D doit être vérifiée sur l’appareil. Le plein écran utilise un code facultatif de quatre caractères et un maintien de trois secondes dans le coin inférieur gauche pour les réglages. Les sorties courantes au clavier sont bloquées en plein écran ; la protection de Windows lui-même exige un compte kiosque dédié, décrit dans [KIOSQUE_WINDOWS.md](docs/KIOSQUE_WINDOWS.md).
 
 Le pilote WPD ne confirme pas encore l’autofocus du 4000D : le premier essai nécessite une mise au point manuelle vérifiée dans les réglages ou la voie du SDK officiel.
 

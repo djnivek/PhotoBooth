@@ -1,6 +1,15 @@
 COLORS PARTY BY ESTELLE
 
-VERSION 0.9.0
+VERSION 0.9.1
+   Plein ecran protege : fermeture et raccourcis courants bloques.
+   Retour aux reglages uniquement par maintien trois secondes en bas a gauche.
+   Code demande si enregistre ; acces direct sans protection configuree.
+   Le plein ecran est conserve au prochain lancement.
+   Lire KIOSQUE_WINDOWS.md pour restreindre aussi Windows sur un compte dedie.
+   Univers regroupes : by Estelle, Les incontournables, Autres.
+   Les sept themes des tables attendent leurs noms. Les neuf actuels restent dans Autres.
+
+SELECTION DES UNIVERS 0.9
    Metamorphose propose neuf univers et La Surprise du Chef.
    Une photo : choisir un univers. Quatre photos : choisir de un a quatre univers
    avant de poser. Avec quatre choix, une photo par univers. Avec trois choix,
@@ -68,13 +77,16 @@ NOUVEAU PARCOURS 0.8
    Accepté par le spooler ne signifie pas encore imprimé. Pas de renvoi automatique.
 
 5. REGLAGES ET PLEIN ECRAN
-   Réglages est visible au démarrage. Le code est facultatif, quatre caractères.
+   Reglages est visible en mode fenetre. Le code est facultatif, quatre caracteres.
    Cocher Protéger les réglages avec un code, saisir le code puis l’enregistrer.
    Activer le plein écran laisse les réglages ouverts ; les fermer pour les invités.
    Maintenir trois secondes en bas à gauche pour les retrouver.
    Avec un code, il est demandé ; sans code, ouverture directe.
-   F11, Echap et fermeture demandent aussi le code configuré pour sortir.
-   Les raccourcis système Windows ne sont pas neutralisés.
+   F11, Echap et fermeture sont refuses, sans afficher le code.
+   Alt+Tab, Alt+F4, Alt+Espace, les touches Windows et Ctrl+Maj+Echap sont bloques.
+   Quitter le plein ecran depuis les reglages pour retrouver une fenetre normale.
+   Ctrl+Alt+Suppr et la protection du bureau exigent le kiosque Windows :
+   suivre KIOSQUE_WINDOWS.md et tester sur le compte dedie de la borne.
 
 DONNEES ET REPRISE
    Photos et réglages restent dans %LOCALAPPDATA%\EstellArt pour compatibilité.

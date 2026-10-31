@@ -46,7 +46,7 @@ Six built-in choices are immediately available. Fetch public metadata once in th
 
 ## Operator access
 
-Settings button visible in windowed mode. Optional four-character code. Entering fullscreen keeps settings open. Once dismissed, hold the lower-left corner for three seconds; authenticate if a code is configured. Short hold, movement away or cancellation must not open settings. Windows system shortcuts are outside this application lock.
+Settings button visible in windowed mode. Optional four-character code. Entering fullscreen keeps settings open. Once dismissed, hold the lower-left corner for three seconds; authenticate if a code is configured. Short hold, movement away or cancellation must not open settings. Common Windows desktop shortcuts are filtered in version 0.9.1; secure desktop and system access still require Windows kiosk policies.
 
 ## Evidence and limits
 
@@ -81,3 +81,9 @@ Manual or automatic departure records an idempotent projection release intent. A
 A new complete session receives a 15-second announcement. A one-photo session then shows its photograph for 30 seconds; a four-photo session shows each pose in order for 15 seconds. Queued sessions never interrupt the current session. Between sessions the viewer shows random photographs from its library and yields to the next complete session. It caches photographs only in memory, bounded to eight sessions, and retries interrupted connections. A disabled state clears displayed photographs and cached blobs. Invalid links, loading, empty and disconnected states have explicit messages.
 
 The viewer capability is distinct from booth credentials and guest-gallery links and is supplied in the URL fragment. Viewer endpoints only read eligible published assets; they do not call or retry a generation provider. The viewer extends the approved Colors Party identity: complete photographs fit without cropping on the dark stage, and universe/pose captions remain entirely in a cream footer. Its timing, responsive composition and evidence are recorded in [.impeccable/surfaces/web-viewer.md](.impeccable/surfaces/web-viewer.md). The finish review has disposition **ship** after moving the caption out of the photograph field. The eight required captures use synthetic geometric photographs and a fake native QR; they establish layout only, not real-gallery access, portrait fidelity or physical-device behavior.
+
+## Fullscreen and theme categories (0.9.1)
+
+Guest fullscreen refuses close, Escape and F11 without opening authentication, enforces a borderless topmost non-minimizable window, and temporarily filters common Windows desktop shortcuts while this process owns focus. Only the existing three-second lower-left hold opens operator access: saved code when configured, direct settings when no code exists. The preference survives restart and --kiosk forces it at launch. The filter is removed on authorized exit and process shutdown. This is not an OS kiosk boundary: Assigned Access on the venue PC's separate standard account is needed for desktop/task-manager protection; Ctrl+Alt+Delete and physical power remain outside this app. See docs/KIOSQUE_WINDOWS.md. No system policy is applied on the development PC.
+
+The universe picker groups the server catalog into by Estelle, Les incontournables and Autres, preserving order within each group and selections across groups. Existing metadata defaults to Autres. The seven table themes and the essential-theme ranking await Kevin's actual names and choices. Existing nine themes and balanced per-pose allocation from main are preserved. Unknown artwork continues to use a local fallback. Categorized and large-catalog captures are synthetic UI evidence, not paid image results.

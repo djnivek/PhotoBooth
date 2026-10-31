@@ -1,5 +1,5 @@
 param(
-    [ValidatePattern('^\d+\.\d+\.\d+(-[A-Za-z0-9.-]+)?$')][string]$Version = '0.9.0',
+    [ValidatePattern('^\d+\.\d+\.\d+(-[A-Za-z0-9.-]+)?$')][string]$Version = '0.9.1',
     [string]$OutputRoot = 'artifacts/package'
 )
 $ErrorActionPreference = 'Stop'
@@ -20,6 +20,8 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Windows publication failed' }
     Copy-Item docs/DEMARRAGE_WINDOWS.txt (Join-Path $stage 'LISEZ-MOI.txt')
     Copy-Item THIRD_PARTY_NOTICES.md $stage
+    Copy-Item docs/KIOSQUE_WINDOWS.md $stage
+    Copy-Item scripts/New-KioskConfiguration.ps1 $stage
     Copy-Item licenses $stage -Recurse
     Copy-Item src/PhotoBooth.App/Assets/OFL-BricolageGrotesque.txt (Join-Path $stage 'licenses')
     New-Item -ItemType Directory -Path (Join-Path $stage 'canon') | Out-Null

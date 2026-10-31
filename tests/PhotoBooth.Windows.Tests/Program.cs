@@ -6,6 +6,14 @@ using System.Text.Json;
 
 var passed = 0;
 void Check(bool condition, string label) { if (!condition) throw new Exception(label); passed++; }
+foreach (var key in new uint[] { 0x5B, 0x5C, 0x7A })
+    Check(WindowsKioskGuard.Blocks(key, false, false), "Windows keys and F11 cannot leave guest mode");
+foreach (var key in new uint[] { 0x09, 0x1B, 0x20, 0x73 })
+    Check(WindowsKioskGuard.Blocks(key, true, false), "Alt desktop shortcuts are suppressed");
+Check(WindowsKioskGuard.Blocks(0x1B, false, true), "Ctrl Escape and Ctrl Shift Escape are suppressed");
+foreach (var key in new uint[] { 0x09, 0x20, 0x41, 0x31, 0x0D, 0x08 })
+    Check(!WindowsKioskGuard.Blocks(key, false, false), "Normal navigation and operator-code input stay usable");
+if (OperatingSystem.IsWindows()) { using var guard = new WindowsKioskGuard(); guard.Dispose(); }
 var normal = PrintRaster.Fit(new(1800, 1200, 300, 300));
 Check(normal == new RasterPlacement(0, 0, 1800, 1200), "Standard 300 dpi target");
 var high = PrintRaster.Fit(new(1800, 2400, 300, 600));

@@ -1,0 +1,21 @@
+{
+  "utc": "2026-10-31T19:13:57.0269899+00:00",
+  "native_process": 31160,
+  "isolated_profile": true,
+  "fullscreen_pixels": {
+    "height": 1080,
+    "width": 3840
+  },
+  "no_window_decorations": true,
+  "settings_button_hidden": true,
+  "f11_blocked": true,
+  "escape_blocked": true,
+  "alt_f4_blocked": true,
+  "alt_tab_blocked": true,
+  "ctrl_shift_escape_blocked": true,
+  "foreground_after_each": "Colors Party",
+  "windows_key_not_injected": true,
+  "secure_attention_not_tested": true,
+  "corner_pin_and_no_pin": "headless native-control integration passed",
+  "os_policy_applied": false
+}

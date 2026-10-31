@@ -5,13 +5,17 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
 using PhotoBooth.Core;
+using PhotoBooth.Windows;
 
 namespace PhotoBooth.App;
 
 public sealed partial class MainWindow
 {
     private Button? adminButton;
+    private Button? resultFiles;
     private bool unlockOpen, operatorAccess;
+    private WindowsKioskGuard? shortcutGuard;
+    private bool restoringFullscreen;
     private readonly CornerHold cornerHold = new();
     private readonly DispatcherTimer cornerTimer = new() { Interval = TimeSpan.FromMilliseconds(50) };
     private IPointer? cornerPointer;
@@ -34,11 +38,39 @@ public sealed partial class MainWindow
         corner.PointerCaptureLost += (_, _) => { cornerHold.Cancel(); cornerTimer.Stop(); cornerPointer = null; };
         Deactivated += (_, _) => { Cancel(); cooking.Stop(); };
         Activated += (_, _) => { if (screen == "processing") cooking.Start(); };
-        cornerTimer.Tick += (_, _) => { if (!cornerHold.Poll()) return; Cancel(); _ = RequestOperatorAsync(false); };
+        cornerTimer.Tick += (_, _) => { if (!cornerHold.Poll()) return; Cancel(); _ = RequestOperatorAsync(); };
     }
-    private void LeaveFullscreen()
-    { kioskLocked = false; WindowState = WindowState.Normal; if (adminButton is not null) adminButton.IsVisible = true; }
-    private async Task RequestOperatorAsync(bool leaveFullscreen)
+    private void EnterFullscreen()
+    {
+        // Headless tests have no HWND. The real Windows window must install its guard
+        // before guest fullscreen can be activated.
+        if (OperatingSystem.IsWindows() && TryGetPlatformHandle() is { Handle: not 0 } && shortcutGuard is null)
+            shortcutGuard = new WindowsKioskGuard();
+        kioskLocked = true; CanResize = false; WindowDecorations = WindowDecorations.None;
+        Topmost = true; WindowState = WindowState.FullScreen;
+        foreach (var dialog in OwnedWindows) dialog.Topmost = true;
+        if (adminButton is not null) adminButton.IsVisible = false;
+        if (resultFiles is not null) resultFiles.IsVisible = false;
+    }
+    private async Task LeaveFullscreenAsync()
+    {
+        var next = boothSettings with { FullscreenEnabled = false };
+        await next.SaveAsync(boothSettingsPath); boothSettings = next;
+        kioskLocked = false; shortcutGuard?.Dispose(); shortcutGuard = null;
+        Topmost = false; foreach (var dialog in OwnedWindows) dialog.Topmost = false;
+        WindowDecorations = WindowDecorations.Full; CanResize = true;
+        WindowState = WindowState.Normal; if (adminButton is not null) adminButton.IsVisible = true;
+        if (resultFiles is not null) resultFiles.IsVisible = true;
+    }
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property != WindowStateProperty || !kioskLocked || restoringFullscreen || WindowState == WindowState.FullScreen) return;
+        restoringFullscreen = true;
+        try { WindowState = WindowState.FullScreen; }
+        finally { restoringFullscreen = false; }
+    }
+    private async Task RequestOperatorAsync()
     {
         if (unlockOpen || controller.IsBusy) return;
         unlockOpen = true;
@@ -64,7 +96,6 @@ public sealed partial class MainWindow
                 await dialog.ShowDialog(this);
                 if (!authorized) return;
             }
-            if (leaveFullscreen) { LeaveFullscreen(); return; }
             operatorAccess = true;
             try { await ShowSettingsAsync(); } finally { operatorAccess = false; }
         }

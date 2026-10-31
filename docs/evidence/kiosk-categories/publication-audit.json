@@ -1,0 +1,26 @@
+{
+  "utc": "2026-10-31T19:15:40.933Z",
+  "base_commit": "d7652f40e12a58a66258c5449b0fd1d30e1b7939",
+  "gitleaks_version": "8.30.1",
+  "reachable_commits": 52,
+  "history_blobs": 765,
+  "release_archives": 9,
+  "github_action_logs": 64,
+  "additional_files": 372,
+  "exact_comparison_bytes": 1540379475,
+  "active_booth_key_compared": true,
+  "secret_findings": 0,
+  "private_capability_url_findings": 0,
+  "scope": [
+    "all reachable Git refs and tags",
+    "extracted release files and attachments",
+    "issue and pull request bodies/comments",
+    "all 64 available Actions logs"
+  ],
+  "repository_visibility_changed": false,
+  "limitations": [
+    "automated checks are not a proof that no future disclosure can occur",
+    "author identities and infrastructure hostnames remain visible in source/history",
+    "Windows kiosk policy and physical devices require venue validation"
+  ]
+}

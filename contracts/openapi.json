@@ -1195,6 +1195,12 @@
                   "type": "string",
                   "pattern": "^#[0-9A-Fa-f]{6}$"
                 },
+                "category": {
+                  "type": "string",
+                  "enum": ["estelle", "essentials", "other"],
+                  "default": "other",
+                  "description": "Fixed section order: by Estelle, Les incontournables, Autres. Array order is preserved within each section. Missing category uses other for older catalogs."
+                },
                 "phrases": {
                   "type": "array",
                   "items": {

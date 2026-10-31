@@ -16,7 +16,7 @@ Le ZIP est accompagné de son SHA-256. Le pipeline extrait le paquet et l'exécu
    l’aperçu et au JPEG de planche ; quatre photos distinctes et correctement orientées.
 4. Définir un code facultatif de quatre caractères, activer le plein écran puis fermer les réglages.
    Maintenir trois secondes en bas à gauche : mauvais/bon code, accès direct si aucun code. Tester F11,
-   Échap et fermeture. Les raccourcis système restent possibles.
+   Échap et fermeture : aucun ne doit sortir ni ouvrir le code. Tester Alt+Tab, Alt+F4 et Ctrl+Maj+Échap. Pour restreindre Windows lui-même, suivre KIOSQUE_WINDOWS.md sur un compte standard dédié.
    « Voir les fichiers » demande aussi ce code. Après un code correct, la borne reste déverrouillée :
    retourner dans Réglages → Activer le plein écran avant de la rendre aux invités.
 5. Ajouter la clé OpenAI dans Supabase, puis le code borne distinct dans les Réglages de l’app.

@@ -118,23 +118,38 @@ public sealed partial class MainWindow
         title.Children.Add(Text("Et si on changeait d’univers ?", compactHome ? 32 : 40, FontWeight.SemiBold));
         styleSelectionHelp = Text(photoCount == 1 ? "Un univers pour votre photo." : "Choisissez jusqu’à quatre univers. Ensuite, place aux poses.", 18);
         styleSelectionHelp.Foreground = Muted; title.Children.Add(styleSelectionHelp); layout.Children.Add(title);
-        var tiles = new UniformGrid { Columns = 3, Rows = Math.Max(1, (catalog.Styles.Length + 2) / 3) };
-        foreach (var style in catalog.Styles)
+        var sections = new StackPanel { Spacing = 24 };
+        foreach (var category in StyleCatalog.Categories)
         {
-            var button = new ToggleButton { Name = "Style_" + style.Id, Background = ReadableTileBackground(style.Color),
-                Theme = (ControlTheme)Application.Current!.FindResource(typeof(Button))!,
-                Margin = new Thickness(0, 0, 12, 12), HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch, MinHeight = compactHome ? 148 : 170, Padding = new Thickness(14, 10) };
-            button.Classes.Add("style-choice");
-            button.Click += (_, _) => { ToggleStyle(style.Id); UpdateStyleSelection(); };
-            var content = new StackPanel { Spacing = 2 };
-            content.Children.Add(Art(style.Asset.Length > 0 ? style.Asset : style.Id, compactHome ? 58 : 70, compactHome ? 58 : 70));
-            var label = Text(style.Label, 22, FontWeight.SemiBold); label.TextAlignment = TextAlignment.Center; content.Children.Add(label);
-            var description = Text(style.Description, 16); description.TextAlignment = TextAlignment.Center; content.Children.Add(description);
-            button.Content = content; AutomationProperties.SetName(button, style.Label);
-            styleButtons.Add(style.Id, button); tiles.Children.Add(button);
+            var styles = catalog.Styles.Where(style => style.Category == category.Id).ToArray();
+            if (styles.Length == 0 && category.Id != "estelle") continue;
+            var section = new StackPanel { Name = "Category_" + category.Id, Spacing = 10 };
+            section.Children.Add(Text(category.Label, 28, FontWeight.SemiBold));
+            sections.Children.Add(section);
+            if (styles.Length == 0)
+            {
+                var waiting = Text("Les univers des sept tables seront bientôt ici.", 17);
+                waiting.Foreground = Muted; section.Children.Add(waiting); continue;
+            }
+            var tiles = new UniformGrid { Columns = 3, Rows = (styles.Length + 2) / 3 };
+            section.Children.Add(tiles);
+            foreach (var style in styles)
+            {
+                var button = new ToggleButton { Name = "Style_" + style.Id, Background = ReadableTileBackground(style.Color),
+                    Theme = (ControlTheme)Application.Current!.FindResource(typeof(Button))!,
+                    Margin = new Thickness(0, 0, 12, 12), HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch, MinHeight = compactHome ? 148 : 170, Padding = new Thickness(14, 10) };
+                button.Classes.Add("style-choice");
+                button.Click += (_, _) => { ToggleStyle(style.Id); UpdateStyleSelection(); };
+                var content = new StackPanel { Spacing = 2 };
+                content.Children.Add(Art(style.Asset.Length > 0 ? style.Asset : style.Id, compactHome ? 58 : 70, compactHome ? 58 : 70));
+                var label = Text(style.Label, 22, FontWeight.SemiBold); label.TextAlignment = TextAlignment.Center; content.Children.Add(label);
+                var description = Text(style.Description, 16); description.TextAlignment = TextAlignment.Center; content.Children.Add(description);
+                button.Content = content; AutomationProperties.SetName(button, style.Label);
+                styleButtons.Add(style.Id, button); tiles.Children.Add(button);
+            }
         }
-        var scroll = new ScrollViewer { Name = "StyleScroll", Content = tiles, Offset = oldOffset,
+        var scroll = new ScrollViewer { Name = "StyleScroll", Content = sections, Offset = oldOffset,
             HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         Grid.SetRow(scroll, 1); layout.Children.Add(scroll);
         var footer = new StackPanel { Spacing = 8, Margin = new Thickness(0, 10, 0, 0) };
