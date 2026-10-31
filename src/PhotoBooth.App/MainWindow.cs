@@ -441,7 +441,7 @@ public sealed partial class MainWindow : Window
         }, true); fullscreen.Name = "EnterFullscreen"; content.Children.Add(fullscreen);
         var leave = Button("Quitter le plein écran", LeaveFullscreenAsync);
         leave.Name = "LeaveFullscreen"; content.Children.Add(leave);
-        content.Children.Add(Text("Pour retrouver les réglages, gardez le doigt trois secondes dans le coin inférieur gauche.", 16));
+        content.Children.Add(Text("Sur l’accueil, touchez la roue crantée en bas à gauche pour ouvrir les réglages.", 16));
         content.Children.Add(Text("Le plein écran sera conservé au prochain lancement. Pour protéger aussi l’accès à Windows, configurez un compte kiosque dédié sur le PC de la borne.", 15));
         content.Children.Add(Button("Fermer les réglages", () => { settings.Close(); return Task.CompletedTask; }));
         settings.Content = new ScrollViewer { Content = content }; await settings.ShowDialog(this);

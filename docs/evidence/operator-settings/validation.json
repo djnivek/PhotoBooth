@@ -1,0 +1,14 @@
+{
+  "runtime_checks": 79,
+  "print_preparation_checks": 59,
+  "fake_canon_checks": 34,
+  "ui_journeys": "passed",
+  "fullscreen_gear_pointer_click": "passed on real Windows, isolated profile without PIN",
+  "pin_wrong_cancel_correct_no_code": "passed in isolated headless journeys",
+  "legacy_hardware_profile_migration": "passed",
+  "explicit_later_rehearsal_persisted": "passed",
+  "production_defaults_visible": "Canon and physical printing checked",
+  "hardware_capture_used": false,
+  "physical_print_used": false,
+  "paid_image_calls": 0
+}
