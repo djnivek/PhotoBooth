@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -81,7 +82,7 @@ var added=new PhotoStyle("ocean","Sous l’océan","Une fête sous les vagues.",
 serverCatalog=new("test.2",StyleCatalog.BuiltIn.Styles.Where(s=>s.Id!="halloween").Append(added).ToArray());
 DialogClick(settings,"Actualiser les univers");Until(()=>catalogCalls==2,2000);
 failCatalog=true;DialogClick(settings,"Actualiser les univers");Until(()=>catalogCalls==3,2000);
-if(window.CatalogCount!=6)throw new Exception("Network failure replaced the in-memory catalog.");
+if(window.CatalogCount!=StyleCatalog.BuiltIn.Styles.Length)throw new Exception("Network failure replaced the in-memory catalog.");
 DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);
 // Preserve the existing desktop escape guard after the operator-access refactor.
 Click("OpenFiles");Until(()=>window.OwnedWindows.Count==1,2000);unlock=window.OwnedWindows.Single();
@@ -113,6 +114,60 @@ using(var touch=window.TouchBegin(touchPoint)) {Pump(3150);window.TouchEnd(touch
 Until(()=>window.OwnedWindows.Any(w=>w.Title=="Réglages de la borne"),2000);settings=window.OwnedWindows.Single();
 DialogClick(settings,"Quitter le plein écran");Until(()=>window.WindowState==WindowState.Normal,2000);
 DialogClick(settings,"Fermer les réglages");Until(()=>window.OwnedWindows.Count==0,2000);window.Close();Pump(100);
+// A large dynamic catalog remains selectable by touch without rebuilding or losing scroll/focus.
+var many = new StyleCatalog("twenty.1", Enumerable.Range(0,20).Select(i => new PhotoStyle($"theme_{i:00}",
+    i==19?"Les grandes aventures de tous les invités":$"Univers {i+1}",
+    i==19?"Un décor de fête qui laisse à chacun une place dans une grande aventure pleine de couleurs et de surprises.":"Une nouvelle aventure pour vos photos.",
+    "not_bundled", "#E0E7D8", ["Les couleurs préparent la fête."])).ToArray());
+foreach(var size in new[]{new Size(1280,800),new Size(960,700)})
+{
+    var requests=0; var multiTransform=new DelayedTransform();
+    window=new MainWindow((_,_)=>Task.CompletedTask,catalogLoader:_=>{requests++;return Task.FromResult(many);},transformFactory:()=>multiTransform);
+    window.Width=size.Width;window.Height=size.Height;window.Show();Pump(100);ClickLabel("Métamorphose");AssertStylesFit();
+    var scroll=window.GetVisualDescendants().OfType<ScrollViewer>().Single(control=>control.Name=="StyleScroll");
+    if(scroll.Extent.Height<=scroll.Viewport.Height)throw new Exception("Twenty themes did not create a scrollable catalog.");
+    scroll.Offset=new Vector(0,scroll.Extent.Height);Pump(100);var offset=scroll.Offset;
+    var last=Find("Style_theme_19")!;var center=last.TranslatePoint(new Point(last.Bounds.Width/2,last.Bounds.Height/2),window)!.Value;
+    window.MouseMove(center);window.MouseDown(center,MouseButton.Left);window.MouseUp(center,MouseButton.Left);Pump(100);
+    if(((ToggleButton)last).IsChecked!=true || scroll.Offset!=offset || !ReferenceEquals(last,Find("Style_theme_19")))
+        throw new Exception("Last theme cannot be selected by touch-sized input without losing scroll/control state.");
+    Click("Style_theme_18");Click("Style_theme_17");Click("Style_theme_16");
+    if(Find("Style_theme_15")!.IsEnabled||!Find("Style_theme_19")!.IsEnabled)throw new Exception("Four-theme cap blocks removal or allows a fifth theme.");
+    Capture($"themes-20-four-{(int)size.Width}x{(int)size.Height}.png");AssertStylesFit();
+    Click("Style_theme_16");if(!Find("Style_theme_15")!.IsEnabled)throw new Exception("Removing a theme did not reopen selection.");
+    Click("Style_chef");
+    if(window.GetVisualDescendants().OfType<ToggleButton>().Any(button=>button.IsChecked==true))throw new Exception("Chef did not replace selected themes.");
+    Click("Style_theme_19");Click("Style_theme_18");Click("Style_theme_17");
+    var summary=window.GetVisualDescendants().OfType<TextBlock>().Single(control=>control.Name=="StyleSelectionSummary");
+    if(!summary.Text!.StartsWith("Trois univers"))throw new Exception("Three-theme allocation is not explained.");
+    Capture($"themes-20-three-{(int)size.Width}x{(int)size.Height}.png");
+    Click("Style_theme_19");Click("Style_theme_18");Click("Style_theme_17");
+    if(Find("StartStyledSession")!.IsEnabled)throw new Exception("Empty theme selection can start.");
+    Click("Style_theme_19");Click("Style_theme_18");Click("Style_theme_17");
+    if(size.Width==960)
+    {
+        Click("StartStyledSession");Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);Click("TakePhotos");
+        Until(()=>multiTransform.Entered.Task.IsCompleted,10000);
+        if(multiTransform.Choices is null||!multiTransform.Choices.Order().SequenceEqual(new[]{"theme_17","theme_18","theme_19"})||multiTransform.PhotoCount!=4)
+            throw new Exception("Selected themes were lost during uninterrupted four-photo capture.");
+        multiTransform.Resume.SetResult();Until(()=>Find("PrintPreview") is not null,10000);
+        Capture("themes-mixed-result-960x700.png");
+    }
+    else
+    {
+        Click("BackFromStyles");ClickLabel("Une photo");ClickLabel("Métamorphose");Click("Style_theme_00");Click("Style_theme_01");
+        if(((ToggleButton)Find("Style_theme_00")!).IsChecked==true||((ToggleButton)Find("Style_theme_01")!).IsChecked!=true)
+            throw new Exception("Single photo allows multiple themes.");
+    }
+    if(requests!=1)throw new Exception("Selecting or scrolling themes fetched the server.");
+    window.Close();Pump(80);
+}
+window=new MainWindow(refreshCatalogOnOpen:false);window.Show();Pump(80);ClickLabel("Métamorphose");
+Click("Style_halloween");Click("Style_animals");Click("Style_showcase");Click("Style_feast");
+Capture("themes-nine-1280x800.png");window.Width=960;window.Height=700;Pump(100);AssertStylesFit();Capture("themes-nine-960x700.png");
+var nineScroll=window.GetVisualDescendants().OfType<ScrollViewer>().Single(control=>control.Name=="StyleScroll");
+nineScroll.Offset=new Vector(0,nineScroll.Extent.Height);Pump(100);Capture("themes-nine-bottom-960x700.png");
+window.Close();Pump(80);
 // A slow startup catalog must not replace the picker underneath a guest.
 var deferredCatalog=new TaskCompletionSource<StyleCatalog>();
 window=new MainWindow(catalogLoader:_=>deferredCatalog.Task);window.Show();Pump(80);
@@ -251,8 +306,22 @@ void ClickLabel(string label){Pump(50);window.GetVisualDescendants().OfType<Butt
 void CaptureDialog(Window dialog,string name)
 {dialog.InvalidateVisual();Pump(100);using var image=dialog.CaptureRenderedFrame()!;image.Save(Path.Combine(screenshots,name),Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);}
 void AssertStylesFit()
-{foreach(var b in window.GetVisualDescendants().OfType<Button>().Where(b=>b.Name?.StartsWith("Style_")==true||b.Name=="StartStyledSession"))
- {var p=b.TranslatePoint(new Point(),window)!.Value;if(p.X<0||p.Y<0||p.X+b.Bounds.Width>window.ClientSize.Width+1||p.Y+b.Bounds.Height>window.ClientSize.Height+1)throw new Exception("Style button clipped: "+b.Name);}}
+{
+    var scroll = window.GetVisualDescendants().OfType<ScrollViewer>().Single(control => control.Name == "StyleScroll");
+    foreach (var name in new[] {"BackFromStyles", "Style_chef", "StartStyledSession"})
+    {
+        var button=Find(name)!; var point=button.TranslatePoint(new Point(),window)!.Value;
+        if(point.X<0||point.Y<0||point.X+button.Bounds.Width>window.ClientSize.Width+1||point.Y+button.Bounds.Height>window.ClientSize.Height+1)
+            throw new Exception("Pinned theme action clipped: "+name);
+    }
+    foreach(var tile in window.GetVisualDescendants().OfType<ToggleButton>().Where(button=>button.Name?.StartsWith("Style_")==true))
+    {
+        var point=tile.TranslatePoint(new Point(),scroll)!.Value;
+        if(point.X<0||point.X+tile.Bounds.Width>scroll.Bounds.Width+1||tile.Bounds.Height<100)
+            throw new Exception("Theme tile exceeds scroll width or loses its touch target: "+tile.Name);
+    }
+    if(scroll.Bounds.Height<150) throw new Exception("Theme catalog has no usable scroll viewport.");
+}
 Button? Find(string name) => window.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == name);
 void Click(string name)
 {
@@ -310,9 +379,9 @@ sealed class DelayedTransform:IPhotoTransform
 {
     public TaskCompletionSource Entered {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
     public TaskCompletionSource Resume {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
-    public string? Choice;
-    public async Task<TransformResult> TransformAsync(Guid id,IReadOnlyList<byte[]> photos,IProgress<string> progress,CancellationToken token,string styleChoice=StyleCatalog.Chef)
-    {Choice=styleChoice;Entered.TrySetResult();await Resume.Task.WaitAsync(token);return await new RehearsalTransform().TransformAsync(id,photos,progress,token,styleChoice);}
+    public string? Choice; public IReadOnlyList<string>? Choices; public int PhotoCount;
+    public async Task<TransformResult> TransformAsync(Guid id,IReadOnlyList<byte[]> photos,IProgress<string> progress,CancellationToken token,string styleChoice=StyleCatalog.Chef,IReadOnlyList<string>? styleChoices=null)
+    {Choice=styleChoice;Choices=styleChoices?.ToArray();PhotoCount=photos.Count;Entered.TrySetResult();await Resume.Task.WaitAsync(token);return await new RehearsalTransform().TransformAsync(id,photos,progress,token,styleChoice,styleChoices);}
 }
 
 sealed class OfflineHttp:HttpMessageHandler

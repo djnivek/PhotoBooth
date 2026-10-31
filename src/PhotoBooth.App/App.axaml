@@ -7,6 +7,15 @@
       <Setter Property="FontFamily" Value="Segoe UI, Arial" />
       <Setter Property="FontSize" Value="20" />
     </Style>
+    <Style Selector="ToggleButton.style-choice:pointerover /template/ ContentPresenter, ToggleButton.style-choice:pressed /template/ ContentPresenter">
+      <Setter Property="Background" Value="#DFD0BD" />
+      <Setter Property="Foreground" Value="#512831" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="3" />
+    </Style>
+    <Style Selector="ToggleButton.style-choice:checked:pointerover /template/ ContentPresenter, ToggleButton.style-choice:checked:pressed /template/ ContentPresenter">
+      <Setter Property="BorderBrush" Value="#512831" />
+    </Style>
     <Style Selector="Button">
       <Setter Property="MinHeight" Value="54" />
       <Setter Property="Padding" Value="22,12" />
@@ -29,6 +38,14 @@
     <Style Selector="Button:focus-visible"><Setter Property="BorderBrush" Value="#742C3F" /><Setter Property="BorderThickness" Value="3" /></Style>
     <Style Selector="Button:disabled"><Setter Property="Opacity" Value="0.45" /></Style>
     <Style Selector="Button.style-choice"><Setter Property="Foreground" Value="#512831" /><Setter Property="HorizontalContentAlignment" Value="Stretch" /></Style>
+    <Style Selector="ToggleButton.style-choice">
+      <Setter Property="CornerRadius" Value="12" />
+      <Setter Property="FontSize" Value="20" />
+      <Setter Property="Foreground" Value="#512831" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="ToggleButton.style-choice:focus-visible /template/ ContentPresenter"><Setter Property="BorderBrush" Value="#742C3F" /><Setter Property="BorderThickness" Value="3" /></Style>
+    <Style Selector="ToggleButton.style-choice:disabled"><Setter Property="Opacity" Value="0.45" /></Style>
     <Style Selector="TextBox"><Setter Property="MinHeight" Value="50" /><Setter Property="FontSize" Value="20" /></Style>
   </Application.Styles>
 </Application>

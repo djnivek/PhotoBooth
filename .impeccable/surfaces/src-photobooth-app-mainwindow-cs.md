@@ -30,7 +30,7 @@ STORY: Choose one or four photos, Au naturel or Métamorphose; choose a universe
 
 FIRST VIEWPORT: Header brand and Réglages, generous cream paper, authored wordmark on the left, count and mode choices on the right, one wide burgundy Démarrer action. Home uses 6:5 columns, a 38-unit gap after the brand column and centered content. The wordmark occupies 470 × 350 normally, 370 × 278 compact. Home choices use 20-unit gaps normally and 14 compact, with a 44/38-unit heading. The left “by Estelle” stays 30; the tagline changes 30 to 26. No photographic placeholder or diagnostic footer is used on home.
 
-FORM: Six illustrated universes and a separate La Surprise du Chef, followed by large live framing. The artwork supplies the festive voice. Guest text stays concise French without AI or simulation labels or dash punctuation. Technical settings may name OpenAI and actual paid behavior.
+FORM: Nine illustrated universes and a separate La Surprise du Chef, followed by large live framing. The artwork supplies the festive voice. Guest text stays concise French without AI or simulation labels or dash punctuation. Technical settings may name OpenAI and actual paid behavior.
 
 ## Native layout and states
 
@@ -45,7 +45,7 @@ FORM: Six illustrated universes and a separate La Surprise du Chef, followed by 
 
 ## Dynamic universe contract
 
-Six bundled choices are available immediately: Colors Party, Halloween, Dans les étoiles, Pays imaginaire, Petits lutins and Disco velours. La Surprise du Chef is separate. Startup makes one background metadata request; opening the picker makes none. Metadata lives only in memory and can be refreshed explicitly in settings. A background response received while a guest is choosing waits until the next home screen. Explicit operator refresh may apply while settings owns focus. An existing session freezes its selected universe/scene prompt.
+Nine bundled choices are available immediately: Colors Party, Halloween, Dans les étoiles, Pays imaginaire, Petits lutins, Disco velours, Drôles de bêtes, Sous cloche and À croquer. La Surprise du Chef is separate. Startup makes one background metadata request; opening the picker makes none. Metadata lives only in memory and can be refreshed explicitly in settings. A background response received while a guest is choosing waits until the next home screen. Explicit operator refresh may apply while settings owns focus. An existing session freezes its selected universe/scene prompt.
 
 Remote colors must reach 4.5:1 against actual burgundy ink; otherwise the tile uses the approved sage fallback. Unknown artwork selects a stable local Colors Party/Disco/Chef emblem. Network failure keeps the previous catalog. Source authority: `PartyScreens.cs`, `StyleCatalog.cs`, `src/PhotoBooth.Runtime/StyleCatalogClient.cs` and the server's frozen prompt handling.
 
@@ -82,3 +82,10 @@ Windows 0.3.0 package CI completed successfully on main d217c000d0cc6efce73c965d
 Readiness 0.8.1 adds one local unavailable state: with Canon selected and cloud disabled, Au naturel is selected, Métamorphose uses the existing disabled control style, and the existing detail line reads « Métamorphose demande une connexion. ». Offline standard capture remains available. Local rehearsal still offers both choices. No palette, art, typography, spacing or motion changes. Native headless captures at 1280×800 and 960×700 are in `docs/evidence/technical-readiness/`; the new UI regression fails before the guard and passes afterward. The whole design context is not refreshed by this narrow hardening task.
 
 Current visual system remains in DESIGN.md and its schema-2 sidecar; this brief records the implemented sharing extension. Both system files are preserved. Context reported pre-existing sidecar drift, which is not repaired in this task; the explicitly requested approximate wait is recorded here as a scoped override of the older no-estimate wording. No code change or Git commit belongs to this documentation pass. Preserve the hardware, deployment and package distinctions above in release claims.
+
+
+## Multiple-universe extension 0.9
+
+One photo selects one theme. Four photos select one to four themes before positioning; Chef is mutually exclusive. Native ToggleButtons expose checked state using the existing Button visual theme and palette. Selection updates the existing controls rather than rebuilding the grid, preserving scroll and focus. At four selections unchosen tiles are disabled while chosen tiles remain removable. A pinned explanation names the allocation and an empty selection disables the start action. The catalog remains three columns in a native ScrollViewer, with pinned Retour, Chef and C’est parti !. Long labels and descriptions wrap. Nine production themes and a 20-theme fixture are checked at 1280x800 and 960x700.
+
+The server freezes per-pose prompts and assignment. Every chosen theme appears; repeated themes are diagonal on the row-major print sheet. The camera/countdown loop is unchanged. Mixed sessions use neutral Colors Party art and « Plusieurs univers » on the print master; unknown future single themes use « Votre métamorphose », never a false Chef label. Three generated gouache assets extend the approved world, with exact prompts stored beside the PNGs. Actual paid portrait quality and physical hardware remain outside automated validation.

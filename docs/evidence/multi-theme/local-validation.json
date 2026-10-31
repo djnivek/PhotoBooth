@@ -1,0 +1,62 @@
+{
+  "utc": "2026-10-31T18:28:28.987069+00:00",
+  "base_commit": "b53731ebd8958d59fed486e530f2276569994d86",
+  "application_version": "0.9.0",
+  "command": "AVALONIA_TELEMETRY_OPTOUT=1 DOTNET_CLI_HOME=/tmp/photobooth-dotnet-home PHOTOBOOTH_DOTNET=/tmp/photobooth-dotnet/dotnet sh scripts/verify.sh",
+  "exit_code": 0,
+  "build": {
+    "warnings": 0,
+    "errors": 0
+  },
+  "checks": {
+    "core": 29,
+    "imaging": 308,
+    "runtime": 72,
+    "print_preparation": 36,
+    "canon_fake_transport": 34,
+    "cloud_fake_http": 102,
+    "deno": 36,
+    "node": 43,
+    "native_headless_ui": "passed"
+  },
+  "admin_labels_followup": {
+    "tests": 17,
+    "passed": 17,
+    "failed": 0
+  },
+  "twenty_theme_ui": {
+    "resolutions": [
+      "960x700",
+      "1280x800"
+    ],
+    "touch_sized_mouse_hit_testing": true,
+    "native_toggle_checked_state": true,
+    "retains_scroll_and_control_identity": true,
+    "one_photo_replaces_choice": true,
+    "four_choice_limit_and_removal": true,
+    "chef_exclusive": true,
+    "empty_selection_blocks_start": true,
+    "four_captures_without_intermediate_picker": true,
+    "single_catalog_startup_request": true
+  },
+  "full_log_sha256": "9298ebe87f4f381a99afff2908b920c0eff817c0f5c28b45ed84ee5926e2a1b4",
+  "detect_result": [],
+  "screenshots": {
+    "after-20-four-1280x800.png": "530eaa2da70b268522d20a13af41019136e3addf251ba0672283719accef2343",
+    "after-20-four-960x700.png": "df83f6066f14ff7cab60fc98c5dd0c767e53c048b7c5182930d562982e28c421",
+    "after-20-three-960x700.png": "76d8b8a3e88905c37654bc2034a0cdcfd3eb247a02ad25885d282c8c46265ecd",
+    "after-nine-1280x800.png": "1552718cfe45c718a2d3cc30542febb294c0dd82f1af7b24da59c162b6060c6f",
+    "after-nine-960x700.png": "4b3ec758330d0d6637db38e668670e1c4bba93c7516df641b7d21cc9ff7ac385",
+    "after-nine-bottom-960x700.png": "f2eb928d297567ddee30a069bc0d70f53aed01859ee30fda152a6d6b25ec3924",
+    "before-1280x800.png": "e41a0a085cfb26b2969b6cc070611ed182d3303a3ee987fb292eab4b020dd48d",
+    "before-960x700.png": "b46a6b21d34e184ed669c9507e7e78a88d59d4d874bf08b98b3866b46c46dd11",
+    "mixed-result-960x700.png": "8a5a1fa3eb18f51e41db9fb8f7c054369ebba6118eb4f3ab8daa97dd346230c1"
+  },
+  "not_tested": [
+    "physical Canon EOS 4000D",
+    "physical DNP DS620 output",
+    "target Windows 10 Pro 22H2",
+    "real OpenAI portrait identity or visual variety"
+  ],
+  "paid_generation_api_calls": 0
+}

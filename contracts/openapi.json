@@ -925,8 +925,25 @@
             "type": "string",
             "default": "chef",
             "pattern": "^[a-z][a-z0-9_]{0,47}$",
-            "description": "Catalog id, or chef for one random universe for the whole session. The choice and scene prompt are frozen at creation."
+            "description": "Legacy single choice. A catalog id selects that theme for every pose; chef chooses distinct active themes when possible. Exclusive with styles. Choices and complete per-pose prompts are frozen at creation."
+          },
+          "styles": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 4,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,47}$"
+            },
+            "description": "One choice for one photo; one to four choices for four photos. Every explicit choice is used, repeats are balanced and diagonal on the 2x2 sheet. chef is exclusive; mix is reserved. Order of choices has no significance. Exclusive with style."
           }
+        },
+        "not": {
+          "required": [
+            "style",
+            "styles"
+          ]
         }
       },
       "Session": {
@@ -937,11 +954,20 @@
             "format": "uuid"
           },
           "style": {
-            "type": "string"
+            "type": "string",
+            "description": "Concrete theme id, mix for several themes, or original. Retained for older clients."
           },
           "expires_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "shot_styles": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "type": "string"
+            },
+            "description": "Frozen concrete theme ids in capture order, one per transformed photo. Empty for original mode. Complete prompts remain private on the server."
           }
         }
       },

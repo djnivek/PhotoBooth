@@ -4,17 +4,17 @@ using SkiaSharp;
 
 namespace PhotoBooth.Runtime;
 
-public sealed record TransformResult(string Style, IReadOnlyList<byte[]> Photos, bool Normalized = false);
+public sealed record TransformResult(string Style, IReadOnlyList<byte[]> Photos, bool Normalized = false, IReadOnlyList<string>? ShotStyles = null);
 public interface IPhotoTransform
 {
     Task<TransformResult> TransformAsync(Guid sessionId, IReadOnlyList<byte[]> originals,
-        IProgress<string> progress, CancellationToken token, string styleChoice = StyleCatalog.Chef);
+        IProgress<string> progress, CancellationToken token, string styleChoice = StyleCatalog.Chef, IReadOnlyList<string>? styleChoices = null);
 }
 
 public sealed class RehearsalTransform : IPhotoTransform
 {
     public Task<TransformResult> TransformAsync(Guid sessionId, IReadOnlyList<byte[]> originals,
-        IProgress<string> progress, CancellationToken token, string styleChoice = StyleCatalog.Chef)
+        IProgress<string> progress, CancellationToken token, string styleChoice = StyleCatalog.Chef, IReadOnlyList<string>? styleChoices = null)
     {
         var photos = originals.Select(bytes =>
         {
@@ -25,7 +25,8 @@ public sealed class RehearsalTransform : IPhotoTransform
             canvas.DrawRect(0, 0, bitmap.Width, bitmap.Height, paint);
             return PhotoProcessor.Jpeg(bitmap);
         }).ToArray();
-        return Task.FromResult(new TransformResult(styleChoice == StyleCatalog.Chef ? StyleCatalog.BuiltIn.Styles[System.Security.Cryptography.RandomNumberGenerator.GetInt32(StyleCatalog.BuiltIn.Styles.Length)].Id : styleChoice, photos));
+        var plan = StyleSelection.RehearsalPlan(styleChoices ?? [styleChoice], originals.Count);
+        return Task.FromResult(new TransformResult(plan.Distinct().Count() == 1 ? plan[0] : StyleCatalog.Mixed, photos, ShotStyles: plan));
     }
 }
 
@@ -138,9 +139,9 @@ public sealed class BoothController : IAsyncDisposable
             if (Session.Options.Mode == PhotoMode.Surprise)
             {
                 var result = await transform.TransformAsync(Session.Id, originals,
-                    new Progress<string>(message => { if (Session.Stage == SessionStage.Processing) { Message = message; Notify(); } }), token, Session.Options.StyleChoice);
+                    new Progress<string>(message => { if (Session.Stage == SessionStage.Processing) { Message = message; Notify(); } }), token, Session.Options.StyleChoice, Session.Options.StyleChoices);
                 if (result.Photos.Count != originals.Count) throw new InvalidDataException("Il manque une photo transformée.");
-                Session.AssignStyle(result.Style);
+                Session.AssignStyles(result.ShotStyles ?? Enumerable.Repeat(result.Style, originals.Count).ToArray());
                 foreach (var bytes in result.Photos)
                     final.Add(await store.SavePhotoAsync(Session.Id, result.Normalized ? bytes : await Task.Run(() => PhotoProcessor.Normalize(bytes), token), token));
             }
@@ -304,7 +305,7 @@ public sealed class BoothController : IAsyncDisposable
         telemetry.RecordAsync(telemetry.Metric(Session.Id,Session.Options,kind,shot,style:Session.StyleId));
     private Task SaveManifestAsync(string state, CancellationToken token) => Session is null ? Task.CompletedTask :
         store.WriteManifestAsync(Session.Id, new { schema = 1, state, Session.Id, Session.Options,
-            Session.StyleId, Session.UsedOriginalFallback, captures = Session.Captures, final = FinalAssets, sheet = Sheet,
+            Session.StyleId, Session.ShotStyles, Session.UsedOriginalFallback, captures = Session.Captures, final = FinalAssets, sheet = Sheet,
             cameraCleanupError = cameraCleanupFailure?.Message, updatedAt = DateTimeOffset.UtcNow }, token);
     private void Notify() => Changed?.Invoke();
     public async ValueTask DisposeAsync() { await CancelAsync(); await CloseCameraAsync(); sessionCancellation?.Dispose(); if (transform is IDisposable disposable) disposable.Dispose(); }

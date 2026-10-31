@@ -7,6 +7,7 @@ public sealed record PhotoStyle(string Id, string Label, string Description, str
 public sealed record StyleCatalog(string Version, PhotoStyle[] Styles)
 {
     public const string Chef = "chef";
+    public const string Mixed = "mix";
     public static readonly PhotoStyle Surprise = new(Chef, "La Surprise du Chef", "Laissez le chef choisir votre univers.", "chef", "#F1E4BC",
         ["Le chef garde sa recette secrète.", "La brigade s’active.", "Vos sourires sont entre de bonnes mains."]);
     public static StyleCatalog BuiltIn { get; } = LoadBuiltIn();
@@ -18,7 +19,7 @@ public sealed record StyleCatalog(string Version, PhotoStyle[] Styles)
             ?? throw new InvalidDataException("La liste des univers est vide.");
         if (string.IsNullOrWhiteSpace(result.Version) || result.Version.Length > 80 || result.Styles is null || result.Styles.Length > 200 ||
             result.Styles.Select(s => s?.Id).Distinct().Count() != result.Styles.Length ||
-            result.Styles.Any(s => s is null || s.Id is null || !ValidId(s.Id) || s.Id == Chef || string.IsNullOrWhiteSpace(s.Label) || s.Label.Length > 48 ||
+            result.Styles.Any(s => s is null || s.Id is null || !ValidId(s.Id) || s.Id is Chef or Mixed || string.IsNullOrWhiteSpace(s.Label) || s.Label.Length > 48 ||
                 s.Description is null || s.Description.Length > 140 || s.Asset is null || s.Asset.Length > 80 || s.Color is null ||
                 !GuestCopy(s.Label) || !GuestCopy(s.Description) ||
                 !Regex.IsMatch(s.Color, "^#[0-9A-Fa-f]{6}$") || s.Phrases is null || s.Phrases.Length is < 1 or > 20 ||

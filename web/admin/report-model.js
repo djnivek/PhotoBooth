@@ -18,7 +18,7 @@
     if (!value || !Number.isFinite(Date.parse(value))) return 'Non mesuré';
     return new Intl.DateTimeFormat(locale, {timeZone: zone, day: 'numeric', month: 'short', ...(time ? {hour: '2-digit', minute: '2-digit'} : {})}).format(new Date(value));
   }
-  const names = {chef: 'La Surprise du Chef', 'colors-party': 'Colors Party', colors_party: 'Colors Party', party: 'Colors Party', halloween: 'Halloween', space: 'Dans les étoiles', fantasy: 'Pays imaginaire', elves: 'Petits lutins', disco: 'Disco velours', original: 'Au naturel', surprise: 'Métamorphose'};
+  const names = {chef: 'La Surprise du Chef', 'colors-party': 'Colors Party', colors_party: 'Colors Party', party: 'Colors Party', halloween: 'Halloween', space: 'Dans les étoiles', fantasy: 'Pays imaginaire', elves: 'Petits lutins', disco: 'Disco velours', animals: 'Drôles de bêtes', showcase: 'Sous cloche', feast: 'À croquer', mix: 'Plusieurs univers', original: 'Au naturel', surprise: 'Métamorphose'};
   const label = value => value == null ? 'Non renseigné' : names[value] || String(value);
   function validate(report) {
     if (!report || !Number.isInteger(report.days) || report.days < 1 || report.days > 366 || typeof report.include_fixtures !== 'boolean' || !Number.isFinite(Date.parse(report.generated_at)) || !report.totals || Array.isArray(report.totals)) throw new Error('invalid_report');

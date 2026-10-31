@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-30.1",
+  "version": "2026-10-31.2",
   "styles": [
     {
       "id": "colors_party",
@@ -16,13 +16,13 @@
     {
       "id": "halloween",
       "label": "Halloween",
-      "description": "Des citrouilles très bien habillées.",
+      "description": "Des frissons, surtout des sourires.",
       "asset": "halloween",
       "color": "#F3D5C3",
       "phrases": [
-        "Les citrouilles ajustent leur tenue.",
         "Une pincée de mystère.",
-        "Les fantômes se tiennent à carreau."
+        "Les invités préparent leur grand effet.",
+        "La fête se donne des frissons."
       ]
     },
     {
@@ -71,6 +71,42 @@
         "La boule à facettes se réveille.",
         "Le velours chauffe la piste.",
         "Les paillettes répètent leur numéro."
+      ]
+    },
+    {
+      "id": "animals",
+      "label": "Drôles de bêtes",
+      "description": "Un brin sauvage, toujours vous.",
+      "asset": "animals",
+      "color": "#F3D5C3",
+      "phrases": [
+        "La ménagerie se met sur son trente et un.",
+        "Un peu de panache dans les pelages.",
+        "La fête prend un air sauvage."
+      ]
+    },
+    {
+      "id": "showcase",
+      "label": "Sous cloche",
+      "description": "Votre petit monde en vitrine.",
+      "asset": "showcase",
+      "color": "#E0E7D8",
+      "phrases": [
+        "On vous prépare une place de choix.",
+        "Le décor sort de sa réserve.",
+        "La vitrine prend des airs de fête."
+      ]
+    },
+    {
+      "id": "feast",
+      "label": "À croquer",
+      "description": "La gourmandise voit les choses en grand.",
+      "asset": "feast",
+      "color": "#F4E6B7",
+      "phrases": [
+        "La fête se ressert une part.",
+        "Une bonne dose de gourmandise.",
+        "Le décor prend du volume."
       ]
     }
   ]

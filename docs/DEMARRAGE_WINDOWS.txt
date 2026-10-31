@@ -1,6 +1,16 @@
 COLORS PARTY BY ESTELLE
 
-VERSION 0.8.1
+VERSION 0.9.0
+   Metamorphose propose neuf univers et La Surprise du Chef.
+   Une photo : choisir un univers. Quatre photos : choisir de un a quatre univers
+   avant de poser. Avec quatre choix, une photo par univers. Avec trois choix,
+   tous apparaissent et un revient. Avec deux choix, deux photos chacun.
+   Les repetitions sont placees en diagonale sur la planche.
+   La Surprise du Chef varie les univers. Aucun choix entre les prises.
+   La liste peut defiler et les boutons du bas restent accessibles.
+   Reglages > Actualiser les univers recharge le catalogue du serveur.
+
+CORRECTIFS 0.8.1 CONSERVES
    Les seances terminees sont liberees de la memoire, y compris lorsque
    la generation se termine pendant la seance de l invite suivant.
    Un arret de visee en erreur bloque la photo. Les erreurs de fermeture
@@ -28,7 +38,7 @@ NOUVEAU PARCOURS 0.8
 2. ESSAI SANS MATERIEL
    Par défaut : caméra locale, effet local, impression vers fichier, aucun appel payant.
    Choisir une ou quatre poses, Au naturel ou Métamorphose.
-   Métamorphose propose six univers et La Surprise du Chef.
+   Métamorphose propose neuf univers et La Surprise du Chef.
    Démarrer, se placer dans la visée, puis On est prêts ! Chaque pose suit 3, 2, 1.
    Réglages permet de choisir vos propres photos locales.
    Imprimer écrit print-preview.jpg tant que l’envoi à l’imprimante reste désactivé.

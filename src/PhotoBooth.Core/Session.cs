@@ -11,15 +11,17 @@ public sealed record SessionOptions
     public int PhotoCount { get; }
     public PhotoMode Mode { get; }
     public int CountdownSeconds { get; }
-    public string StyleChoice { get; }
+    public IReadOnlyList<string> StyleChoices { get; }
+    public string StyleChoice => StyleChoices.Count == 1 ? StyleChoices[0] : StyleCatalog.Mixed;
 
-    public SessionOptions(int photoCount, PhotoMode mode, int countdownSeconds = 3, string styleChoice = StyleCatalog.Chef)
+    public SessionOptions(int photoCount, PhotoMode mode, int countdownSeconds = 3, string styleChoice = StyleCatalog.Chef,
+        IReadOnlyList<string>? styleChoices = null)
     {
         if (photoCount is not (1 or 4)) throw new ArgumentOutOfRangeException(nameof(photoCount));
         if (!Enum.IsDefined(mode)) throw new ArgumentOutOfRangeException(nameof(mode));
         if (countdownSeconds is < 3 or > 10) throw new ArgumentOutOfRangeException(nameof(countdownSeconds));
-        if (!StyleCatalog.ValidId(styleChoice)) throw new ArgumentException("Invalid style identifier.", nameof(styleChoice));
-        StyleChoice = mode == PhotoMode.Original ? StyleCatalog.Chef : styleChoice;
+        var chosen = StyleSelection.Normalize(styleChoices ?? [styleChoice], photoCount);
+        StyleChoices = mode == PhotoMode.Original ? Array.AsReadOnly(new[] { StyleCatalog.Chef }) : chosen;
         PhotoCount = photoCount;
         Mode = mode;
         CountdownSeconds = countdownSeconds;
@@ -45,6 +47,7 @@ public sealed class Session
     public PrintStage PrintStage { get; private set; }
     public int SecondsRemaining { get; private set; }
     public string? StyleId { get; private set; }
+    public IReadOnlyList<string> ShotStyles { get; private set; } = Array.Empty<string>();
     public string? SheetAssetKey { get; private set; }
     public string? FailureCode { get; private set; }
     public bool UsedOriginalFallback { get; private set; }
@@ -85,14 +88,18 @@ public sealed class Session
         Stage = captures.Count == Options.PhotoCount ? SessionStage.Processing : SessionStage.Positioning;
     }
 
-    // The server picks one allowed style per session, then persists it before processing.
-    public void AssignStyle(string styleId)
+    public void AssignStyle(string styleId) => AssignStyles(Enumerable.Repeat(styleId, Options.PhotoCount).ToArray());
+
+    // The server freezes one theme for every pose before generating any image.
+    public void AssignStyles(IReadOnlyList<string> styles)
     {
         Require(SessionStage.Processing);
         if (Options.Mode != PhotoMode.Surprise) throw new InvalidOperationException("Original sessions have no style.");
-        ArgumentException.ThrowIfNullOrWhiteSpace(styleId);
-        if (StyleId is not null && StyleId != styleId) throw new InvalidOperationException("A retry must retain the session style.");
-        StyleId = styleId;
+        if (!StyleSelection.MatchesPlan(Options.StyleChoices, styles, Options.PhotoCount))
+            throw new ArgumentException("Every pose needs a concrete style.", nameof(styles));
+        if (ShotStyles.Count > 0 && !ShotStyles.SequenceEqual(styles)) throw new InvalidOperationException("A retry must retain every pose's style.");
+        ShotStyles = Array.AsReadOnly(styles.ToArray());
+        StyleId = styles.Distinct().Count() == 1 ? styles[0] : StyleCatalog.Mixed;
     }
 
     public void CompleteProcessing(IEnumerable<FinalPhoto> photos, string sheetAssetKey)
@@ -125,7 +132,7 @@ public sealed class Session
         Require(SessionStage.Failed);
         if (Options.Mode != PhotoMode.Surprise || captures.Count != Options.PhotoCount)
             throw new InvalidOperationException("A complete set of originals is required.");
-        UsedOriginalFallback = true; FailureCode = null; StyleId = null; Stage = SessionStage.Processing;
+        UsedOriginalFallback = true; FailureCode = null; StyleId = null; ShotStyles = Array.Empty<string>(); Stage = SessionStage.Processing;
     }
 
     // Called only for an explicit visitor action. The host must journal before spooling.
