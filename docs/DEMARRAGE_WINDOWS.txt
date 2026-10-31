@@ -1,6 +1,10 @@
 COLORS PARTY BY ESTELLE
 
-NOUVEAU PARCOURS 0.8.0
+VERSION 0.8.1
+   Les seances terminees sont liberees de la memoire, y compris lorsque
+   la generation se termine pendant la seance de l invite suivant.
+
+NOUVEAU PARCOURS 0.8
    En ligne, le QR apparait pendant la preparation des metamorphoses.
    Scannez-le avant Une nouvelle seance : les photos arrivent progressivement
    dans la galerie. Comptez environ une a deux minutes, parfois davantage.

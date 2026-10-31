@@ -1,0 +1,51 @@
+{
+  "reviewed_main": "0b447de67d4d692965a778726e99369688a30165",
+  "baseline": {
+    "build": "passed, zero warnings/errors",
+    "core_checks": 26,
+    "imaging_assertions": 231,
+    "runtime_checks": 54,
+    "print_preparation_checks": 26,
+    "canon_fake_transport_checks": 28,
+    "cloud_fake_http_checks": 91,
+    "headless_ui": "passed",
+    "deno_tests": 30,
+    "node_tests": 43,
+    "windows_ci": "https://github.com/djnivek/PhotoBooth/actions/runs/41216240831"
+  },
+  "memory_regression": {
+    "before_exit": 134,
+    "before_failure": "Completed background session remains strongly referenced; WeakReference stays alive after forced GC.",
+    "after_exit": 0,
+    "after_result": "Completed background controller is collected while the next guest captures successfully."
+  },
+  "paid_openai_calls": 0,
+  "physical_camera_tested": false,
+  "physical_printer_tested": false,
+  "target_windows_10_tested": false,
+  "old_i7_performance_measured": false,
+  "admin_restart": {
+    "verified_at": "2026-10-31T16:43:48.908329+00:00",
+    "source_commit": "0b447de67d4d692965a778726e99369688a30165",
+    "url": "https://macmini-de-kevin.tail8f2f33.ts.net/photobooth/",
+    "restarted": true,
+    "stable_code": true,
+    "https_valid": true,
+    "authenticated_report": 200,
+    "anonymous_report": 401,
+    "from_serving_mac": true,
+    "other_tailnet_device_tested": false
+  },
+  "local_logs_sha256": {
+    "verify.log": "d5212b3573a5343faa334783dd428cc60f2014476823c8809e41b9c83c24a01e",
+    "memory-before.log": "0550872172d470776790bdb1046fcca7dbf12b3d374f83e7ec77266d56d9e903",
+    "memory-after.log": "084b9ad8f4597aa5a8b3efdf16c3840d34c2be4f6d10a1a494c49db65c7702ae"
+  },
+  "final_local_suite": {
+    "exit_code": 0,
+    "duration_seconds": 54.7,
+    "log_sha256": "17a011870ce116c6b9590b6abc0c34ad372a044ad0c39394f30479a854bfafbc",
+    "paid_api_calls": 0,
+    "hardware_used": false
+  }
+}
