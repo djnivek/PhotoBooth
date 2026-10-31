@@ -69,9 +69,13 @@ public sealed partial class MainWindow
         finally
         {
             detachedControllers.Remove(source);
-            await source.DisposeAsync();
-            client?.Dispose();
-            if (id is not null) { publications.Remove(id.Value); galleries.Remove(id.Value); }
+            try { await source.DisposeAsync(); }
+            finally
+            {
+                client?.Dispose();
+                finishingControllers.Remove(source);
+                if (id is not null) { publications.Remove(id.Value); galleries.Remove(id.Value); }
+            }
         }
     }
 }

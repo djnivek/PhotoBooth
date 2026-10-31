@@ -178,10 +178,16 @@ if(!window.GetVisualDescendants().OfType<Image>().Single(i=>i.Name=="ProcessingQ
 Capture("processing-qr-1280x800.png");window.Width=960;window.Height=700;Pump(100);Capture("processing-qr-960x700.png");
 var next=Find("ContinueOnPhone")!;var nextPoint=next.TranslatePoint(new Point(),window)!.Value;
 if(nextPoint.Y+next.Bounds.Height>window.ClientSize.Height||nextPoint.X+next.Bounds.Width>window.ClientSize.Width)throw new Exception("Continue-on-phone action clipped.");
+var retiredController=TrackCurrentController(window);
 Click("ContinueOnPhone");Until(()=>Find("StartSession") is not null,3000);
 if(window.ProcessingAnimationRunning)throw new Exception("Processing animation leaked after leaving with QR.");
 ClickLabel("Au naturel");Click("StartSession");Until(()=>Find("TakePhotos") is {IsEnabled:true,IsVisible:true},3000);
 progressiveHttp.Resume.TrySetResult();Until(()=>progressiveHttp.Shares==1,10000);
+Until(()=>
+{
+    GC.Collect();GC.WaitForPendingFinalizers();GC.Collect();
+    return !retiredController.IsAlive;
+},3000);
 if(Find("TakePhotos") is not {IsVisible:true}||Find("PrintPreview") is not null)throw new Exception("Background result replaced next guest's capture screen.");
 Click("TakePhotos");Until(()=>Find("PrintPreview") is not null&&progressiveHttp.Shares==2,10000);Pump(100);
 if(Find("ShareRetry") is {IsVisible:true})throw new Exception("Retry share visible after successful publication.");
@@ -218,6 +224,10 @@ viewerClock=viewerClock.AddMinutes(2);Pump(300);if(window.ResultReturnRunning||F
 Click("PrintPreview");Click("NewSession");Until(()=>Find("StartSession") is not null,3000);window.Close();Pump(100);
 Console.WriteLine("PASS UI: native flows, cloud offline, early QR, visible loading and wait copy, background completion during next guest, no share retry after success, prominent new-session action. No network, paid API or hardware.");
 Directory.Delete(root,true);
+[System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+static WeakReference TrackCurrentController(MainWindow owner) => new(typeof(MainWindow)
+    .GetField("controller",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.GetValue(owner)!);
+
 void HoldCorner(int milliseconds)
 {var p=new Point(20,window.ClientSize.Height-20);window.MouseMove(p);window.MouseDown(p,MouseButton.Left);Pump(milliseconds);window.MouseUp(p,MouseButton.Left);Pump(50);}
 void DialogClick(Window dialog,string label)=>dialog.GetVisualDescendants().OfType<Button>().Single(b=>Equals(b.Content,label)).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

@@ -1,5 +1,11 @@
 # Handoff actif : Colors Party by Estelle
 
+## Revue avant branchement du 31 octobre
+
+Main 0.8.0 récupéré sur `0b447de`, admin persistant redémarré et accès HTTPS Tailscale authentifié vérifié. Le code admin reste identique. La revue technique porte sur Canon, DNP, impression, réseau, projection et performances ; [dossier et recette de branchement](reviews/technical-readiness-2026-10-31/README.md).
+
+Correctif 0.8.1 : les contrôleurs de séances terminées ne restent plus conservés en mémoire. La régression a été reproduite avant correction et le parcours UI avec génération en arrière-plan passe après correction. Ni appel OpenAI payant ni modification du stockage/quota. Le Canon 4000D en MF confirmé, la sortie papier DS620 et le lancement sur le Windows 10 exact restent des validations physiques à faire. Les sections de versions ci-dessous sont un historique ; les commandes de reprise utilisent la version courante.
+
 ## Projection 0.8 : intégration du dernier main
 
 Le viewer de salle est ajouté sur `feat/room-viewer`, avec le main `17edd1c` et le dashboard Mac des PR19 à PR21 conservés. [Procédure complète](VIEWER.md). Option désactivée par défaut ; activer et enregistrer la projection dans les réglages de la borne, puis copier le lien de lecture vers le navigateur de la salle. Pour ce PC sans Canon, cocher aussi l’inclusion des séances simulées.
@@ -106,7 +112,7 @@ Le dossier `%LOCALAPPDATA%\EstellArt` est conservé intentionnellement pour ne p
 
 ## Tests restants, dans l’ordre
 
-1. Fermer l’ancienne app puis lancer l’exécutable 0.5 extrait. Les essais automatisés sans matériel sont terminés sur Windows 11 ; refaire le parcours opérateur et tester manuellement une/quatre poses, six styles et Chef, aperçu/Imprimer vers fichier, réglages et maintien souris/tactile.
+1. Fermer l’ancienne app puis lancer le dernier exécutable extrait, version 0.8.1 pour cette correction. La CI Windows Server 2022 ne valide pas le Windows 10 cible ; refaire le parcours opérateur et tester manuellement une/quatre poses, six styles et Chef, aperçu/Imprimer vers fichier, réglages et maintien souris/tactile.
 2. Essai réel volontaire avec un portrait autorisé, puis quatre si le résultat convient : fidélité, délai de génération, coûts retournés, QR sur téléphone et continuité après Une nouvelle séance. Faire cette mesure sur la 4G prévue. Pour un profil rapide, appliquer seulement le réglage approuvé après comparaison. Les essais hors ligne simulés sont couverts ; refaire la coupure/rétablissement réelle et Réessayer le partage.
 3. Photomaton : fermer DSLR Booth/EOS Utility, tester Canon en MF confirmé, quatre photos nettes, annulation et reconnexion. Puis DS620 4×6, une mire et quatre poses sur une seule feuille.
 4. Vérifier réseau, espace, consommables et plusieurs séances successives. Le Windows10 exact et l’ancien i7 restent distincts de la CI Server2022.
@@ -119,4 +125,4 @@ Stockage Free conservé à la demande de Kevin ; revoir après les essais réuss
 
 `sh scripts/verify.sh`, ou `./scripts/verify.ps1` sur Windows. Sur ce Mac : `PHOTOBOOTH_DOTNET=/tmp/photobooth-dotnet/dotnet`, `DOTNET_CLI_HOME=/tmp/photobooth-dotnet-home`. Tests C# exécutables, Deno et Node ; pas dotnet test. Construire avec `--disable-build-servers -m:1`, puis tests `--no-build`.
 
-`./scripts/package-windows.ps1 -Version 0.5.0` prépare un ZIP autonome, l’extrait puis exécute `--self-test` et `--smoke-ui` sur Windows. Release GitHub privée à distinguer de ce paquet local, SHA256, captures et reçus. Sources seules dans Git. Aucun auteur ou co-auteur assistant.
+`./scripts/package-windows.ps1 -Version 0.8.1` prépare un ZIP autonome, l’extrait puis exécute `--self-test` et `--smoke-ui` sur Windows. Release GitHub privée à distinguer de ce paquet local, SHA256, captures et reçus. Sources seules dans Git. Aucun auteur ou co-auteur assistant.
