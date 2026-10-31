@@ -9,9 +9,9 @@ if(args is ["--benchmark-transfers"])
     await TransferBenchmark.RunAsync();
     return;
 }
-if(args is ["--share-synthetic-progressive"])
+if(args is ["--share-synthetic-progressive"] or ["--share-synthetic-progressive-browser"])
 {
-    await ProgressiveSmoke.RunAsync();
+    await ProgressiveSmoke.RunAsync(args[0].EndsWith("-browser"));
     return;
 }
 if(args.Length!=1||args[0] is not ("--share-synthetic-originals" or "--share-synthetic-edits"))

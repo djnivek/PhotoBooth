@@ -1,7 +1,7 @@
 # API PhotoBooth
 
 Base : `https://frkckrvsdsiwivdfyjau.supabase.co/functions/v1/photobooth-api`.
-Le contrat [OpenAPI](../contracts/openapi.json) décrit l'implémentation 0.6. Son déploiement est encore en attente ; l'API distante reste en 0.5. Voir [HANDOFF](HANDOFF.md) pour l'état de livraison.
+Le contrat [OpenAPI](../contracts/openapi.json) décrit l'implémentation 0.6, déployée et vérifiée sur Supabase. Voir [HANDOFF](HANDOFF.md) pour la livraison Windows et les reçus.
 
 | Méthode et route | Protection | Rôle |
 | --- | --- | --- |

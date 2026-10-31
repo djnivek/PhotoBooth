@@ -13,7 +13,7 @@ internal static class ProgressiveSmoke
 {
     private const string Api = "https://frkckrvsdsiwivdfyjau.supabase.co/functions/v1/photobooth-api";
 
-    internal static async Task RunAsync()
+    internal static async Task RunAsync(bool coordinateBrowser = false)
     {
         string key;
         if (File.Exists(".local/booth-provisioning.json"))
@@ -66,6 +66,12 @@ internal static class ProgressiveSmoke
         using (var health = await Send(HttpMethod.Get, "/health", publicRequest: true))
             Check(health.RootElement.GetProperty("api_version").GetString() == "0.6.0", "deployed API is 0.6.0");
         Check(await client.CheckAsync(), "booth authentication and OpenAI key presence");
+        using (var configuration = await Send(HttpMethod.Get, "/booth/check"))
+            Check(configuration.RootElement.GetProperty("generation_api").GetString() == "images/edits" &&
+                configuration.RootElement.GetProperty("image_model").GetString() == "gpt-image-2.5-sunburst" &&
+                configuration.RootElement.GetProperty("image_quality").GetString() == "medium" &&
+                configuration.RootElement.GetProperty("image_size").GetString() == "1024x1024",
+                "deployed direct Sunburst medium square configuration");
         using (var session = await Send(HttpMethod.Post, "/sessions", new { id, photo_count = 4, mode = "surprise", style = "halloween" }))
             Check(session.RootElement.GetProperty("id").GetGuid() == id, "synthetic session created without generation");
         var capability = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32));
@@ -108,6 +114,16 @@ internal static class ProgressiveSmoke
         using (var partial = await Resolve())
             Check(partial.RootElement.GetProperty("state").GetString() == "processing" && partial.RootElement.GetProperty("completed_count").GetInt32() == 1 && partial.RootElement.GetProperty("assets").GetArrayLength() == 5,
                 "first result arrives while the session is still processing");
+
+        if (coordinateBrowser)
+        {
+            // The browser inspects the real partial gallery before releasing publication.
+            // Only a test-local signal is exchanged; no QR capability enters console output.
+            await File.WriteAllTextAsync(Path.Combine(output, "browser-session.json"), JsonSerializer.Serialize(new { session_id = id }));
+            using var deadline = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+            while (!File.Exists(Path.Combine(store.Root, id.ToString("N"), "browser-continue.signal")))
+                await Task.Delay(200, deadline.Token);
+        }
 
         using (var guestRequest = new HttpRequestMessage(HttpMethod.Get, Api + "/booth/check"))
         {
