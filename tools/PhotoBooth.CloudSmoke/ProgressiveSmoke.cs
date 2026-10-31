@@ -32,15 +32,16 @@ internal static class ProgressiveSmoke
         }
         if (string.IsNullOrWhiteSpace(key)) throw new InvalidOperationException("No provisioned booth credential.");
 
-        var output = Path.Combine(Environment.CurrentDirectory, "artifacts", "direct-square-0.6.0", "live-smoke");
+        var output = Path.Combine(Environment.CurrentDirectory, "artifacts", "monitoring-0.7.0", "live-smoke");
         var store = new SessionStore(output);
-        await using var controller = new BoothController(store, () => new FixtureCamera(store), new RehearsalTransform(), (_, _) => Task.CompletedTask);
+        await using var metrics = new BoothTelemetry(output,Api,key,"fixture",new NeverGenerateHandler(),automatic:false);
+        await using var controller = new BoothController(store, () => new FixtureCamera(store), new RehearsalTransform(), (_, _) => Task.CompletedTask,metrics);
         await controller.BeginAsync(new SessionOptions(4, PhotoMode.Surprise, styleChoice: "halloween"));
         await controller.TakeAsync();
         if (controller.Session?.Stage != SessionStage.Ready) throw new InvalidOperationException(controller.Message);
         var id = controller.Session.Id;
         using var http = new HttpClient(new NeverGenerateHandler()) { Timeout = TimeSpan.FromSeconds(45) };
-        using var client = new BoothCloudClient(Api, key, store, handler: new NeverGenerateHandler());
+        using var client = new BoothCloudClient(Api, key, store, handler: new NeverGenerateHandler()) { Telemetry=metrics };
         var checks = new List<string>();
         void Check(bool condition, string name)
         {
@@ -64,7 +65,7 @@ internal static class ProgressiveSmoke
         }
 
         using (var health = await Send(HttpMethod.Get, "/health", publicRequest: true))
-            Check(health.RootElement.GetProperty("api_version").GetString() == "0.6.0", "deployed API is 0.6.0");
+            Check(health.RootElement.GetProperty("api_version").GetString() == "0.7.0", "deployed API is 0.7.0");
         Check(await client.CheckAsync(), "booth authentication and OpenAI key presence");
         using (var configuration = await Send(HttpMethod.Get, "/booth/check"))
             Check(configuration.RootElement.GetProperty("generation_api").GetString() == "images/edits" &&
@@ -115,6 +116,8 @@ internal static class ProgressiveSmoke
             Check(partial.RootElement.GetProperty("state").GetString() == "processing" && partial.RootElement.GetProperty("completed_count").GetInt32() == 1 && partial.RootElement.GetProperty("assets").GetArrayLength() == 5,
                 "first result arrives while the session is still processing");
 
+        await metrics.FlushAsync();
+        Check(metrics.PendingCount==0,"synthetic session monitoring is classified as fixture");
         if (coordinateBrowser)
         {
             // The browser inspects the real partial gallery before releasing publication.
@@ -163,6 +166,7 @@ internal static class ProgressiveSmoke
         Check(archive.Entries.Count == 9, "archive has four results, four originals and sheet");
         var replay = await client.PublishAsync(controller.Session, controller.FinalAssets, controller.Sheet!);
         Check(replay.Url == earlyUrl, "publication replay retains the early QR");
+        await metrics.FlushAsync();
         var receipt = new { utc = DateTimeOffset.UtcNow, session_id = id, source = "synthetic calibration and local effect; NOT OpenAI output", generation_calls = 0,
             early_gallery = true, progressive_result = true, unchanged_qr = true, exact_assets_verified = 10, checks, success = true };
         await File.WriteAllTextAsync(Path.Combine(output, "receipt.json"), JsonSerializer.Serialize(receipt, SessionStore.JsonOptions));

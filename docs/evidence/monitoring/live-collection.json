@@ -1,0 +1,19 @@
+{
+  "budget": {
+    "generation_enabled": true,
+    "id": "event",
+    "max_images": 2400,
+    "max_in_flight": 8,
+    "max_per_minute": 16,
+    "started": 1
+  },
+  "captured": 4,
+  "download_requests": 4,
+  "gallery_views": 2,
+  "generation_calls": 0,
+  "private": true,
+  "source": "synthetic only",
+  "success": true,
+  "upload_samples": 9,
+  "visible_image_events": 4
+}

@@ -1,5 +1,12 @@
 # Validation
 
+## Version 0.7 — monitoring
+
+448 contrôles C# attendus avec les suites métier/imaging/runtime/impression/Canon inchangées et 83 cloud passés, 25 tests Deno, 20 galerie, 3 admin, OpenAPI validé. Les tests vérifient les captures réelles plutôt que la quantité demandée, les transferts mesurés, la reprise durable après redémarrage, le mode Au naturel, la panne de monitoring sans effet sur les photos, les permissions et les compteurs visiteurs dédoublonnés. Le serveur admin local refuse écritures, accès sans jeton et origines non autorisées.
+
+La migration et les agrégats ont passé des assertions SQL dans une transaction annulée, avant application. Backend 0.7 et galerie sont déployés. Chromium réel ordinateur/mobile observe la progression et deux demandes de téléchargement par appareil ; les reçus de collecte sont relus via la base. Le serveur admin temporaire a lu les vrais rapports et a été fermé. Aucun appel OpenAI, Canon ou tirage physique. Mac et Tailscale non testés. Voir [MONITORING](MONITORING.md) et [preuves](evidence/monitoring/README.md).
+
+
 ## Version 0.6 — validation locale
 
 437 assertions C# réussies (métier 26, imaging 231, runtime 54, impression 26, Canon fictif 28, cloud 72), parcours UI étendu passé ; 22 tests Deno, typecheck/lint, 18 tests galerie et OpenAPI réussis. Les tests client bloquent les résultats jusqu’aux huit départs de deux séances. Les tests serveur vérifient le 202 immédiat, le travail en arrière-plan, l'absence de nouveau POST Responses, les erreurs ambiguës sans relance, la récupération d'une sortie persistée et la lecture des anciens jobs Responses.

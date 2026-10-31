@@ -1,7 +1,7 @@
 # API PhotoBooth
 
 Base : `https://frkckrvsdsiwivdfyjau.supabase.co/functions/v1/photobooth-api`.
-Le contrat [OpenAPI](../contracts/openapi.json) décrit l'implémentation 0.6, déployée et vérifiée sur Supabase. Voir [HANDOFF](HANDOFF.md) pour la livraison Windows et les reçus.
+Le contrat [OpenAPI](../contracts/openapi.json) décrit l'implémentation 0.7, déployée et vérifiée sur Supabase. Voir [HANDOFF](HANDOFF.md) pour la livraison Windows et les reçus.
 
 | Méthode et route | Protection | Rôle |
 | --- | --- | --- |
@@ -71,3 +71,7 @@ valable jusqu’à expiration, sauf suppression de l’objet. Pas de listing pub
 ## Protection 0.3.1
 
 Voir [SECURITY](SECURITY.md) pour les limites, la révocation, les états incertains et les tests de permissions. Le navigateur ne reçoit aucun code borne ni clé fournisseur. Son unique API est le résolveur de liens, jamais une route de génération.
+
+## Monitoring 0.7
+
+POST `/monitoring/booth` acquitte des lots de dix mesures du client authentifié. POST `/downloads/events` accepte uniquement les compteurs d'une galerie valide et de ses fichiers disponibles. Ces routes ne génèrent aucune photo. La table `booth_metrics` est privée et aucun accès lecture n'est donné au code borne ou aux invités. Rapports opérateur via `booth_monitoring_report` et le serveur local du Mac. [Définitions et reprise](MONITORING.md), [admin local](ADMIN_LOCAL.md).

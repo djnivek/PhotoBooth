@@ -1,5 +1,19 @@
 # Handoff actif : Colors Party by Estelle
 
+## Version 0.7 — monitoring et admin local
+
+Kevin demande la collecte métier durable puis le dashboard plus tard sur Mac. Il autorise explicitement la PR et sa fusion. PR17 (version 0.6 déjà approuvée) fusionnée sur b93740a ; travail 0.7 dans `feat/monitoring-local-admin`.
+
+API 0.7 et migration `20261031103145_booth_monitoring.sql` appliquées, sécurité sans alerte. Galerie Vercel `dpl_6jaKcfRSsQ6dgJKHNFShM3FR49eP` READY sur le domaine habituel. Aucun abonnement ni budget de génération modifié. Tests synthétiques uniquement, compteur de générations conservé.
+
+Table privée `booth_metrics` : choix, captures sauvegardées, transferts HTTP mesurés, réponse OpenAI valide et durée fournisseur, ouvertures de galerie, images entrées dans le viewport, clics de téléchargement. Dédoublonnage et file locale durable ; simulations exclues par défaut. Pas de reconstruction des captures historiques ou de personnes uniques. [Définitions](MONITORING.md).
+
+Tests : 83 contrôles cloud, 25 tests Deno, 20 tests galerie et 3 tests admin ; autres suites C# et parcours UI passent. Validation SQL annulée : moyennes, médiane/p95, filtrage fixture, dédoublonnage et droits. Production : 49 contrôles de partage, deux navigateurs restent ouverts pendant la progression, quatre vrais clics/téléchargements synthétiques suivis. Admin local temporaire a lu les vrais rapports et refusé une requête sans jeton ; serveur fermé après test.
+
+Le socle admin est une API JSON en lecture seule, sans dashboard graphique à ce stade. Bind fixe 127.0.0.1, jeton local éphémère, requête Supabase fixe via CLI connectée. [Procédure Mac et Tailscale](ADMIN_LOCAL.md). Aucun serveur permanent ou proxy Tailscale lancé sur Windows. Validation sur le vrai Mac/Tailscale et matériel Canon/DNP à faire plus tard avec Kevin. Il faut le client 0.7 pour les compteurs borne ; le site et les nouvelles générations sont instrumentés côté serveur.
+
+La section 0.6 ci-dessous est historique. La PR, la CI et le paquet 0.7 sont consignés dans les reçus et la description de livraison.
+
 ## Mise à jour 0.6 — décision la plus récente de Kevin
 
 Kevin remplace explicitement la précédente décision paysage/xhigh : **Sunburst direct via Images edits, sans Luna, qualité medium, sortie 1024 × 1024**. Puis il demande deux séances pouvant se chevaucher, jusqu'à huit images simultanées, une PR avec aperçus et la mise à jour Supabase. La planche reste 6 × 4 pouces (1800 × 1200, 300 dpi), avec carrés complets à gauche et logo/thème à droite. Au naturel conserve sa composition.

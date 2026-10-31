@@ -32,6 +32,7 @@ public sealed class RehearsalTransform : IPhotoTransform
 public sealed class BoothController : IAsyncDisposable
 {
     private readonly SessionStore store;
+    private readonly BoothTelemetry? telemetry;
     private readonly Func<IPhotoCamera> cameraFactory;
     private readonly IPhotoTransform transform;
     private readonly Func<TimeSpan, CancellationToken, Task> delay;
@@ -55,9 +56,9 @@ public sealed class BoothController : IAsyncDisposable
     public SessionStore Store => store;
 
     public BoothController(SessionStore store, Func<IPhotoCamera> cameraFactory, IPhotoTransform transform,
-        Func<TimeSpan, CancellationToken, Task>? delay = null)
+        Func<TimeSpan, CancellationToken, Task>? delay = null, BoothTelemetry? telemetry = null)
     {
-        this.store = store; this.cameraFactory = cameraFactory; this.transform = transform;
+        this.store = store; this.cameraFactory = cameraFactory; this.transform = transform; this.telemetry = telemetry;
         this.delay = delay ?? ((duration, token) => Task.Delay(duration, token));
     }
 
@@ -70,6 +71,7 @@ public sealed class BoothController : IAsyncDisposable
             await CloseCameraAsync();
             sessionCancellation?.Dispose(); sessionCancellation = new();
             Session = new Session(options); Sheet = null; FinalAssets = [];
+            await ObserveAsync("session_started");
             Message = "Connexion à la caméra…"; Notify();
             camera = cameraFactory();
             var status = await camera.ConnectAsync(sessionCancellation.Token);
@@ -115,6 +117,7 @@ public sealed class BoothController : IAsyncDisposable
                 token.ThrowIfCancellationRequested();
                 Session.RecordCapture(capture);
                 await SaveManifestAsync("captured", token);
+                await ObserveAsync("capture_saved", Session.Captures.Count-1);
                 if (Session.Stage == SessionStage.Positioning)
                 {
                     Message = "Une autre pose ?"; StartLiveView(); Notify();
@@ -150,6 +153,7 @@ public sealed class BoothController : IAsyncDisposable
             Session.CompleteProcessing(Session.Captures.Select((shot, i) => new FinalPhoto(shot.Id, final[i].Key)), Sheet.Key);
             Message = "Vos souvenirs sont prêts.";
             await SaveManifestAsync("ready", token);
+            await ObserveAsync("session_ready");
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
         { Message = "Séance annulée. Les photos déjà prises sont conservées."; }
@@ -216,6 +220,7 @@ public sealed class BoothController : IAsyncDisposable
             Sheet = await store.SavePhotoAsync(Session.Id, PhotoProcessor.Compose(bytes)); FinalAssets = final;
             Session.CompleteProcessing(Session.Captures.Select(c => new FinalPhoto(c.Id,c.LocalAssetKey)),Sheet.Key);
             Message = "Vos originaux sont prêts."; await SaveManifestAsync("ready_original_fallback",CancellationToken.None);
+            await ObserveAsync("original_fallback");
         }
         catch (Exception exception) { await FailAsync(exception); }
         finally { taking = false; Notify(); }
@@ -224,7 +229,7 @@ public sealed class BoothController : IAsyncDisposable
     public async Task CancelAsync()
     {
         sessionCancellation?.Cancel();
-        if (Session is { Stage: not (SessionStage.Ready or SessionStage.Failed or SessionStage.Cancelled) }) Session.Cancel();
+        if (Session is { Stage: not (SessionStage.Ready or SessionStage.Failed or SessionStage.Cancelled) }) { Session.Cancel(); await ObserveAsync("session_cancelled"); }
         await StopLiveViewAsync();
         Message = "Séance annulée."; Notify();
     }
@@ -272,8 +277,10 @@ public sealed class BoothController : IAsyncDisposable
     {
         if (Session is { Stage: not (SessionStage.Ready or SessionStage.Failed or SessionStage.Cancelled) }) Session.Fail(exception.GetType().Name);
         Message = exception.Message; await CloseCameraAsync();
-        await SaveManifestAsync("failed", CancellationToken.None); Notify();
+        await SaveManifestAsync("failed", CancellationToken.None); await ObserveAsync("session_failed"); Notify();
     }
+    private Task ObserveAsync(string kind,int shot=-1) => telemetry is null || Session is null ? Task.CompletedTask :
+        telemetry.RecordAsync(telemetry.Metric(Session.Id,Session.Options,kind,shot,style:Session.StyleId));
     private Task SaveManifestAsync(string state, CancellationToken token) => Session is null ? Task.CompletedTask :
         store.WriteManifestAsync(Session.Id, new { schema = 1, state, Session.Id, Session.Options,
             Session.StyleId, Session.UsedOriginalFallback, captures = Session.Captures, final = FinalAssets, sheet = Sheet,

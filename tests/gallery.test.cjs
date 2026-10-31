@@ -6,7 +6,7 @@ const source=fs.readFileSync('web/gallery/gallery.js','utf8');
 const origin='https://frkckrvsdsiwivdfyjau.supabase.co';
 const id='e3ac9960-328c-4a62-8d68-1266361bb8cf';
 class Element {
-  constructor(tag){this.tag=tag;this.children=[];this.hidden=true;this.textContent='';this.listeners={};}
+  constructor(tag){this.tag=tag;this.children=[];this.hidden=true;this.textContent='';this.listeners={};this.complete=true;this.naturalWidth=1536;}
   append(...children){this.children.push(...children);}
   replaceChildren(...children){this.children=children;}
   addEventListener(event,callback){this.listeners[event]=callback;}
@@ -15,16 +15,16 @@ class Element {
 function payload(count,edited){return {photo_count:count,mode:edited?'surprise':'original',expires_at:'2026-11-06T12:00:00Z',assets:[
  ...Array.from({length:count},(_,i)=>`photo-${i+1}.jpg`),...(edited?Array.from({length:count},(_,i)=>`original-${i+1}.jpg`):[]),'sheet.jpg','archive.zip'
 ].map(name=>({name,url:`${origin}/storage/v1/object/sign/booth-private/${id}/${name}?token=signed`}))};}
-async function render({count=4,edited=false,status=200,token='a'.repeat(64),modify=x=>x,offline=false}={}){
+async function render({count=4,edited=false,status=200,token='a'.repeat(64),modify=x=>x,offline=false,metrics=false}={}){
   const elements=Object.fromEntries(['status','retry','photos','sheet','archive','expiry','waiting','waiting-art'].map(name=>['#'+name,new Element(name)]));
-  const requests=[];let currentStatus=status;const events={};let reloads=0;
+  const requests=[];const metricRequests=[];let currentStatus=status;const events={};let reloads=0;
   const timers=[];
-  const context=vm.createContext({URL,Error,Date,AbortSignal,setTimeout:callback=>{timers.push(callback);return timers.length;},clearTimeout:()=>{},location:{hash:'#'+token,reload:()=>reloads++},addEventListener:(name,listener)=>events[name]=listener,
+  const context=vm.createContext({URL,Error,Date,AbortSignal,crypto:metrics?require("node:crypto").webcrypto:undefined,IntersectionObserver:class{constructor(callback){this.callback=callback;}observe(){this.callback([{isIntersecting:true}]);}disconnect(){}},setTimeout:callback=>{timers.push(callback);return timers.length;},clearTimeout:()=>{},location:{hash:'#'+token,reload:()=>reloads++},addEventListener:(name,listener)=>events[name]=listener,
     document:{body:new Element('body'),querySelector:name=>elements[name],createElement:tag=>new Element(tag)},
-    fetch:async(url,options)=>{requests.push({url,options});if(offline)throw new TypeError('Network error');return {ok:currentStatus===200,status:currentStatus,json:async()=>modify(payload(count,edited))};}});
+    fetch:async(url,options)=>{if(url.endsWith("/downloads/events")){metricRequests.push({url,options});return {ok:true,json:async()=>({accepted:JSON.parse(options.body).events.length})};}requests.push({url,options});if(offline)throw new TypeError('Network error');return {ok:currentStatus===200,status:currentStatus,json:async()=>modify(payload(count,edited))};}});
   vm.runInContext(source,context);
   await new Promise(resolve=>setImmediate(resolve));
-  return {elements,requests,setStatus:value=>currentStatus=value,events,reloads:()=>reloads,timers};
+  return {elements,requests,metricRequests,flushMetrics:()=>vm.runInContext("flushEvents()",context),setStatus:value=>currentStatus=value,events,reloads:()=>reloads,timers};
 }
 for(const count of [1,4])for(const edited of [false,true])test(`${count} poses, ${edited?'original/edited pairs':'original only'}, sheet and archive`,async()=>{
   const {elements,requests}=await render({count,edited});
@@ -97,4 +97,19 @@ for(const state of ['failed','delayed'])test(`terminal ${state} retains availabl
  const {elements,timers}=await render({edited:true,modify:x=>({...x,state,assets:x.assets.filter(a=>a.name==='original-1.jpg')})});
  assert.equal(elements['#waiting'].hidden,true);assert.equal(elements['#archive'].hidden,true);assert.equal(timers.length,0);
  assert.equal(elements['#photos'].children[0].children[1].children[0].tag,'figure');
+});
+
+test('first-party counters distinguish openings, visible images and download requests without counting refreshes',async()=>{
+ const {elements,metricRequests,flushMetrics}=await render({count:1,metrics:true});await flushMetrics();
+ let events=metricRequests.flatMap(r=>JSON.parse(r.options.body).events);
+ assert.equal(events.filter(e=>e.kind==='gallery_view').length,1);assert.equal(events.filter(e=>e.kind==='image_view').length,2);
+ await elements['#retry'].listeners.click();await flushMetrics();events=metricRequests.flatMap(r=>JSON.parse(r.options.body).events);
+ assert.equal(events.filter(e=>e.kind==='gallery_view').length,1);assert.equal(events.filter(e=>e.kind==='image_view').length,2);
+ elements['#photos'].children[0].children[1].children[0].children[1].children[1].listeners.click();elements['#archive'].listeners.click();await flushMetrics();
+ events=metricRequests.flatMap(r=>JSON.parse(r.options.body).events);
+ assert.deepEqual(events.filter(e=>e.kind==='download_requested').map(e=>e.asset),['photo-1.jpg','archive.zip']);assert.equal(new Set(events.map(e=>e.view_id)).size,1);
+ assert.ok(metricRequests.every(r=>!r.url.includes('a'.repeat(64))&&r.options.credentials==='omit'&&r.options.keepalive===true));
+});
+test('invalid or expired galleries never emit consultation counters',async()=>{
+ const {metricRequests,flushMetrics}=await render({metrics:true,status:404});await flushMetrics();assert.equal(metricRequests.length,0);
 });

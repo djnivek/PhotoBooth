@@ -1,4 +1,6 @@
 using System.IO.Compression;
+using System.Diagnostics;
+using System.Collections.Concurrent;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
@@ -16,6 +18,8 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
     private static readonly SemaphoreSlim GenerationSlots = new(8);
     private static readonly SemaphoreSlim UploadSlots = new(2);
     private static readonly SemaphoreSlim DownloadSlots = new(2);
+    public BoothTelemetry? Telemetry { get; set; }
+    private readonly ConcurrentDictionary<Guid,SessionOptions> metricOptions = new();
     private readonly HttpClient http;
     private readonly Uri api;
     private readonly string accessKey;
@@ -52,6 +56,7 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
     public async Task<TransformResult> TransformAsync(Guid sessionId, IReadOnlyList<byte[]> originals,
         IProgress<string> progress, CancellationToken token, string styleChoice = StyleCatalog.Chef)
     {
+        metricOptions[sessionId]=new SessionOptions(originals.Count,PhotoMode.Surprise,styleChoice:styleChoice);
         var style = await EnsureSession(sessionId, originals.Count, PhotoMode.Surprise, token, styleChoice);
         var shareToken = await ShareTokenAsync(sessionId, token);
         using (var gallery = await SendJsonAsync(HttpMethod.Post, $"sessions/{sessionId}/gallery", new { token = shareToken }, token))
@@ -104,7 +109,7 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
                         // The server's generation slot is already free. Let the
                         // next guest start while these bytes download for print.
                         GenerationSlots.Release(); acquired = false;
-                        var image = await DownloadAsync(status.RootElement.GetProperty("url").GetString()!, token);
+                        var image = await DownloadAsync(status.RootElement.GetProperty("url").GetString()!, token, sessionId, index);
                         if (status.RootElement.TryGetProperty("asset_stored", out var stored) && stored.GetBoolean())
                         {
                             if (!status.RootElement.TryGetProperty("sha256", out var digest) || digest.GetString() != SessionStore.Hash(image))
@@ -134,6 +139,7 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
         if (session.Stage != SessionStage.Ready || photos.Count != session.Options.PhotoCount ||
             !session.Results.Select(r => r.AssetKey).SequenceEqual(photos.Select(p => p.Key)) || session.SheetAssetKey != sheet.Key)
             throw new InvalidOperationException("Le partage doit correspondre exactement à l’aperçu validé.");
+        metricOptions[session.Id]=session.Options;
         await EnsureSession(session.Id, photos.Count, session.Options.Mode, token, session.Options.StyleChoice);
         var images = new List<byte[]>();
         foreach (var photo in photos) images.Add(await store.ReadVerifiedAsync(photo, token));
@@ -204,26 +210,29 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
         var marker = UploadMarker(id, name); var digest = SessionStore.Hash(bytes);
         if (File.Exists(marker) && await File.ReadAllTextAsync(marker, token) == digest) return;
         await UploadSlots.WaitAsync(token);
+        var started=Stopwatch.GetTimestamp(); long? elapsed=null; var outcome="failed";
         try
         {
         using var content = new ByteArrayContent(bytes); content.Headers.ContentType = new(name.EndsWith(".zip") ? "application/zip" : "image/jpeg");
         using var response = await SendAsync(HttpMethod.Put, $"sessions/{id}/assets/{name}", content, token);
         await EnsureSuccess(response);
-        using var result = JsonDocument.Parse(await response.Content.ReadAsByteArrayAsync(token));
+        var replyBytes=await response.Content.ReadAsByteArrayAsync(token); elapsed=(long)Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+        using var result = JsonDocument.Parse(replyBytes);
         if (result.RootElement.GetProperty("sha256").GetString() != digest)
             throw new IOException("La vérification du fichier envoyé a échoué.");
-        await RememberUploadAsync(id, name, bytes, token);
+        await RememberUploadAsync(id, name, bytes, token); outcome="success";
         }
-        finally { UploadSlots.Release(); }
+        finally { UploadSlots.Release(); await ObserveTransferAsync(id,"upload",name,elapsed ?? (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds,bytes.LongLength,outcome); }
     }
     private string UploadMarker(Guid id, string name) => Path.Combine(store.Root, id.ToString("N"), $"asset-upload-{name}.sha256");
     private Task RememberUploadAsync(Guid id, string name, byte[] bytes, CancellationToken token) =>
         SessionStore.WriteAtomicAsync(UploadMarker(id, name), Encoding.ASCII.GetBytes(SessionStore.Hash(bytes)), token);
-    private async Task<byte[]> DownloadAsync(string address, CancellationToken token)
+    private async Task<byte[]> DownloadAsync(string address, CancellationToken token, Guid sessionId, int index)
     {
         var uri = new Uri(address);
         if (uri.Scheme != "https" || uri.Host != api.Host || uri.Port != api.Port) throw new IOException("Adresse de résultat non reconnue.");
         await DownloadSlots.WaitAsync(token);
+        var started=Stopwatch.GetTimestamp(); long? elapsed=null; long transferred=0; var outcome="failed";
         try
         {
         using var request = new HttpRequestMessage(HttpMethod.Get, uri); // No booth credential on signed storage requests.
@@ -233,11 +242,15 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
         await using var stream=await response.Content.ReadAsStreamAsync(token);using var memory=new MemoryStream();
         var buffer=new byte[65536];int read;
         while((read=await stream.ReadAsync(buffer,token))>0)
-        { if(memory.Length+read>PhotoProcessor.MaxEncodedBytes)throw new IOException("Image distante trop volumineuse.");await memory.WriteAsync(buffer.AsMemory(0,read),token); }
-        var bytes=memory.ToArray();using var decoded=PhotoProcessor.DecodeUpright(bytes);return bytes;
+        { if(memory.Length+read>PhotoProcessor.MaxEncodedBytes)throw new IOException("Image distante trop volumineuse.");await memory.WriteAsync(buffer.AsMemory(0,read),token); transferred+=read; }
+        elapsed=(long)Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+        var bytes=memory.ToArray();using var decoded=PhotoProcessor.DecodeUpright(bytes);outcome="success";return bytes;
         }
-        finally { DownloadSlots.Release(); }
+        finally { DownloadSlots.Release(); await ObserveTransferAsync(sessionId,"download",$"photo-{index+1}.jpg",elapsed ?? (long)Stopwatch.GetElapsedTime(started).TotalMilliseconds,transferred,outcome); }
     }
+    private Task ObserveTransferAsync(Guid id,string kind,string asset,long milliseconds,long bytes,string outcome) =>
+        Telemetry is null || !metricOptions.TryGetValue(id,out var options) ? Task.CompletedTask :
+        Telemetry.RecordAsync(Telemetry.Metric(id,options,kind,milliseconds:milliseconds,bytes:bytes,asset:asset,outcome:outcome));
     private async Task<JsonDocument> SendJsonAsync(HttpMethod method,string path,object? body,CancellationToken token)
     {
         using var content=body is null?null:JsonContent.Create(body);
