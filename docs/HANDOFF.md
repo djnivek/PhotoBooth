@@ -1,5 +1,12 @@
 # Handoff actif : Colors Party by Estelle
 
+## Métamorphose 0.9 : plusieurs univers avant les poses
+
+En cours de livraison sur `feat/multi-theme-sessions`, depuis main `b53731e`. Neuf univers embarqués et serveur, dont Drôles de bêtes, Sous cloche et À croquer. Choix de un à quatre univers pour quatre poses ; distribution équilibrée et répétitions en diagonale. Chef choisit quatre univers distincts si possible. Catalogue de vingt univers testé sur les deux formats de fenêtre, actions fixes et aucun appel réseau à l’ouverture du sélecteur.
+
+Les prompts complets sont figés par pose côté serveur, avec quatre directions créatives et costumes libres. Les identités, corps, lunettes et aides personnelles restent à préserver par consigne. L’interface n’interrompt pas la série pour redemander un thème. [Revue, preuves et étapes de livraison](reviews/multi-theme-2026-10-31/README.md). La recette physique et le premier vrai portrait restent nécessaires ; aucun appel OpenAI payant automatisé.
+
+
 ## Revue avant branchement du 31 octobre
 
 Main 0.8.0 récupéré sur `0b447de`, admin persistant redémarré et accès HTTPS Tailscale authentifié vérifié. Le code admin reste identique. La revue technique porte sur Canon, DNP, impression, réseau, projection et performances ; [dossier et recette de branchement](reviews/technical-readiness-2026-10-31/README.md).
@@ -112,7 +119,7 @@ Le dossier `%LOCALAPPDATA%\EstellArt` est conservé intentionnellement pour ne p
 
 ## Tests restants, dans l’ordre
 
-1. Fermer l’ancienne app puis lancer le dernier exécutable extrait, version 0.8.1 pour cette correction. La CI Windows Server 2022 ne valide pas le Windows 10 cible ; refaire le parcours opérateur et tester manuellement une/quatre poses, six styles et Chef, aperçu/Imprimer vers fichier, réglages et maintien souris/tactile.
+1. Fermer l’ancienne app puis lancer le dernier exécutable extrait, version 0.9.0 pour cette évolution. La CI Windows Server 2022 ne valide pas le Windows 10 cible ; refaire le parcours opérateur et tester manuellement une/quatre poses, neuf univers, choix multiples et Chef, aperçu/Imprimer vers fichier, réglages et maintien souris/tactile.
 2. Essai réel volontaire avec un portrait autorisé, puis quatre si le résultat convient : fidélité, délai de génération, coûts retournés, QR sur téléphone et continuité après Une nouvelle séance. Faire cette mesure sur la 4G prévue. Pour un profil rapide, appliquer seulement le réglage approuvé après comparaison. Les essais hors ligne simulés sont couverts ; refaire la coupure/rétablissement réelle et Réessayer le partage.
 3. Photomaton : fermer DSLR Booth/EOS Utility, tester Canon en MF confirmé, quatre photos nettes, annulation et reconnexion. Puis DS620 4×6, une mire et quatre poses sur une seule feuille.
 4. Vérifier réseau, espace, consommables et plusieurs séances successives. Le Windows10 exact et l’ancien i7 restent distincts de la CI Server2022.
@@ -125,4 +132,4 @@ Stockage Free conservé à la demande de Kevin ; revoir après les essais réuss
 
 `sh scripts/verify.sh`, ou `./scripts/verify.ps1` sur Windows. Sur ce Mac : `PHOTOBOOTH_DOTNET=/tmp/photobooth-dotnet/dotnet`, `DOTNET_CLI_HOME=/tmp/photobooth-dotnet-home`. Tests C# exécutables, Deno et Node ; pas dotnet test. Construire avec `--disable-build-servers -m:1`, puis tests `--no-build`.
 
-`./scripts/package-windows.ps1 -Version 0.8.1` prépare un ZIP autonome, l’extrait puis exécute `--self-test` et `--smoke-ui` sur Windows. Release GitHub privée à distinguer de ce paquet local, SHA256, captures et reçus. Sources seules dans Git. Aucun auteur ou co-auteur assistant.
+`./scripts/package-windows.ps1 -Version 0.9.0` prépare un ZIP autonome, l’extrait puis exécute `--self-test` et `--smoke-ui` sur Windows. Release GitHub privée à distinguer de ce paquet local, SHA256, captures et reçus. Sources seules dans Git. Aucun auteur ou co-auteur assistant.

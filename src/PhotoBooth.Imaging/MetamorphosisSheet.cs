@@ -10,7 +10,9 @@ public static class MetamorphosisSheet
     public static byte[] Compose(IReadOnlyList<byte[]> photos, string? styleId)
     {
         var layout = PrintLayout.Metamorphosis(photos.Count);
-        var style = StyleCatalog.BuiltIn.Find(styleId ?? StyleCatalog.Chef);
+        var mixed = styleId == StyleCatalog.Mixed;
+        var unknown = styleId is not null && styleId != StyleCatalog.Chef && !StyleCatalog.BuiltIn.Styles.Any(s => s.Id == styleId);
+        var style = StyleCatalog.BuiltIn.Find(mixed || unknown ? "colors_party" : styleId ?? StyleCatalog.Chef);
         using var bitmap = new SKBitmap(layout.Width, layout.Height);
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColor.Parse("#FFF8EC"));
@@ -40,7 +42,7 @@ public static class MetamorphosisSheet
         font.Size = 38;
         // Built-in labels plus safe fallback only; a remote catalog cannot inject
         // asset paths or unbounded copy into the print master.
-        var label = style.Id == StyleCatalog.Chef ? "La Surprise du Chef" : style.Label;
+        var label = mixed ? "Plusieurs univers" : unknown ? "Votre métamorphose" : style.Id == StyleCatalog.Chef ? "La Surprise du Chef" : style.Label;
         while (font.MeasureText(label, paint) > 492 && font.Size > 28) font.Size -= 1;
         canvas.DrawText(label, 1494, 1036, SKTextAlign.Center, font, paint);
         font.Size = 29;

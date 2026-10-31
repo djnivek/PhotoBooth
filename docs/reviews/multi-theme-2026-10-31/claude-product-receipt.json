@@ -1,0 +1,24 @@
+{
+  "exit_code": 0,
+  "elapsed_seconds": 285.81,
+  "model_requested": "claude-opus-5-5",
+  "models_observed": [
+    "claude-opus-5-5"
+  ],
+  "effort": "max",
+  "max_output_tokens": 128000,
+  "tools_enabled": true,
+  "input_manifest": {
+    "files": [
+      {
+        "name": "DECISIONS.md",
+        "sha256": "37403def4ce30fdd1d24908404a7d6fa6f5cb6ef9a14fc18f97d34df7b232249",
+        "bytes": 2596
+      }
+    ],
+    "secrets": false,
+    "photos": false
+  },
+  "result_received": true,
+  "is_error": false
+}

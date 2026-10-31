@@ -6,7 +6,7 @@ Télécharger [le dernier paquet Colors Party Windows x64](https://github.com/dj
 avec un compte ayant accès au dépôt privé. Extraire **tout** le ZIP dans un dossier local avant
 `ColorsParty.exe` ; ne pas lancer depuis la vue ZIP du navigateur. Pas de SDK .NET requis.
 Le ZIP est accompagné de son SHA-256. Le pipeline extrait le paquet et l'exécute sur Windows Server 2022 ;
-[revue et reçus 0.8.1](reviews/technical-readiness-2026-10-31/README.md). Le lancement sur le Windows 10 cible reste à vérifier.
+[revue et reçus 0.9.0](reviews/technical-readiness-2026-10-31/README.md). Le lancement sur le Windows 10 cible reste à vérifier.
 
 1. Lancer en répétition (défaut). Tester 1/4 poses, Au naturel/Métamorphose, placement,
    décompte 3 secondes, effet de capture, aperçu. Aucun appareil ni Internet requis pour ce parcours.
@@ -81,7 +81,7 @@ travail signifie accepté par le spooler, pas imprimé. Si `print.json` indique 
 vérifier la file avant toute reprise manuelle ; ne pas supprimer le journal pour forcer un renvoi.
 Le réglage DNP « Print Re-try » peut conserver un travail dans la mémoire de l'imprimante même s'il n'est plus dans la file Windows. Après une panne de papier, ruban ou couvercle, corriger la panne puis attendre sa reprise avant toute décision de renvoi.
 
-À partir de 0.8.1, un refus prouvé avant `StartDoc` est journalisé `not_submitted` : corriger le réglage puis appuyer explicitement sur Imprimer est autorisé. `requested`, `submitted` et `needs_operator` restent bloquants. Aucun renvoi automatique n'a été ajouté.
+À partir de 0.9.0, un refus prouvé avant `StartDoc` est journalisé `not_submitted` : corriger le réglage puis appuyer explicitement sur Imprimer est autorisé. `requested`, `submitted` et `needs_operator` restent bloquants. Aucun renvoi automatique n'a été ajouté.
 
 ## Validation finale
 
@@ -93,3 +93,12 @@ Le réglage DNP « Print Re-try » peut conserver un travail dans la mémoire de
 
 Ne déclarer le photomaton prêt qu’après ces essais. Les tests Mac/CI ne simulent pas un papier,
 un capteur, un pilote ou un port USB réel. Garder DSLR Booth opérationnel pendant la recette.
+
+
+## Plusieurs univers dans la version 0.9
+
+Avant une séance de quatre poses, sélectionner de un à quatre univers, puis C’est parti ! La borne enchaîne les quatre comptes à rebours sans nouvelle question. Tous les univers choisis sont utilisés. Deux choix donnent deux images chacun ; trois choix donnent une image chacun et une répétition ; quatre choix donnent une image chacun. Les thèmes répétés occupent les diagonales de la planche. Un seul univers conserve quatre directions créatives distinctes, sans promettre des costumes forcément différents.
+
+La Surprise du Chef est exclusive et varie les thèmes disponibles. Une photo conserve un seul choix. Les neuf univers initiaux incluent Drôles de bêtes, Sous cloche et À croquer. La grille accepte une liste plus longue et garde Retour, Chef et C’est parti ! accessibles. Pour recevoir une modification serveur, ouvrir Réglages puis Actualiser les univers. Le changement ne remplace pas les choix d’un invité en train de poser.
+
+Au naturel reste indépendant du catalogue et du réseau. Un ancien serveur qui ne renvoie pas le plan de plusieurs univers provoque un refus avant tout envoi de photo et toute génération ; les originaux restent disponibles. Voir [la livraison multi-univers](reviews/multi-theme-2026-10-31/README.md) pour la version serveur déployée et les tests.

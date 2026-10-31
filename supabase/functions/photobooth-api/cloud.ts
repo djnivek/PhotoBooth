@@ -1,4 +1,5 @@
 import { Buffer } from "node:buffer";
+import { identityPrompt, requestedStyles, freezePlan, styleId, type FrozenShotStyle } from "./style-plans.ts";
 import catalog from "./styles.json" with { type: "json" };
 import { buildArchive } from "./archive.ts";
 import { boothMetrics, guestMetrics } from "./monitoring.ts";
@@ -20,6 +21,8 @@ export type SessionRow = {
   style: string;
   requested_style?: string;
   style_prompt?: string;
+  requested_styles?: string[] | null;
+  shot_styles?: FrozenShotStyle[] | null;
   share_hash: string | null;
   published_at: string | null;
   used_original_fallback?: boolean;
@@ -63,25 +66,17 @@ const legacyStyles: Record<string, string> = {
 export const styles: Record<string, string> = {
   ...legacyStyles, ...Object.fromEntries(catalog.styles.map(s => [s.id, s.prompt])),
 };
-export const identityPrompt = "La photo jointe est l’unique référence des personnes. " +
-  "Conserve strictement le même nombre de personnes et leur identité : mêmes visages, traits, âge apparent, carnation, cheveux, expression, pose et emplacement relatif. " +
-  "Conserve exactement leur corpulence, silhouette et proportions anatomiques, ainsi que leurs aides à la mobilité. " +
-  "Ne rajeunis, n’amincis, n’embellis, ne caricature et ne remplace aucun visage. N’ajoute ni personne ni membre. " +
-  "Les vêtements, accessoires qui ne masquent pas les visages et le décor peuvent changer. " +
-  "Le thème ne doit jamais modifier l’anatomie, la peau ou les visages. Si une consigne de thème entre en conflit, la fidélité à la référence prévaut. " +
-  "Garde dans le cadre toutes les parties du corps visibles dans la photo source et les mêmes distances relatives entre les personnes. " +
-  "Rendu photographique, familial et bienveillant. Ne sexualise personne. Une seule image carrée, sans texte, logo, collage ni planche. " +
-  "Adapte le décor autour des personnes pour remplir le carré sans rogner les personnes ou les parties du corps visibles dans la référence.";
+export { identityPrompt } from "./style-plans.ts";
 export function publicCatalog() {
   return { version: catalog.version, styles: catalog.styles.map(({ prompt: _prompt, ...style }) => style) };
 }
-export function imageRequest(config: Config, imageUrl: string, style: string, savedPrompt?: string) {
-  if (!savedPrompt && !(style in styles)) throw new ApiError(400, "invalid_style");
+export function imageRequest(config: Config, imageUrl: string, style: string, savedPrompt?: string, frozenPrompt?: string) {
+  if (!frozenPrompt && !savedPrompt && !(style in styles)) throw new ApiError(400, "invalid_style");
   return {
     model: config.imageModel,
     images: [{ image_url: imageUrl }],
-    prompt: "Transforme cette seule photo pour un anniversaire familial. " + identityPrompt +
-      " Univers choisi : " + (savedPrompt ?? styles[style]),
+    prompt: frozenPrompt ?? ("Transforme cette seule photo pour un anniversaire familial. " + identityPrompt +
+      " Univers choisi : " + (savedPrompt ?? styles[style])),
     n: 1,
     quality: "medium",
     size: "1024x1024",
@@ -211,6 +206,14 @@ export class CloudApi {
       `booth_jobs?session_id=eq.${id}&shot_index=eq.${index}&select=*`,
     ))[0];
   }
+  private frozenShot(session: SessionRow, index: number): FrozenShotStyle | undefined {
+    if (session.shot_styles == null) return undefined; // pre-migration session
+    if (!Array.isArray(session.shot_styles) || session.shot_styles.length !== session.photo_count ||
+        session.shot_styles.some(shot => !shot || !styleId(shot.id) || shot.id === "chef" ||
+          typeof shot.prompt !== "string" || !shot.prompt.trim() || typeof shot.variation !== "string" || !shot.variation.trim()))
+      throw new ApiError(503, "invalid_session_plan");
+    return session.shot_styles[index];
+  }
   private updateJob(
     id: string,
     index: number,
@@ -312,7 +315,7 @@ export class CloudApi {
   private async generationMetric(session: SessionRow, index: number, started: number, duration: number, outcome: string, bytes?: number) {
     const task = this.recordMetrics([{ id: crypto.randomUUID(), session_id: session.id, origin: "provider", kind: "generation",
       occurred_at: new Date(started).toISOString(), mode: session.mode, photo_count: session.photo_count,
-      requested_style: session.requested_style ?? "chef", style: session.style, source: "unknown", shot_index: index,
+      requested_style: session.requested_style ?? "chef", style: session.shot_styles?.[index]?.id ?? session.style, source: "unknown", shot_index: index,
       duration_ms: duration, bytes: bytes ?? null, outcome, asset: null, view_id: null }]);
     if (this.background) this.background(task); else await task;
   }
@@ -332,7 +335,7 @@ export class CloudApi {
         method: "POST",
         headers: { Authorization: "Bearer " + this.config.openAIKey, "Content-Type": "application/json",
           "X-Client-Request-Id": `${session.id}-${index}` },
-        body: JSON.stringify(imageRequest(this.config, imageUrl, session.style, session.style_prompt)),
+        body: JSON.stringify(imageRequest(this.config, imageUrl, this.frozenShot(session, index)?.id ?? session.style, session.style_prompt, this.frozenShot(session, index)?.prompt)),
         // Leave room for Storage/DB finalization within a Free Edge worker's lifetime.
         signal: AbortSignal.timeout(110000),
       });
@@ -391,7 +394,7 @@ export class CloudApi {
         }
         return reply({
           service: "photobooth",
-          api_version: "0.8.0",
+          api_version: "0.9.0",
           stage: "rehearsal",
           production_ready: false,
           session_api_enabled: !!this.config.accessKeyHash,
@@ -485,31 +488,32 @@ export class CloudApi {
           ![1, 4].includes(input.photo_count) ||
           !["original", "surprise"].includes(String(input.mode))
         ) throw new ApiError(400, "invalid_session");
-        const requestedStyle = input.style ?? "chef";
-        if (typeof requestedStyle !== "string") throw new ApiError(400, "invalid_style");
-        // An existing session always retains its original choice and prompt, even after removal.
+        let choices: string[];
+        try { choices = requestedStyles(input, input.photo_count); }
+        catch { throw new ApiError(400, "invalid_style"); }
+        const requestedStyle = choices.length === 1 ? choices[0] : "mix";
+        // A prior session wins, including its exact plan and removed catalog themes.
         const existing = await this.rest<SessionRow[]>(`booth_sessions?id=eq.${input.id}&owner_hash=eq.${owner}&select=*`);
-        const chosen = requestedStyle === "chef"
-          ? catalog.styles[crypto.getRandomValues(new Uint32Array(1))[0] % catalog.styles.length]
-          : catalog.styles.find(s => s.id === requestedStyle);
-        if (!existing.length && input.mode === "surprise" && !chosen) throw new ApiError(400, "invalid_style");
-        await this.rest("booth_sessions", "POST", {
-          id: input.id,
-          owner_hash: owner,
-          photo_count: input.photo_count,
-          mode: input.mode,
-          style: input.mode === "original" ? "original" : chosen?.id ?? existing[0]?.style,
-          requested_style: requestedStyle,
-          style_prompt: input.mode === "original" ? null : chosen?.prompt ?? existing[0]?.style_prompt,
-        }, "resolution=ignore-duplicates,return=representation");
+        if (!existing.length) {
+          let plan: FrozenShotStyle[] | null = null;
+          try { if (input.mode === "surprise") plan = freezePlan(choices, input.photo_count); }
+          catch { throw new ApiError(400, "invalid_style"); }
+          const single = plan && plan.every(s => s.id === plan[0].id) ? plan[0].id : "mix";
+          await this.rest("booth_sessions", "POST", {
+            id: input.id, owner_hash: owner, photo_count: input.photo_count, mode: input.mode,
+            style: input.mode === "original" ? "original" : single,
+            requested_style: requestedStyle, requested_styles: choices,
+            style_prompt: plan ? styles[plan[0].id] : null, shot_styles: plan,
+          }, "resolution=ignore-duplicates,return=representation");
+        }
         const session = await this.session(input.id, owner);
-        if (
-          session.photo_count !== input.photo_count ||
-          session.mode !== input.mode || (session.requested_style ?? "chef") !== requestedStyle
-        ) throw new ApiError(409, "session_conflict");
+        const savedChoices = session.requested_styles ?? [session.requested_style ?? "chef"];
+        if (session.photo_count !== input.photo_count || session.mode !== input.mode ||
+            JSON.stringify([...savedChoices].sort()) !== JSON.stringify(choices)) throw new ApiError(409, "session_conflict");
         return reply({
           id: session.id,
           style: session.style,
+          shot_styles: session.mode === "surprise" ? Array.from({length: session.photo_count}, (_, index) => this.frozenShot(session, index)?.id ?? session.style) : [],
           expires_at: session.expires_at,
         }, 201);
       }
@@ -537,6 +541,7 @@ export class CloudApi {
         if (index >= session.photo_count || session.mode !== "surprise") {
           throw new ApiError(400, "invalid_shot");
         }
+        this.frozenShot(session, index); // reject a damaged plan before claiming any quota
         if (request.method === "POST") {
           if (!this.config.openAIKey) {
             throw new ApiError(503, "openai_not_configured");

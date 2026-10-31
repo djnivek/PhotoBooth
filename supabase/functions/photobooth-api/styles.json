@@ -1,11 +1,122 @@
 {
-  "version": "2026-10-30.1",
+  "version": "2026-10-31.2",
   "styles": [
-    {"id":"colors_party","label":"Colors Party","description":"Du velours, des couleurs et vous.","asset":"colors_party","color":"#E0E7D8","phrases":["Une pincée de couleurs.","Le velours entre en scène.","Vos sourires sont entre de bonnes mains."],"prompt":"Une fête chic et joyeuse aux couleurs vert sauge, jaune beurre, corail et rouge velours. Habille les personnes de costumes festifs aux tissus tactiles et détails légèrement extravagants, grandes fleurs en tissu et accessoires amusants. Un décor de fête avec rubans verticaux évoque une soirée des années 80. Humour tendre, lumière douce, rendu photographique."},
-    {"id":"halloween","label":"Halloween","description":"Des citrouilles très bien habillées.","asset":"halloween","color":"#F3D5C3","phrases":["Les citrouilles ajustent leur tenue.","Une pincée de mystère.","Les fantômes se tiennent à carreau."],"prompt":"Une fête Halloween familiale, drôle et charmante. Choisis librement pour chaque personne un déguisement original de citrouille chic, sorcier maladroit, vampire élégant ou autre costume Halloween bienveillant. Capes en velours, chapeaux dégagés du visage, citrouilles et petits fantômes de décoration. Aucun masque, maquillage de visage, sang, violence ou horreur. Les visages restent des visages photographiques inchangés."},
-    {"id":"space","label":"Dans les étoiles","description":"Votre équipage change de planète.","asset":"space","color":"#E7DFF0","phrases":["Les étoiles s’alignent.","Votre équipage prépare son entrée.","Un petit détour par Saturne."],"prompt":"Une fête spatiale rétrofuturiste joyeuse. Les personnes sont un équipage en combinaisons élégantes, broderies cosmiques et bottes fantaisie, sur une station avec planètes pastel et accessoires de voyage absurdes. Casques absents ou portés à la main, jamais autour ou devant la tête. Rendu de photographie de plateau, chaleureux et humoristique, sans transformer les visages."},
-    {"id":"fantasy","label":"Pays imaginaire","description":"Les licornes sont de la partie.","asset":"fantasy","color":"#F4E6B7","phrases":["Les licornes lissent leur crinière.","Un peu de poussière de fée.","Le jardin sort ses habits de fête."],"prompt":"Un pays imaginaire photographique, jardin enchanté avec fleurs géantes, petits compagnons licornes et accessoires de conte espiègles. Vêts les personnes de tenues de fête féeriques adaptées à leur silhouette existante, sans ailes sur le visage, sans modification de peau, oreilles, yeux ou corps. Les sujets restent des personnes humaines photographiques, reconnaissables. Les créatures fantastiques sont des compagnons et des éléments du décor."},
-    {"id":"elves","label":"Petits lutins","description":"Petits dans un monde trop grand.","asset":"elves","color":"#DCE6D7","phrases":["Les lutins sortent le grand jeu.","Les champignons dressent la table.","Le petit monde s’agite en cuisine."],"prompt":"Les personnes deviennent une joyeuse équipe d’artisans de forêt par leurs costumes de lutins, bonnets inclinés loin du visage, vestes en velours et accessoires de bricolage fantaisistes. Un décor de champignons et d’objets domestiques gigantesques crée une impression de monde miniature. Ne réduis jamais la taille relative d’une personne par rapport aux autres, ne modifie aucune proportion corporelle, ne crée ni grosses têtes, ni jambes raccourcies, ni visage caricatural. L’effet miniature vient exclusivement de l’échelle du décor. Rendu photographique."},
-    {"id":"disco","label":"Disco velours","description":"La piste n’attendait que vous.","asset":"disco","color":"#F1D5D3","phrases":["La boule à facettes se réveille.","Le velours chauffe la piste.","Les paillettes répètent leur numéro."],"prompt":"Une soirée disco rétro pleine d’humour et d’élégance. Tenues seventies et eighties en velours, manches festives, pantalons évasés et détails scintillants, sans changer les silhouettes. Décor de boule à facettes et rideaux de rubans verticaux en couleurs pastel, vert sauge, jaune beurre et rouge velours. Pas de lunettes opaques, perruques ou accessoires cachant les visages, aucune coiffure modifiée. Rendu photographique de fête."}
+    {
+      "id": "colors_party",
+      "label": "Colors Party",
+      "description": "Du velours, des couleurs et vous.",
+      "asset": "colors_party",
+      "color": "#E0E7D8",
+      "phrases": [
+        "Une pincée de couleurs.",
+        "Le velours entre en scène.",
+        "Vos sourires sont entre de bonnes mains."
+      ],
+      "prompt": "Une Colors Party chic, joyeuse et délicieusement extravagante, dans une ambiance de fête des années 80 aux couleurs sauge, jaune beurre, corail et rouge velours. Invente librement les tenues, les matières et le décor de fête. Trouve une situation drôle et élégante qui respecte la pose de la référence. Humour tendre et lumière douce."
+    },
+    {
+      "id": "halloween",
+      "label": "Halloween",
+      "description": "Des frissons, surtout des sourires.",
+      "asset": "halloween",
+      "color": "#F3D5C3",
+      "phrases": [
+        "Une pincée de mystère.",
+        "Les invités préparent leur grand effet.",
+        "La fête se donne des frissons."
+      ],
+      "prompt": "Une fête Halloween familiale, drôle et charmante. Imagine librement pour chaque personne un déguisement et une ambiance de fête dans cet univers, sans costume ni personnage imposé. Cherche une interprétation surprenante et bienveillante. Aucun masque, maquillage du visage, sang, violence ou horreur. Les visages restent des visages photographiques inchangés."
+    },
+    {
+      "id": "space",
+      "label": "Dans les étoiles",
+      "description": "Votre équipage change de planète.",
+      "asset": "space",
+      "color": "#E7DFF0",
+      "phrases": [
+        "Les étoiles s’alignent.",
+        "Votre équipage prépare son entrée.",
+        "Un petit détour par Saturne."
+      ],
+      "prompt": "Une fête dans un univers spatial rétrofuturiste, photographique, chaleureux et plein d’humour. Imagine librement les tenues et une situation cosmique inattendue, en gardant la pose des personnes. Le décor et les accessoires portent la fantaisie. Aucun équipement ne cache ou ne déforme le visage. Ne transforme pas les personnes en créatures."
+    },
+    {
+      "id": "fantasy",
+      "label": "Pays imaginaire",
+      "description": "Les licornes sont de la partie.",
+      "asset": "fantasy",
+      "color": "#F4E6B7",
+      "phrases": [
+        "Les licornes lissent leur crinière.",
+        "Un peu de poussière de fée.",
+        "Le jardin sort ses habits de fête."
+      ],
+      "prompt": "Une fête dans un pays imaginaire merveilleux, photographique et espiègle. Invente librement une scène de conte, des tenues et des accessoires surprenants qui respectent la silhouette et la pose de la référence. La magie vient du décor et des vêtements. Les personnes gardent une apparence humaine, sans modification de peau, oreilles, yeux ou corps."
+    },
+    {
+      "id": "elves",
+      "label": "Petits lutins",
+      "description": "Petits dans un monde trop grand.",
+      "asset": "elves",
+      "color": "#DCE6D7",
+      "phrases": [
+        "Les lutins sortent le grand jeu.",
+        "Les champignons dressent la table.",
+        "Le petit monde s’agite en cuisine."
+      ],
+      "prompt": "Une joyeuse fête de petits lutins dans un monde qui semble trop grand. Invente librement des costumes et un décor de conte avec un décalage d’échelle amusant. L’impression miniature vient exclusivement des objets et du décor agrandis. Conserve la taille relative des personnes, leurs proportions, leur pose et leurs visages photographiques. Aucune caricature anatomique."
+    },
+    {
+      "id": "disco",
+      "label": "Disco velours",
+      "description": "La piste n’attendait que vous.",
+      "asset": "disco",
+      "color": "#F1D5D3",
+      "phrases": [
+        "La boule à facettes se réveille.",
+        "Le velours chauffe la piste.",
+        "Les paillettes répètent leur numéro."
+      ],
+      "prompt": "Une soirée disco rétro pleine d’humour et d’élégance. Invente librement des tenues, des accessoires et un décor de fête inspirés des années 70 et 80, avec des matières tactiles et une ambiance joyeuse. Ne modifie ni les silhouettes ni les coiffures. Aucun accessoire ne cache les visages. Rendu photographique de soirée."
+    },
+    {
+      "id": "animals",
+      "label": "Drôles de bêtes",
+      "description": "Un brin sauvage, toujours vous.",
+      "asset": "animals",
+      "color": "#F3D5C3",
+      "phrases": [
+        "La ménagerie se met sur son trente et un.",
+        "Un peu de panache dans les pelages.",
+        "La fête prend un air sauvage."
+      ],
+      "prompt": "Une fête animalière élégante et drôle. Choisis librement une inspiration animale pour chaque personne et évoque cette inspiration uniquement par un costume inventif et des accessoires. Les personnes restent humaines : visage, peau, cheveux, silhouette, membres et proportions strictement conservés. Aucune tête animale, aucun museau ni maquillage, aucune transformation anatomique. Laisse les visages complètement dégagés. Imagine un décor de fête assorti, sans danger ni violence. Choisis cette inspiration sans te baser sur l’apparence physique, l’âge ou l’origine des personnes. Reste dans un registre tendre et valorisant, jamais humiliant."
+    },
+    {
+      "id": "showcase",
+      "label": "Sous cloche",
+      "description": "Votre petit monde en vitrine.",
+      "asset": "showcase",
+      "color": "#E0E7D8",
+      "phrases": [
+        "On vous prépare une place de choix.",
+        "Le décor sort de sa réserve.",
+        "La vitrine prend des airs de fête."
+      ],
+      "prompt": "Une mise en scène de collection photographique, drôle et théâtrale : les personnes semblent installées dans un petit monde de fête présenté sous une grande cloche de vitrine. Invente librement le décor et les vêtements, avec des objets d’échelle surprenante. Les personnes restent humaines et conservent leur pose et toutes leurs proportions. La cloche est spacieuse, légère et suggérée autour du décor, sans reflet, montant ou déformation sur les visages et sans partie du corps coupée. Ambiance accueillante et joyeuse, sans impression de danger, de cage ou de détresse. Le petit monde est une vitrine de curiosités non alimentaire. La cloche dessine une grande arche autour et derrière le groupe ; les visages sont parfaitement dégagés, sans verre au premier plan."
+    },
+    {
+      "id": "feast",
+      "label": "À croquer",
+      "description": "La gourmandise voit les choses en grand.",
+      "asset": "feast",
+      "color": "#F4E6B7",
+      "phrases": [
+        "La fête se ressert une part.",
+        "Une bonne dose de gourmandise.",
+        "Le décor prend du volume."
+      ],
+      "prompt": "Une fête gourmande photographique où le décor et les gourmandises semblent démesurés autour des personnes. Invente librement un banquet imaginaire et des tenues de fête avec un décalage d’échelle drôle et élégant. Les personnes gardent leur pose, leurs visages et leurs proportions humaines. L’effet miniature vient uniquement du décor agrandi. Ne transforme jamais les personnes en aliments, ne les mange pas et ne couvre pas leur visage de nourriture. Humour tendre, aucune menace, aucun corps comestible. Les personnes se tiennent au milieu du décor gourmand, jamais posées dans une assiette, un bol ou près de couverts ou de bouches. Pas de cloche, de présentoir ni de costume alimentaire."
+    }
   ]
 }

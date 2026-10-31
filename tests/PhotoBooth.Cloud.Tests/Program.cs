@@ -15,7 +15,7 @@ try
     using(var handler=new CatalogHttp(catalogJson))
     {
         var catalog=await StyleCatalogClient.FetchAsync("https://test.supabase.co/functions/v1/photobooth-api",default,handler);
-        Check(catalog.Styles.Length==6&&handler.Calls==1,"Public catalog uses exactly one unauthenticated request");
+        Check(catalog.Styles.Length==9&&handler.Calls==1,"Public catalog uses exactly one unauthenticated request");
     }
     foreach(var invalid in new[]{"{}",new string('x',256*1024+1),catalogJson.Replace("Halloween","Halloween AI"),catalogJson.Replace("Halloween","Halloween-party")})
     {
@@ -189,6 +189,31 @@ try
             Check(resumedHandler.Calls==3,"Only configure, one release, disable; never a provider call");
         }
     }
+    // Protocol v0.9 must freeze one concrete theme per pose before the first upload or paid job.
+    {
+        string[] plan = ["space", "halloween", "fantasy", "space"];
+        using var handler = new FakeHttp(originals[0]) { ShotStyles = plan, DirectStored = true, Fixtures = originals };
+        var store = new SessionStore(root);
+        using var cloud = new BoothCloudClient("https://test.supabase.co/api", "fake-booth", store, handler:handler, delay:(_,_)=>Task.CompletedTask);
+        var id = Guid.NewGuid();
+        var result = await cloud.TransformAsync(id, originals, new Progress<string>(), default, styleChoices:["space", "fantasy", "halloween"]);
+        Check(result.Style == StyleCatalog.Mixed && result.ShotStyles!.SequenceEqual(plan), "Per-pose server assignment retains all three selected themes");
+        Check(handler.Selections.Single().SequenceEqual(new[]{"fantasy","halloween","space"}), "Selection crosses HTTP as a canonical set, not click order");
+        Check(handler.Starts == 4 && result.Photos.Select(bytes=>SessionStore.Hash(bytes)).SequenceEqual(originals.Select(bytes=>SessionStore.Hash(bytes))), "Four parallel results retain capture order and trigger exactly four jobs");
+        using var saved = JsonDocument.Parse(File.ReadAllText(Path.Combine(store.Root,id.ToString("N"),"style-plan.json")));
+        Check(saved.RootElement.GetProperty("shots").EnumerateArray().Select(value=>value.GetString()).SequenceEqual(plan), "Shot assignment is durable before processing");
+        handler.ShotStyles = ["space", "fantasy", "halloween", "space"];
+        var uploads=handler.UploadCalls;
+        try { await cloud.TransformAsync(id,originals,new Progress<string>(),default,styleChoices:["halloween","space","fantasy"]);throw new Exception("Rerolled plan accepted"); }
+        catch(IOException){Check(handler.Starts==4&&handler.UploadCalls==uploads,"Changed assignment cannot cause any upload or extra generation");}
+    }
+    foreach(var plan in new string[]?[]{null,[],["space"],["space","space","space","space"],["chef","space","halloween","fantasy"],["space","space","halloween","fantasy"]})
+    {
+        using var handler=new FakeHttp(originals[0]) { ShotStyles=plan };
+        using var cloud=new BoothCloudClient("https://test.supabase.co/api","fake-booth",new SessionStore(root),handler:handler,delay:(_,_)=>Task.CompletedTask);
+        try {await cloud.TransformAsync(Guid.NewGuid(),originals,new Progress<string>(),default,styleChoices:["space","fantasy","halloween"]);throw new Exception("Incomplete multi-theme server accepted");}
+        catch(IOException){Check(handler.Starts==0&&handler.UploadCalls==0,"Missing, invalid or imbalanced plans fail before uploads and generations");}
+    }
     {
         var secret=Path.Combine(root,"credential");await CredentialStore.SaveAsync(secret,"test-only-credential");
         Check(CredentialStore.Load(secret)=="test-only-credential","Credential roundtrip (DPAPI on Windows)");
@@ -200,7 +225,7 @@ Console.WriteLine($"PASS {passed} cloud client checks; HTTP fully replaced by a 
 
 sealed class FailingTransform:IPhotoTransform
 {
-    public Task<TransformResult> TransformAsync(Guid id,IReadOnlyList<byte[]> photos,IProgress<string> progress,CancellationToken token,string styleChoice=StyleCatalog.Chef)=>throw new IOException("Simulated API failure");
+    public Task<TransformResult> TransformAsync(Guid id,IReadOnlyList<byte[]> photos,IProgress<string> progress,CancellationToken token,string styleChoice=StyleCatalog.Chef,IReadOnlyList<string>? styleChoices=null)=>throw new IOException("Simulated API failure");
 }
 sealed class FallbackPrinter:IPhotoPrinter
 {
@@ -209,6 +234,7 @@ sealed class FallbackPrinter:IPhotoPrinter
 sealed class FakeHttp(byte[] fixture):HttpMessageHandler
 {
     public List<JsonElement> Metrics=[];public bool RejectMetrics;
+    public string[]? ShotStyles; public List<string[]> Selections=[];
     public int Starts;public int UploadCalls;public bool DropStartResponse;public bool CredentialSentToStorage;
     public byte[][]? Fixtures;
     public bool DirectStored;public int ExpectedParallelStarts;
@@ -233,7 +259,14 @@ sealed class FakeHttp(byte[] fixture):HttpMessageHandler
             foreach(var e in events)if(!Metrics.Any(m=>m.GetProperty("id").GetString()==e.GetProperty("id").GetString()))Metrics.Add(e.Clone());
             return Json(new{accepted=events.Length});
         }
-        if(path.EndsWith("/sessions"))return Json(new{style="cinema"});
+        if(path.EndsWith("/sessions"))
+        {
+            using var input=JsonDocument.Parse(await request.Content!.ReadAsByteArrayAsync(token));
+            var selected=input.RootElement.TryGetProperty("style",out var chosen)?chosen.GetString():"chef";
+            if(input.RootElement.TryGetProperty("styles",out var multiple))Selections.Add(multiple.EnumerateArray().Select(value=>value.GetString()!).ToArray());
+            if(ShotStyles is not null)return Json(new{style="mix",shot_styles=ShotStyles});
+            return Json(new{style=selected=="chef"?"cinema":selected});
+        }
         if(path.EndsWith("/gallery"))
         {
             using var input=JsonDocument.Parse(await request.Content!.ReadAsByteArrayAsync(token));

@@ -76,7 +76,7 @@ var squares = Enumerable.Range(0, 4).Select(i => {
     return PhotoProcessor.Jpeg(bitmap);
 }).ToArray();
 var hashes = squares.Select(bytes => SessionStore.Hash(bytes)).ToArray();
-foreach (var style in StyleCatalog.BuiltIn.Styles.Append(StyleCatalog.Surprise))
+foreach (var style in StyleCatalog.BuiltIn.Styles.Append(StyleCatalog.Surprise).Append(new PhotoStyle(StyleCatalog.Mixed, "Plusieurs univers", "", "colors_party", "#E0E7D8", ["Les couleurs se préparent."])))
 foreach (var count in new[] { 1, 4 })
 {
     var printed = MetamorphosisSheet.Compose(squares.Take(count).ToArray(), style.Id);
@@ -94,7 +94,8 @@ foreach (var count in new[] { 1, 4 })
     await File.WriteAllBytesAsync(Path.Combine(printEvidence, $"{style.Id}-{count}.jpg"), printed);
 }
 Check(hashes.SequenceEqual(squares.Select(bytes => SessionStore.Hash(bytes))), "Print composition never changes source photos");
-Check(MetamorphosisSheet.Compose([squares[0]], "unknown_style").SequenceEqual(MetamorphosisSheet.Compose([squares[0]], StyleCatalog.Chef)), "Unknown theme has a deterministic bundled fallback");
+Check(MetamorphosisSheet.Compose([squares[0]], "unknown_style").SequenceEqual(MetamorphosisSheet.Compose([squares[0]], "another_remote_style")), "Unknown themes use one deterministic neutral print fallback");
+Check(!MetamorphosisSheet.Compose([squares[0]], "unknown_style").SequenceEqual(MetamorphosisSheet.Compose([squares[0]], StyleCatalog.Chef)), "Unknown chosen theme is not mislabeled as a Chef choice");
 Check(PhotoProcessor.Compose(fixtures).SequenceEqual(sheet), "Au naturel master remains byte-for-byte unchanged");
 Reject(() => MetamorphosisSheet.Compose([squares[0], squares[1]], "halloween"));
 

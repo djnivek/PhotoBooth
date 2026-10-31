@@ -46,18 +46,41 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
         return result.RootElement.GetProperty("image_generation_enabled").GetBoolean();
     }
 
-    private async Task<string> EnsureSession(Guid id, int count, PhotoMode mode, CancellationToken token, string styleChoice = StyleCatalog.Chef)
+    private async Task<IReadOnlyList<string>> EnsureSession(Guid id, int count, PhotoMode mode, CancellationToken token,
+        IReadOnlyList<string> choices)
     {
-        using var result = await SendJsonAsync(HttpMethod.Post, "sessions", new { id = id.ToString(), photo_count = count,
-            mode = mode == PhotoMode.Surprise ? "surprise" : "original", style = styleChoice }, token);
-        return result.RootElement.GetProperty("style").GetString()!;
+        var selected = StyleSelection.Normalize(choices, count);
+        var modeName = mode == PhotoMode.Surprise ? "surprise" : "original";
+        object request = selected.Count == 1
+            ? new { id = id.ToString(), photo_count = count, mode = modeName, style = selected[0] }
+            : new { id = id.ToString(), photo_count = count, mode = modeName, styles = selected };
+        using var result = await SendJsonAsync(HttpMethod.Post, "sessions", request, token);
+        if (mode == PhotoMode.Original) return Array.Empty<string>();
+        string[] plan;
+        if (result.RootElement.TryGetProperty("shot_styles", out var shots) && shots.ValueKind == JsonValueKind.Array)
+            plan = shots.EnumerateArray().Select(s => s.ValueKind == JsonValueKind.String ? s.GetString()! : "").ToArray();
+        else if (selected.Count == 1)
+            plan = Enumerable.Repeat(result.RootElement.GetProperty("style").GetString()!, count).ToArray();
+        else throw new IOException("Le serveur doit être actualisé pour préparer plusieurs univers. Vos originaux sont conservés.");
+        if (!StyleSelection.MatchesPlan(selected, plan, count))
+            throw new IOException("La répartition des univers reçue est incomplète. Vos originaux sont conservés.");
+        var path = Path.Combine(store.Root, id.ToString("N"), "style-plan.json");
+        if (File.Exists(path))
+        {
+            using var previous = JsonDocument.Parse(await File.ReadAllBytesAsync(path, token));
+            if (!previous.RootElement.GetProperty("shots").EnumerateArray().Select(s => s.GetString()).SequenceEqual(plan))
+                throw new IOException("La répartition enregistrée a changé. Aucune génération supplémentaire n’a été lancée.");
+        }
+        else await SessionStore.WriteAtomicAsync(path, JsonSerializer.SerializeToUtf8Bytes(new { selected, shots = plan }), token);
+        return Array.AsReadOnly(plan);
     }
 
     public async Task<TransformResult> TransformAsync(Guid sessionId, IReadOnlyList<byte[]> originals,
-        IProgress<string> progress, CancellationToken token, string styleChoice = StyleCatalog.Chef)
+        IProgress<string> progress, CancellationToken token, string styleChoice = StyleCatalog.Chef, IReadOnlyList<string>? styleChoices = null)
     {
-        metricOptions[sessionId]=new SessionOptions(originals.Count,PhotoMode.Surprise,styleChoice:styleChoice);
-        var style = await EnsureSession(sessionId, originals.Count, PhotoMode.Surprise, token, styleChoice);
+        var options = new SessionOptions(originals.Count, PhotoMode.Surprise, styleChoice: styleChoice, styleChoices: styleChoices);
+        metricOptions[sessionId] = options;
+        var plan = await EnsureSession(sessionId, originals.Count, PhotoMode.Surprise, token, options.StyleChoices);
         var shareToken = await ShareTokenAsync(sessionId, token);
         using (var gallery = await SendJsonAsync(HttpMethod.Post, $"sessions/{sessionId}/gallery", new { token = shareToken }, token))
             GalleryAvailable?.Invoke(sessionId, GalleryLink(gallery.RootElement, shareToken));
@@ -131,7 +154,7 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
             finally { if (acquired) GenerationSlots.Release(); }
         }).ToArray();
         await Task.WhenAll(tasks.Cast<Task>().Append(archivalUpload));
-        return new TransformResult(style, tasks.Select(task => task.Result).ToArray(), Normalized: true);
+        return new TransformResult(plan.Distinct().Count() == 1 ? plan[0] : StyleCatalog.Mixed, tasks.Select(task => task.Result).ToArray(), Normalized: true, ShotStyles: plan);
     }
 
     public async Task<PublishedSession> PublishAsync(Session session, IReadOnlyList<StoredAsset> photos, StoredAsset sheet, CancellationToken token = default)
@@ -140,7 +163,7 @@ public sealed class BoothCloudClient : IPhotoTransform, IDisposable
             !session.Results.Select(r => r.AssetKey).SequenceEqual(photos.Select(p => p.Key)) || session.SheetAssetKey != sheet.Key)
             throw new InvalidOperationException("Le partage doit correspondre exactement à l’aperçu validé.");
         metricOptions[session.Id]=session.Options;
-        await EnsureSession(session.Id, photos.Count, session.Options.Mode, token, session.Options.StyleChoice);
+        await EnsureSession(session.Id, photos.Count, session.Options.Mode, token, session.Options.StyleChoices);
         var images = new List<byte[]>();
         foreach (var photo in photos) images.Add(await store.ReadVerifiedAsync(photo, token));
         var sheetBytes = await store.ReadVerifiedAsync(sheet, token);

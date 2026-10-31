@@ -8,6 +8,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using Avalonia.Styling;
 using PhotoBooth.Core;
 
 namespace PhotoBooth.App;
@@ -16,12 +17,17 @@ public sealed partial class MainWindow
 {
     private StyleCatalog catalog = StyleCatalog.BuiltIn;
     private StyleCatalog? pendingCatalog;
-    private string styleChoice = StyleCatalog.Chef;
+    private readonly HashSet<string> selectedStyles = [StyleCatalog.Chef];
+    private readonly Dictionary<string, ToggleButton> styleButtons = [];
+    private TextBlock? styleSelectionSummary, styleSelectionHelp;
+    private Button? styledStart, chefButton;
+    private string StyleSummary => selectedStyles.Count == 0 ? "Choisissez vos univers." :
+        selectedStyles.Count == 1 ? catalog.Find(selectedStyles.Single()).Label : $"{selectedStyles.Count} univers pour vos quatre photos.";
     private PhotoStyle? sessionStyle;
     private readonly Func<CancellationToken, Task<StyleCatalog>> catalogLoader;
     private readonly CancellationTokenSource lifetime = new();
     private bool refreshingCatalog;
-    private string catalogStatus = "Les six univers de départ sont disponibles.";
+    private string catalogStatus = "Les univers de départ sont disponibles.";
     private readonly Dictionary<string, Bitmap> artwork = [];
     private Bitmap? resultBitmap;
     private readonly DispatcherTimer cooking = new() { Interval = TimeSpan.FromMilliseconds(80) };
@@ -35,7 +41,7 @@ public sealed partial class MainWindow
 
     private Image Art(string name, double width, double height)
     {
-        string[] known = ["wordmark", "colors_party", "halloween", "space", "fantasy", "elves", "disco", "chef"];
+        string[] known = ["wordmark", "colors_party", "halloween", "space", "fantasy", "elves", "disco", "chef", "animals", "showcase", "feast"];
         if (!known.Contains(name))
         {
             string[] defaults = ["colors_party", "disco", "chef"];
@@ -55,7 +61,7 @@ public sealed partial class MainWindow
     private void RenderHome()
     {
         if (!MetamorphosisAvailable) mode = PhotoMode.Original;
-        resultReturn.Stop();
+        resultReturn.Stop(); styleButtons.Clear(); styleSelectionSummary = null; styleSelectionHelp = null; styledStart = null; chefButton = null;
         if (pendingCatalog is not null) { ApplyCatalog(pendingCatalog); pendingCatalog = null; }
         StopProcessing(); sharingCancellation?.Cancel(); sharingCancellation?.Dispose(); sharingCancellation = null;
         screen = "home"; liveImage = null; countdown = null; pulse.Stop();
@@ -72,7 +78,7 @@ public sealed partial class MainWindow
         var choices = new StackPanel { Spacing = compactHome ? 14 : 20, VerticalAlignment = VerticalAlignment.Center };
         choices.Children.Add(Text("À vous de jouer.", compactHome ? 38 : 44, FontWeight.SemiBold));
         choices.Children.Add(Text("Combien de poses ?", 20, FontWeight.SemiBold));
-        choices.Children.Add(ChoiceRow(("Une photo", photoCount == 1, () => { photoCount = 1; RenderHome(); }),
+        choices.Children.Add(ChoiceRow(("Une photo", photoCount == 1, () => { photoCount = 1; if (selectedStyles.Count > 1) { selectedStyles.Clear(); selectedStyles.Add(StyleCatalog.Chef); } RenderHome(); }),
             ("Quatre photos", photoCount == 4, () => { photoCount = 4; RenderHome(); })));
         choices.Children.Add(Text("À votre façon", 20, FontWeight.SemiBold));
         var modes = ChoiceRow(("Au naturel", mode == PhotoMode.Original, () => { mode = PhotoMode.Original; RenderHome(); }),
@@ -82,10 +88,10 @@ public sealed partial class MainWindow
         if (!MetamorphosisAvailable) ToolTip.SetTip(metamorphosis,"Activez la connexion en ligne dans les réglages.");
         choices.Children.Add(modes);
         var detail = Text(!MetamorphosisAvailable ? "Métamorphose demande une connexion." :
-            mode == PhotoMode.Original ? "Vos photos, telles quelles." : catalog.Find(styleChoice).Label, 18);
+            mode == PhotoMode.Original ? "Vos photos, telles quelles." : StyleSummary, 18);
         detail.Foreground = Muted; choices.Children.Add(detail);
         var start = Button("Démarrer", BeginChosenSessionAsync, primary: true); start.Name = "StartSession";
-        start.IsEnabled = mode == PhotoMode.Original || catalog.Styles.Length > 0;
+        start.IsEnabled = mode == PhotoMode.Original || (catalog.Styles.Length > 0 && selectedStyles.Count > 0);
         start.HorizontalAlignment = HorizontalAlignment.Stretch; choices.Children.Add(start);
         var note = Text("À télécharger, à imprimer, à garder.", 17); note.Foreground = Muted; choices.Children.Add(note);
         Grid.SetColumn(choices, 1); grid.Children.Add(choices); body.Content = grid;
@@ -95,52 +101,99 @@ public sealed partial class MainWindow
     {
         if (mode == PhotoMode.Surprise && !MetamorphosisAvailable)
             throw new InvalidOperationException("Activez la connexion en ligne dans les réglages pour utiliser Métamorphose avec le Canon.");
-        sessionStyle = catalog.Find(styleChoice);
-        await controller.BeginAsync(new SessionOptions(photoCount, mode, styleChoice: styleChoice));
+        if (mode == PhotoMode.Surprise && selectedStyles.Count == 0) return;
+        var choices = selectedStyles.Count > 0 ? selectedStyles.ToArray() : new[] { StyleCatalog.Chef };
+        sessionStyle = catalog.Find(choices.Length == 1 ? choices[0] : "colors_party");
+        await controller.BeginAsync(new SessionOptions(photoCount, mode, styleChoices: choices));
     }
 
     private void RenderStyles()
     {
-        if (!MetamorphosisAvailable) {mode = PhotoMode.Original; RenderHome(); return;}
-        StopProcessing(); screen = "styles";
+        if (!MetamorphosisAvailable) { mode = PhotoMode.Original; RenderHome(); return; }
+        var oldOffset = screen == "styles" && body.Content is Grid previous
+            ? previous.Children.OfType<ScrollViewer>().FirstOrDefault()?.Offset ?? default : default;
+        StopProcessing(); screen = "styles"; styleButtons.Clear();
         var layout = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
-        var title = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 0, 18) };
+        var title = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 0, 14) };
         title.Children.Add(Text("Et si on changeait d’univers ?", compactHome ? 32 : 40, FontWeight.SemiBold));
-        var help = Text("Choisissez le décor de votre prochaine aventure.", 19); help.Foreground = Muted; title.Children.Add(help);
-        layout.Children.Add(title);
+        styleSelectionHelp = Text(photoCount == 1 ? "Un univers pour votre photo." : "Choisissez jusqu’à quatre univers. Ensuite, place aux poses.", 18);
+        styleSelectionHelp.Foreground = Muted; title.Children.Add(styleSelectionHelp); layout.Children.Add(title);
         var tiles = new UniformGrid { Columns = 3, Rows = Math.Max(1, (catalog.Styles.Length + 2) / 3) };
         foreach (var style in catalog.Styles)
         {
-            var button = Button(style.Label, () => { styleChoice = style.Id; RenderStyles(); return Task.CompletedTask; });
-            button.Name = "Style_" + style.Id; button.Classes.Add("style-choice");
-            button.Background = ReadableTileBackground(style.Color); button.Margin = new Thickness(0, 0, 12, 12);
-            button.HorizontalAlignment = HorizontalAlignment.Stretch; button.VerticalAlignment = VerticalAlignment.Stretch;
-            button.MinHeight = compactHome ? 148 : 170; button.Padding = new Thickness(14, 10);
+            var button = new ToggleButton { Name = "Style_" + style.Id, Background = ReadableTileBackground(style.Color),
+                Theme = (ControlTheme)Application.Current!.FindResource(typeof(Button))!,
+                Margin = new Thickness(0, 0, 12, 12), HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch, MinHeight = compactHome ? 148 : 170, Padding = new Thickness(14, 10) };
+            button.Classes.Add("style-choice");
+            button.Click += (_, _) => { ToggleStyle(style.Id); UpdateStyleSelection(); };
             var content = new StackPanel { Spacing = 2 };
-            content.Children.Add(Art(style.Asset.Length > 0 ? style.Asset : style.Id, compactHome ? 66 : 78, compactHome ? 66 : 78));
+            content.Children.Add(Art(style.Asset.Length > 0 ? style.Asset : style.Id, compactHome ? 58 : 70, compactHome ? 58 : 70));
             var label = Text(style.Label, 22, FontWeight.SemiBold); label.TextAlignment = TextAlignment.Center; content.Children.Add(label);
             var description = Text(style.Description, 16); description.TextAlignment = TextAlignment.Center; content.Children.Add(description);
             button.Content = content; AutomationProperties.SetName(button, style.Label);
-            if (styleChoice == style.Id) { button.BorderBrush = Ink; button.BorderThickness = new Thickness(3); }
-            tiles.Children.Add(button);
+            styleButtons.Add(style.Id, button); tiles.Children.Add(button);
         }
-        var scroll = new ScrollViewer { Content = tiles, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled };
+        var scroll = new ScrollViewer { Name = "StyleScroll", Content = tiles, Offset = oldOffset,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         Grid.SetRow(scroll, 1); layout.Children.Add(scroll);
-        var bottom = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Margin = new Thickness(0, 12, 0, 0) };
+        var footer = new StackPanel { Spacing = 8, Margin = new Thickness(0, 10, 0, 0) };
+        styleSelectionSummary = Text("", 17); styleSelectionSummary.Name = "StyleSelectionSummary";
+        footer.Children.Add(styleSelectionSummary);
+        var bottom = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto") };
         var back = Button("Retour", () => { RenderHome(); return Task.CompletedTask; }); back.Name = "BackFromStyles"; bottom.Children.Add(back);
-        var chef = Button("La Surprise du Chef", () => { styleChoice = StyleCatalog.Chef; RenderStyles(); return Task.CompletedTask; });
-        chef.Name = "Style_chef"; chef.Background = Brush.Parse("#F1E4BC"); chef.Margin = new Thickness(14, 0);
+        var chef = Button("La Surprise du Chef", () => { selectedStyles.Clear(); selectedStyles.Add(StyleCatalog.Chef); UpdateStyleSelection(); return Task.CompletedTask; });
+        chefButton = chef; chef.Name = "Style_chef"; chef.Background = Brush.Parse("#F1E4BC"); chef.Margin = new Thickness(14, 0);
         chef.HorizontalAlignment = HorizontalAlignment.Stretch;
         var chefContent = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 8 };
-        chefContent.Children.Add(Art("chef", 52, 52));
+        chefContent.Children.Add(Art("chef", 44, 44));
         var chefWords = new StackPanel { Spacing = 1, VerticalAlignment = VerticalAlignment.Center };
-        chefWords.Children.Add(Text("La Surprise du Chef", 21, FontWeight.SemiBold)); chefWords.Children.Add(Text("Un univers choisi pour vous.", 15)); chefContent.Children.Add(chefWords);
+        chefWords.Children.Add(Text("La Surprise du Chef", 21, FontWeight.SemiBold));
+        chefWords.Children.Add(Text(photoCount == 1 ? "Un univers choisi pour vous." : "Le chef varie les univers.", 15)); chefContent.Children.Add(chefWords);
         chef.Content = chefContent; AutomationProperties.SetName(chef, "La Surprise du Chef");
-        if (styleChoice == StyleCatalog.Chef) { chef.BorderBrush = Ink; chef.BorderThickness = new Thickness(3); }
         chef.IsEnabled = catalog.Styles.Length > 0; Grid.SetColumn(chef, 1); bottom.Children.Add(chef);
-        var start = Button("C’est parti !", BeginChosenSessionAsync, true); start.Name = "StartStyledSession";
-        start.IsEnabled = catalog.Styles.Length > 0; Grid.SetColumn(start, 2); bottom.Children.Add(start);
-        Grid.SetRow(bottom, 2); layout.Children.Add(bottom); body.Content = layout;
+        styledStart = Button("C’est parti !", BeginChosenSessionAsync, true); styledStart.Name = "StartStyledSession";
+        Grid.SetColumn(styledStart, 2); bottom.Children.Add(styledStart);
+        footer.Children.Add(bottom); Grid.SetRow(footer, 2); layout.Children.Add(footer); body.Content = layout;
+        UpdateStyleSelection();
+    }
+
+    private void ToggleStyle(string id)
+    {
+        if (photoCount == 1) { selectedStyles.Clear(); selectedStyles.Add(id); return; }
+        selectedStyles.Remove(StyleCatalog.Chef);
+        if (!selectedStyles.Remove(id) && selectedStyles.Count < photoCount) selectedStyles.Add(id);
+    }
+
+    private void UpdateStyleSelection()
+    {
+        var chef = selectedStyles.Contains(StyleCatalog.Chef);
+        foreach (var (id, button) in styleButtons)
+        {
+            var chosen = selectedStyles.Contains(id);
+            button.IsChecked = chosen;
+            button.BorderBrush = chosen ? Ink : Brushes.Transparent;
+            button.BorderThickness = new Thickness(3);
+            button.IsEnabled = chosen || chef || photoCount == 1 || selectedStyles.Count < photoCount;
+            AutomationProperties.SetHelpText(button, chosen ? "Univers sélectionné." : "Choisir cet univers.");
+        }
+        if (chefButton is not null)
+        {
+            chefButton.BorderBrush = chef ? Ink : Brushes.Transparent;
+            chefButton.BorderThickness = new Thickness(3);
+            AutomationProperties.SetHelpText(chefButton, chef ? "Le chef choisit les univers." : "Remplacer votre sélection par le choix du chef.");
+        }
+        if (styleSelectionSummary is not null)
+            styleSelectionSummary.Text = catalog.Styles.Length == 0 ? "Aucun univers disponible. Revenez pour une photo au naturel." :
+                chef ? (photoCount == 1 ? "Le chef choisit pour vous." : "Quatre photos, un mélange d’univers choisi pour vous.") :
+                selectedStyles.Count == 0 ? "Choisissez au moins un univers ou laissez faire le chef." :
+                photoCount == 1 ? StyleSummary : selectedStyles.Count switch {
+                    1 => "Un univers, quatre interprétations.",
+                    2 => "Deux univers, deux photos chacun.",
+                    3 => "Trois univers, tous utilisés. L’un revient pour la quatrième photo.",
+                    _ => "Quatre univers, une photo chacun. Retirez un choix pour en changer."
+                };
+        if (styledStart is not null) styledStart.IsEnabled = catalog.Styles.Length > 0 && selectedStyles.Count > 0;
     }
 
     private static IBrush ReadableTileBackground(string value)
@@ -187,7 +240,8 @@ public sealed partial class MainWindow
     private void ApplyCatalog(StyleCatalog incoming)
     {
         catalog = incoming;
-        if (!catalog.Styles.Any(s => s.Id == styleChoice)) styleChoice = StyleCatalog.Chef;
+        selectedStyles.RemoveWhere(id => id != StyleCatalog.Chef && !catalog.Styles.Any(s => s.Id == id));
+        if (selectedStyles.Count == 0) selectedStyles.Add(StyleCatalog.Chef);
     }
 
     private void RenderProcessing()

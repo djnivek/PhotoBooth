@@ -39,7 +39,7 @@ foreach (var count in new[] { 1, 4 }) foreach (var mode in new[] { PhotoMode.Ori
             s.RecordCapture(new CapturedPhoto(Guid.NewGuid(), $"capture-{i}"));
         }
         Check(s.Stage == SessionStage.Processing);
-        if (mode == PhotoMode.Surprise) s.AssignStyle("test-style");
+        if (mode == PhotoMode.Surprise) s.AssignStyle("test_style");
         s.CompleteProcessing(s.Captures.Reverse().Select(c => new FinalPhoto(c.Id,
             mode == PhotoMode.Original ? c.LocalAssetKey : $"edited-{c.Id}")), "sheet");
         Check(s.Results.Select(x => x.CaptureId).SequenceEqual(s.Captures.Select(x => x.Id)));
@@ -183,7 +183,7 @@ Test("catalog accepts new identifiers without prompts and rejects malformed meta
 {
     var json = System.Text.Json.JsonSerializer.Serialize(StyleCatalog.BuiltIn);
     var loaded = StyleCatalog.Parse(json);
-    Check(loaded.Styles.Length == 6 && loaded.Find("not_bundled").Id == StyleCatalog.Chef);
+    Check(loaded.Styles.Length == 9 && loaded.Find("not_bundled").Id == StyleCatalog.Chef);
     Check(new SessionOptions(4, PhotoMode.Surprise, styleChoice: "ocean").StyleChoice == "ocean");
     Throws<InvalidDataException>(() => StyleCatalog.Parse("{\"version\":\"x\",\"styles\":[null]}"));
     Throws<ArgumentException>(() => new SessionOptions(1, PhotoMode.Surprise, styleChoice: "../path"));
@@ -203,6 +203,44 @@ Test("four-character operator code roundtrip and legacy credential compatibility
     var hash = System.Security.Cryptography.Rfc2898DeriveBytes.Pbkdf2("381629",salt,600000,System.Security.Cryptography.HashAlgorithmName.SHA256,32);
     var old = new KioskExitGate.Credential(Convert.ToBase64String(salt),Convert.ToBase64String(hash),0,default);
     Check(KioskExitGate.Restore(old).TryAuthorizeExit("381629"));
+});
+
+Test("theme selection is bounded, immutable and independent of click order", () =>
+{
+    string[] chosen = ["space", "halloween", "fantasy"];
+    var options = new SessionOptions(4, PhotoMode.Surprise, styleChoices: chosen);
+    chosen[0] = "disco";
+    Check(options.StyleChoices.SequenceEqual(new[] {"fantasy", "halloween", "space"}) && options.StyleChoice == StyleCatalog.Mixed);
+    foreach (var invalid in new string[][] { [], ["chef", "space"], ["space", "space"], ["mix"], ["../scene"], ["a","b","c","d","e"] })
+        Throws<ArgumentException>(() => new SessionOptions(4, PhotoMode.Surprise, styleChoices: invalid));
+    Throws<ArgumentException>(() => new SessionOptions(1, PhotoMode.Surprise, styleChoices: ["space", "fantasy"]));
+});
+Test("four poses use every selected theme with balanced diagonal repetition", () =>
+{
+    string[] all = ["halloween", "space", "fantasy", "disco"];
+    for (var count = 1; count <= 4; count++) for (var trial = 0; trial < 64; trial++)
+    {
+        var choices = all.Take(count).ToArray();
+        var plan = StyleSelection.RehearsalPlan(choices, 4);
+        Check(StyleSelection.MatchesPlan(choices, plan, 4));
+        Check(plan.Distinct().Count() == count);
+        if(count>1)Check(plan[0]!=plan[1]&&plan[0]!=plan[2]&&plan[1]!=plan[3]&&plan[2]!=plan[3]);
+        Check(plan.GroupBy(id => id).Max(g => g.Count()) == (int)Math.Ceiling(4d/count));
+    }
+    var chef = StyleSelection.RehearsalPlan([StyleCatalog.Chef], 4);
+    Check(chef.Count == 4 && chef.Distinct().Count() == 4);
+});
+Test("per-pose assignment is frozen and copied; original fallback clears it", () =>
+{
+    var session = Captured();
+    Throws<InvalidOperationException>(() => session.AssignStyles(["space", "halloween", "fantasy", "disco"]));
+    session = Captured(4, PhotoMode.Surprise);
+    string[] plan = ["space", "halloween", "space", "fantasy"];
+    session.AssignStyles(plan); plan[0] = "disco";
+    Check(session.StyleId == StyleCatalog.Mixed && session.ShotStyles[0] == "space");
+    Throws<InvalidOperationException>(() => session.AssignStyles(plan));
+    session.Fail("generation_failed"); session.PrepareOriginalFallback();
+    Check(session.ShotStyles.Count == 0 && session.StyleId is null);
 });
 
 var failed = 0;

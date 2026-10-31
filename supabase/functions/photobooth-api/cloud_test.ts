@@ -1,4 +1,6 @@
 import { CloudApi, type Config, hash, imageRequest } from "./cloud.ts";
+import { balancedPlan, freezePlan, type FrozenShotStyle } from "./style-plans.ts";
+import catalog from "./styles.json" with { type: "json" };
 
 const id = "e3ac9960-328c-4a62-8d68-1266361bb8cf";
 const key = "test-only-not-a-real-secret";
@@ -44,6 +46,7 @@ class FakeServices {
   metrics: Record<string, unknown>[] = [];
   metricsFail = false;
   providerCreates = 0;
+  providerPrompts: { index: number; prompt: string }[] = [];
   providerMode = "completed";
   providerFail = false;
   providerRateLimited = false;
@@ -68,6 +71,8 @@ class FakeServices {
     if (url.hostname === "api.openai.com") {
       if (method === "POST") {
         this.providerCreates++;
+        const headers = new Headers(init?.headers);
+        this.providerPrompts.push({ index: Number(headers.get("X-Client-Request-Id")?.split("-").at(-1)), prompt: body.prompt });
         assert(
           path === "/v1/images/edits" && body.model === "gpt-image-2.5-sunburst" && body.quality === "medium" && body.size === "1024x1024" && body.n === 1,
           "direct medium square edit, no mainline model or Responses call",
@@ -450,7 +455,7 @@ Deno.test("public catalog is immediate, safe metadata without prompts or provide
   const response = await api.handle(request("/styles", "GET", undefined, false));
   assert(response.status === 200);
   const data = await response.json();
-  assert(data.styles.length === 6 && data.version);
+  assert(data.styles.length === 9 && data.version);
   assert(!JSON.stringify(data).includes('"prompt"'));
   assert(data.styles.every((s: { label: string; description: string; phrases: string[] }) =>
     !/[\u2013\u2014-]/.test([s.label, s.description, ...s.phrases].join(" "))));
@@ -461,7 +466,7 @@ Deno.test("explicit universe and prompt freeze across updates; rejected changes 
   const selected = { id, photo_count: 4, mode: "surprise", style: "halloween" };
   const first = await api.handle(request("/sessions", "POST", selected));
   assert(first.status === 201 && (await first.json()).style === "halloween");
-  assert(String(fake.sessions[0].style_prompt).includes("citrouille"));
+  assert(String(fake.sessions[0].style_prompt).includes("Halloween"));
   fake.sessions[0].style_prompt = "Frozen test scene";
   const resumed = await api.handle(request("/sessions", "POST", selected));
   assert(resumed.status === 201); await resumed.body?.cancel();
@@ -586,4 +591,90 @@ Deno.test("a monitoring outage cannot turn a successful paid generation into fai
   assert((await api.handle(request(`/sessions/${id}/photos/0`,"POST",{}))).status===202);
   assert(f.jobs[0].state==="ready" && f.providerCreates===1);
   assert(typeof (f.jobs[0].usage as Record<string,unknown>).provider_elapsed_ms==="number");
+});
+
+Deno.test("balanced plans cover selected themes with repeats on print diagonals, including a 20-theme Chef pool", () => {
+  for (const length of [1, 2, 3, 4, 20]) for (let seed = 1; seed <= 64; seed++) {
+    let state = seed;
+    const random = (max: number) => { state = (Math.imul(state, 1664525) + 1013904223) >>> 0; return state % max; };
+    const pool = Array.from({length}, (_, index) => `theme_${index}`);
+    const plan = balancedPlan(pool, 4, random);
+    assert(plan.length === 4 && plan.every(id => pool.includes(id)));
+    assert(new Set(plan).size === Math.min(length, 4));
+    if (length > 1) assert(plan[0] !== plan[1] && plan[0] !== plan[2] && plan[1] !== plan[3] && plan[2] !== plan[3]);
+    const counts = pool.map(id => plan.filter(value => value === id).length);
+    assert(Math.max(...counts) - Math.min(...counts) <= 1);
+  }
+  assert(balancedPlan(["one"], 1)[0] === "one");
+});
+Deno.test("multi selection validates bounded sets and rejects conflicts without paid calls", async () => {
+  const fake = new FakeServices(); const api = new CloudApi(config, fake.send);
+  for (const selected of [null, [], ["chef", "space"], ["mix"], ["space", "space"], ["../file"], ["unknown"], ["space", "fantasy", "disco", "halloween", "elves"]]) {
+    const response = await api.handle(request("/sessions", "POST", {id: crypto.randomUUID(), photo_count: 4, mode: "surprise", styles: selected}));
+    assert(response.status === 400, JSON.stringify(selected)); await response.body?.cancel();
+  }
+  for (const options of [{photo_count: 1, styles: ["space", "fantasy"]}, {photo_count: 4, style: "space", styles: ["space"]}]) {
+    const response = await api.handle(request("/sessions", "POST", {id: crypto.randomUUID(), mode: "surprise", ...options}));
+    assert(response.status === 400); await response.body?.cancel();
+  }
+  const input = {id, photo_count: 4, mode: "surprise", styles: ["space", "halloween", "fantasy"], prompt: "CLIENT PROMPT MUST NEVER BE USED"};
+  const first = await (await api.handle(request("/sessions", "POST", input))).json();
+  const second = await (await api.handle(request("/sessions", "POST", {...input, styles: [...input.styles].reverse()}))).json();
+  assert(first.style === "mix" && JSON.stringify(first.shot_styles) === JSON.stringify(second.shot_styles));
+  assert(!JSON.stringify(first).includes("prompt") && !JSON.stringify(first).includes("variation"));
+  assert(!JSON.stringify(fake.sessions[0].shot_styles).includes("CLIENT PROMPT MUST NEVER BE USED"));
+  const changed = await api.handle(request("/sessions", "POST", {...input, styles: ["space", "disco"]}));
+  assert(changed.status === 409); await changed.body?.cancel();
+  assert(fake.providerCreates === 0 && fake.sessions.length === 1);
+});
+Deno.test("parallel edits use each exact frozen full prompt even when the catalog changes or removes a theme", async () => {
+  const fake = new FakeServices(); const api = new CloudApi(config, fake.send);
+  const input = {id, photo_count: 4, mode: "surprise", styles: ["space", "halloween", "fantasy", "disco"]};
+  const pair = await Promise.all([api.handle(request("/sessions", "POST", input)), api.handle(request("/sessions", "POST", input))]);
+  const [first, second] = await Promise.all(pair.map(response => response.json()));
+  assert(JSON.stringify(first.shot_styles) === JSON.stringify(second.shot_styles) && fake.sessions.length === 1);
+  const plan = structuredClone(fake.sessions[0].shot_styles) as FrozenShotStyle[];
+  assert(new Set(plan.map(shot => shot.id)).size === 4 && new Set(plan.map(shot => shot.variation)).size === 4);
+  const previous = catalog.styles.splice(0);
+  try {
+    catalog.styles.push({...previous[0], prompt: "NEW CATALOG MUST NOT CHANGE A SAVED SHOT"});
+    const resumed = await api.handle(request("/sessions", "POST", input));
+    assert(resumed.status === 201); await resumed.body?.cancel();
+    for (let index = 0; index < 4; index++) await (await api.handle(request(`/sessions/${id}/assets/input-${index + 1}.jpg`, "PUT", fixture))).body?.cancel();
+    await Promise.all(plan.map(async (_, index) => {
+      const response = await api.handle(request(`/sessions/${id}/photos/${index}`, "POST", {}));
+      assert(response.status === 202); await response.body?.cancel();
+    }));
+    assert(fake.providerCreates === 4);
+    for (const call of fake.providerPrompts) assert(call.prompt === plan[call.index].prompt);
+    assert(fake.metrics.filter(event => event.kind === "generation").every(event => event.style === plan[Number(event.shot_index)].id));
+    for (let index = 0; index < 4; index++) await (await api.handle(request(`/sessions/${id}/photos/${index}`, "POST", {}))).body?.cancel();
+    assert(fake.providerCreates === 4, "Replay never creates extra paid requests");
+  } finally { catalog.styles.splice(0, catalog.styles.length, ...previous); }
+});
+Deno.test("legacy sessions retain their scalar prompt and all repeated poses", async () => {
+  const fake = new FakeServices(); const api = new CloudApi(config, fake.send);
+  const input = {id, photo_count: 4, mode: "surprise", style: "halloween"};
+  await (await api.handle(request("/sessions", "POST", input))).body?.cancel();
+  delete fake.sessions[0].requested_styles; delete fake.sessions[0].shot_styles;
+  fake.sessions[0].style_prompt = "LEGACY FROZEN SCENE";
+  const resumed = await (await api.handle(request("/sessions", "POST", input))).json();
+  assert(resumed.shot_styles.length === 4 && resumed.shot_styles.every((style: string) => style === "halloween"));
+  await (await api.handle(request(`/sessions/${id}/assets/input-1.jpg`, "PUT", fixture))).body?.cancel();
+  await (await api.handle(request(`/sessions/${id}/photos/0`, "POST", {}))).body?.cancel();
+  assert(fake.providerCreates === 1 && fake.providerPrompts[0].prompt.includes("LEGACY FROZEN SCENE"));
+});
+Deno.test("same-theme poses freeze different creative directions while preserving identity", () => {
+  const plan = freezePlan(["halloween"], 4);
+  assert(plan.every(shot => shot.id === "halloween") && new Set(plan.map(shot => shot.prompt)).size === 4);
+  assert(plan.every(shot => shot.prompt.includes("corpulence") && shot.prompt.includes("aides à la mobilité") && shot.prompt.includes("Halloween")));
+});
+
+Deno.test("damaged frozen plans fail before claiming quota or contacting the provider", async () => {
+  const fake = new FakeServices(); const api = new CloudApi(config, fake.send);
+  await (await api.handle(request("/sessions", "POST", {id, photo_count: 1, mode: "surprise", style: "halloween"}))).body?.cancel();
+  fake.sessions[0].shot_styles = [{id:"halloween", prompt:"", variation:"test"}];
+  const response = await api.handle(request(`/sessions/${id}/photos/0`, "POST", {}));
+  assert(response.status === 503 && (await response.json()).code === "invalid_session_plan");
+  assert(fake.claims === 0 && fake.providerCreates === 0);
 });

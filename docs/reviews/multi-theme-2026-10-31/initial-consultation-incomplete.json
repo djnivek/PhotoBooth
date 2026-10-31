@@ -1,0 +1,8 @@
+{
+  "status": "incomplete_output_limit",
+  "stopped_at": "2026-10-31T18:06:23.029117+00:00",
+  "model": "claude-opus-5-5",
+  "effort": "max",
+  "result_received": false,
+  "reason": "No verdict after an output-limit continuation. Retrying a narrower decision packet with read-only tools."
+}
