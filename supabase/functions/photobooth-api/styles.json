@@ -1,5 +1,5 @@
 {
-  "version": "2026-10-31.2",
+  "version": "2026-10-31.3",
   "styles": [
     {
       "id": "colors_party",
@@ -51,7 +51,7 @@
         "Un peu de poussière de fée.",
         "Le jardin sort ses habits de fête."
       ],
-      "prompt": "Une fête dans un pays imaginaire merveilleux, photographique et espiègle. Invente librement une scène de conte, des tenues et des accessoires surprenants qui respectent la silhouette et la pose de la référence. La magie vient du décor et des vêtements. Les personnes gardent une apparence humaine, sans modification de peau, oreilles, yeux ou corps."
+      "prompt": "Une fête dans un pays imaginaire merveilleux, photographique et espiègle. Invente librement une scène de conte, des tenues et des accessoires surprenants qui respectent la silhouette et la pose de la référence. La magie vient du décor et des vêtements. Les personnes gardent une apparence humaine, sans modification de peau, oreilles, yeux ou corps. Les licornes font partie du décor en arrière plan, sans cacher ni remplacer les personnes."
     },
     {
       "id": "elves",
@@ -90,7 +90,7 @@
         "Un peu de panache dans les pelages.",
         "La fête prend un air sauvage."
       ],
-      "prompt": "Une fête animalière élégante et drôle. Choisis librement une inspiration animale pour chaque personne et évoque cette inspiration uniquement par un costume inventif et des accessoires. Les personnes restent humaines : visage, peau, cheveux, silhouette, membres et proportions strictement conservés. Aucune tête animale, aucun museau ni maquillage, aucune transformation anatomique. Laisse les visages complètement dégagés. Imagine un décor de fête assorti, sans danger ni violence. Choisis cette inspiration sans te baser sur l’apparence physique, l’âge ou l’origine des personnes. Reste dans un registre tendre et valorisant, jamais humiliant."
+      "prompt": "Une fête animalière élégante et drôle. Choisis librement une inspiration animale pour chaque personne et évoque cette inspiration uniquement par un costume inventif et des accessoires. Les personnes restent humaines : visage, peau, cheveux, silhouette, membres et proportions strictement conservés. Aucune tête animale, aucun museau ni maquillage, aucune transformation anatomique. Laisse les visages complètement dégagés. Imagine un décor de fête assorti, sans danger ni violence. Choisis cette inspiration sans te baser sur l’apparence physique, l’âge ou l’origine des personnes. Reste dans un registre tendre et valorisant, jamais humiliant. Écarte les animaux employés comme moqueries envers une personne, notamment les singes, cochons, vaches et ânes."
     },
     {
       "id": "showcase",

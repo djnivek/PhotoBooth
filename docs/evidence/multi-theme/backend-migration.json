@@ -1,0 +1,41 @@
+{
+  "project": "frkckrvsdsiwivdfyjau",
+  "migration": "20261031175047_multi_theme_sessions.sql",
+  "transactional_constraint_validation": {
+    "migration_and_constraints_tested": true,
+    "new_columns_remaining": 0,
+    "rolled_back": true,
+    "test_rows_remaining": 0
+  },
+  "dry_run_pending_migrations": [
+    "20261031175047_multi_theme_sessions.sql"
+  ],
+  "persistently_applied": true,
+  "postflight": {
+    "budget": {
+      "generation_enabled": true,
+      "id": "event",
+      "max_images": 2400,
+      "max_in_flight": 8,
+      "max_per_minute": 16,
+      "started": 1
+    },
+    "migration_applied": true,
+    "new_columns": [
+      "requested_styles",
+      "shot_styles"
+    ],
+    "public_read_grants": 0,
+    "rls_enabled": true
+  },
+  "budget_unchanged": true,
+  "function_deployment": "photobooth-api 0.9.0 deployed and live smoke passed",
+  "backup_file_hashes": {
+    "archive.ts": "dde88c37a9e5bf5f9a7538ecd89e0e62cb94a0cf5352068720f6bdeef90cb886",
+    "cloud.ts": "14b03e0a799425a195516754eaa16e2696ca81f1342fc7b7012bcf81fbebf9c1",
+    "index.ts": "9fb9d60d1ca075bb610018a188b3bc8d74353796a826a1c4a39ce5c98165acc7",
+    "monitoring.ts": "3cbbc2d0c6f05b394726c6628cee0cee04fc06721866767625fd05eecb70c5e7",
+    "styles.json": "f01a67c3686416446ef653eee4b7d40e610d3a2093a86729bad23dca4147dc50",
+    "viewer.ts": "580b18ff17b4cc170ee69509890bf3065766cbd2b2291b521ccb3bcccd60254f"
+  }
+}

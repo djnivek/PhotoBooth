@@ -42,6 +42,19 @@ for(const count of [1,4])for(const edited of [false,true])test(`${count} poses, 
   assert.equal(requests[0].options.credentials,'omit');assert.equal(requests[0].options.headers.Authorization,undefined);
   assert.equal(JSON.parse(requests[0].options.body).token,'a'.repeat(64));assert.equal(requests[0].url.includes('a'.repeat(64)),false);
 });
+test('mixed and future universes keep all original and edited downloads without provider access',async()=>{
+ for(const style of ['mix','animals','showcase','feast','future_theme']){
+  const {elements,requests}=await render({count:4,edited:true,modify:x=>({...x,style})});
+  assert.equal(elements['#photos'].children.length,4);
+  for(const [index,section] of elements['#photos'].children.entries()){
+   const figures=section.children[1].children;assert.equal(figures.length,2);
+   assert.match(figures[0].children[1].children[1].href,new RegExp(`original-${index+1}`));
+   assert.match(figures[1].children[1].children[1].href,new RegExp(`photo-${index+1}`));
+  }
+  assert.equal(elements['#archive'].hidden,false);assert.equal(elements['#sheet'].hidden,false);
+  assert.ok(requests.every(r=>r.url.endsWith('/downloads/resolve')&&r.options.headers.Authorization===undefined));
+ }
+});
 test('explicit fallback never labels originals as transformed',async()=>{
  const {elements}=await render({edited:true,modify:x=>({...x,used_original_fallback:true})});
  assert.equal(elements['#photos'].children[0].children[1].children.length,1);
