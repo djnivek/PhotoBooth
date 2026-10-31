@@ -1,0 +1,153 @@
+{
+  "version": "0.7.0",
+  "utc": "2026-10-31T11:01:04.414Z",
+  "source_base": "b93740a6a74129f134d6247958ed93ecada45eb4",
+  "backend": {
+    "deployed": true,
+    "version": "0.7.0",
+    "project": "frkckrvsdsiwivdfyjau",
+    "migration": "20261031103145_booth_monitoring.sql",
+    "rls": true,
+    "security_advisors": "No issues found",
+    "budget": {
+      "generation_enabled": true,
+      "id": "event",
+      "max_images": 2400,
+      "max_in_flight": 8,
+      "max_per_minute": 16,
+      "started": 1
+    }
+  },
+  "gallery": {
+    "deployed": true,
+    "deployment": "dpl_6jaKcfRSsQ6dgJKHNFShM3FR49eP",
+    "url": "https://colors-party-estelle.vercel.app"
+  },
+  "tests": {
+    "csharp_checks": 448,
+    "cloud_checks": 83,
+    "deno_tests": 25,
+    "gallery_tests": 20,
+    "admin_tests": 3,
+    "sql_rollback_checks": true,
+    "live_collection": {
+      "budget": {
+        "generation_enabled": true,
+        "id": "event",
+        "max_images": 2400,
+        "max_in_flight": 8,
+        "max_per_minute": 16,
+        "started": 1
+      },
+      "captured": 4,
+      "download_requests": 4,
+      "gallery_views": 2,
+      "generation_calls": 0,
+      "private": true,
+      "source": "synthetic only",
+      "success": true,
+      "upload_samples": 9,
+      "visible_image_events": 4
+    },
+    "production_browser": {
+      "utc": "2026-10-31T10:54:18.112Z",
+      "production_gallery": true,
+      "production_api": true,
+      "synthetic_photos": true,
+      "openai_calls": 0,
+      "cases": [
+        {
+          "download_requests_verified": 2,
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "initial_results": 1,
+          "final_results": 4,
+          "final_originals": 4,
+          "automatic_refresh": true,
+          "stable_url": true,
+          "overflow": false,
+          "script_errors": 0,
+          "success": true
+        },
+        {
+          "download_requests_verified": 2,
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "initial_results": 1,
+          "final_results": 4,
+          "final_originals": 4,
+          "automatic_refresh": true,
+          "stable_url": true,
+          "overflow": false,
+          "script_errors": 0,
+          "success": true
+        }
+      ],
+      "success": true
+    },
+    "temporary_admin": {
+      "success": true,
+      "temporary_loopback_server": true,
+      "real_supabase_report": true,
+      "unauthorized_refused": true,
+      "fixtures_excluded": true,
+      "normal": {
+        "avg_captures_per_observed_session": null,
+        "captured": 0,
+        "download_requests": 0,
+        "gallery_views": 0,
+        "generated": 1,
+        "generation_failures": 0,
+        "image_views": 0,
+        "sessions": 0,
+        "sessions_failed": 0,
+        "sessions_ready": 0,
+        "sessions_viewed": 0,
+        "unclassified_events": 1
+      },
+      "including_fixtures": {
+        "avg_captures_per_observed_session": 4,
+        "captured": 8,
+        "download_requests": 5,
+        "gallery_views": 4,
+        "generated": 1,
+        "generation_failures": 0,
+        "image_views": 8,
+        "sessions": 2,
+        "sessions_failed": 0,
+        "sessions_ready": 2,
+        "sessions_viewed": 2,
+        "unclassified_events": 1
+      },
+      "server_closed": true
+    }
+  },
+  "package": {
+    "name": "ColorsParty-0.7.0-win-x64.zip",
+    "bytes": 91752693,
+    "sha256": "883c0bed9670c705282559caa3dfdb9edb300eb4da0a55232a3c54862da55cd5",
+    "extracted_self_test": true,
+    "modes": 4,
+    "native_viewports": [
+      [
+        1280,
+        800
+      ],
+      [
+        960,
+        700
+      ]
+    ]
+  },
+  "paid_openai_calls": 0,
+  "physical_canon": false,
+  "physical_dnp": false,
+  "mac_tested": false,
+  "tailscale_tested": false,
+  "permanent_admin_started": false,
+  "subscription_changed": false
+}

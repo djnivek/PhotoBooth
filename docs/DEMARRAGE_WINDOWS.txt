@@ -1,6 +1,6 @@
 COLORS PARTY BY ESTELLE
 
-NOUVEAU PARCOURS 0.6.0
+NOUVEAU PARCOURS 0.7.0
    En ligne, le QR apparait pendant la preparation des metamorphoses.
    Scannez-le avant Une nouvelle seance : les photos arrivent progressivement
    dans la galerie. Comptez environ une a deux minutes, parfois davantage.
@@ -68,3 +68,6 @@ DONNEES ET REPRISE
    fourni et télécharger uniquement depuis le dépôt privé PhotoBooth.
    La validation automatisée sur Windows Server 2022 ne remplace pas Windows 10,
    le Canon, la DNP ou le premier essai OpenAI réel.
+
+MONITORING 0.7
+Les temps de transfert et de génération, choix de séance et captures sont mesurés. Les mesures de la borne sont conservées localement pendant une coupure, puis envoyées en arrière-plan. Utiliser cette version 0.7 pour les nouveaux compteurs. Les essais caméra simulée sont identifiés séparément des prises Canon. L'administration et les rapports seront consultés depuis le Mac ; aucun serveur admin ne doit être laissé ouvert sur cette borne.

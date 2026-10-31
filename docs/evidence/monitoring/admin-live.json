@@ -1,0 +1,36 @@
+{
+  "success": true,
+  "temporary_loopback_server": true,
+  "real_supabase_report": true,
+  "unauthorized_refused": true,
+  "fixtures_excluded": true,
+  "normal": {
+    "avg_captures_per_observed_session": null,
+    "captured": 0,
+    "download_requests": 0,
+    "gallery_views": 0,
+    "generated": 1,
+    "generation_failures": 0,
+    "image_views": 0,
+    "sessions": 0,
+    "sessions_failed": 0,
+    "sessions_ready": 0,
+    "sessions_viewed": 0,
+    "unclassified_events": 1
+  },
+  "including_fixtures": {
+    "avg_captures_per_observed_session": 4,
+    "captured": 8,
+    "download_requests": 5,
+    "gallery_views": 4,
+    "generated": 1,
+    "generation_failures": 0,
+    "image_views": 8,
+    "sessions": 2,
+    "sessions_failed": 0,
+    "sessions_ready": 2,
+    "sessions_viewed": 2,
+    "unclassified_events": 1
+  },
+  "server_closed": true
+}

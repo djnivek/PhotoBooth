@@ -1,6 +1,7 @@
 import { Buffer } from "node:buffer";
 import catalog from "./styles.json" with { type: "json" };
 import { buildArchive } from "./archive.ts";
+import { boothMetrics, guestMetrics } from "./monitoring.ts";
 
 export type Config = {
   url: string;
@@ -297,6 +298,24 @@ export class CloudApi {
     return await this.saveAsset(session, "archive.zip", buildArchive(contents), "application/zip");
   }
 
+  private async recordMetrics(events: unknown[], required = false) {
+    try {
+      const response = await this.send(this.config.url + "/rest/v1/rpc/booth_metrics_ingest", {
+        method: "POST", headers: { apikey: this.config.serviceKey, Authorization: "Bearer " + this.config.serviceKey, "Content-Type": "application/json" },
+        body: JSON.stringify({ p_events: events }), signal: AbortSignal.timeout(5000),
+      });
+      if (!response.ok) throw new Error("metrics_unavailable");
+      await response.body?.cancel();
+    } catch { if (required) throw new ApiError(503, "metrics_unavailable"); }
+  }
+  private async generationMetric(session: SessionRow, index: number, started: number, duration: number, outcome: string, bytes?: number) {
+    const task = this.recordMetrics([{ id: crypto.randomUUID(), session_id: session.id, origin: "provider", kind: "generation",
+      occurred_at: new Date(started).toISOString(), mode: session.mode, photo_count: session.photo_count,
+      requested_style: session.requested_style ?? "chef", style: session.style, source: "unknown", shot_index: index,
+      duration_ms: duration, bytes: bytes ?? null, outcome, asset: null, view_id: null }]);
+    if (this.background) this.background(task); else await task;
+  }
+
   // One claimed edit, executed by the Edge runtime after the 202 response.
   // Images API has no recoverable Responses ID: never repeat an ambiguous call.
   private async editImage(session: SessionRow, index: number, imageUrl: string,
@@ -305,6 +324,8 @@ export class CloudApi {
       provider: "images", request: { image_model: this.config.imageModel, quality: "medium", size: "1024x1024" },
       input_bytes: inputBytes, started_at: new Date(started).toISOString(),
     };
+    const providerStarted = Date.now();
+    let providerElapsed: number | undefined;
     try {
       const response = await this.send("https://api.openai.com/v1/images/edits", {
         method: "POST",
@@ -316,23 +337,27 @@ export class CloudApi {
       });
       if (!response.ok) {
         await response.body?.cancel();
+        await this.generationMetric(session,index,started,Date.now()-providerStarted,response.status >= 400 && response.status < 500 && response.status !== 408 ? "failed" : "uncertain");
         const rejected = response.status >= 400 && response.status < 500 && response.status !== 408;
         await this.updateJob(session.id, index, { state: rejected ? "failed" : "uncertain",
           usage: { ...usage, status: response.status, error_code: response.status === 429 ? "provider_rate_limited" : "generation_not_completed" } });
         return;
       }
       const encoded = await readBytes(new Request("https://internal.invalid", { method: "POST", body: response.body }), 15 * 1024 * 1024);
+      providerElapsed = Date.now()-providerStarted;
       const result = JSON.parse(new TextDecoder().decode(encoded));
       if (result.data?.length !== 1 || typeof result.data[0].b64_json !== "string") throw new Error("Invalid image response");
       const bytes = new Uint8Array(Buffer.from(result.data[0].b64_json, "base64"));
       jpeg(bytes);
       if (bytes.length > 10 * 1024 * 1024) throw new Error("Image too large");
+      await this.generationMetric(session,index,started,providerElapsed,"success",bytes.length);
       const asset = direct ? await this.saveAsset(session, `photo-${index + 1}.jpg`, bytes, "image/jpeg") : null;
       const objectKey = asset?.object_key ?? `${session.id}/generated-${index}.jpg`;
       if (!direct) await this.upload(objectKey, bytes, "image/jpeg");
       await this.updateJob(session.id, index, { state: "ready", object_key: objectKey,
-        usage: { ...usage, image: result.usage, processing_elapsed_ms: Date.now() - started, result_bytes: bytes.length, direct_storage: direct } });
+        usage: { ...usage, image: result.usage, provider_elapsed_ms: providerElapsed, processing_elapsed_ms: Date.now() - started, result_bytes: bytes.length, direct_storage: direct } });
     } catch {
+      await this.generationMetric(session,index,started,providerElapsed ?? Date.now()-providerStarted,"uncertain");
       // A network loss or runtime timeout never authorizes another paid edit.
       await this.updateJob(session.id, index, { state: "uncertain", usage: { ...usage, error_code: "generation_uncertain_no_auto_retry" } })
         .catch(() => { /* Stale-job polling handles a failed final DB write. */ });
@@ -365,7 +390,7 @@ export class CloudApi {
         }
         return reply({
           service: "photobooth",
-          api_version: "0.6.0",
+          api_version: "0.7.0",
           stage: "rehearsal",
           production_ready: false,
           session_api_enabled: !!this.config.accessKeyHash,
@@ -374,8 +399,9 @@ export class CloudApi {
         });
       }
       if (path === "/styles" && request.method === "GET") return reply(publicCatalog());
-      if (path === "/downloads/resolve" && request.method === "POST") {
-        const { token } = await jsonBody(request);
+      if (["/downloads/resolve", "/downloads/events"].includes(path) && request.method === "POST") {
+        const guestBody = await jsonBody(request);
+        const { token } = guestBody;
         if (typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token)) {
           throw new ApiError(404, "link_unavailable");
         }
@@ -398,6 +424,12 @@ export class CloudApi {
         const stalled = !!row.created_at && Date.now() - Date.parse(row.created_at) > 10 * 60 * 1000;
         const publicAssets = assets.filter(a => /^(photo|original)-[1-4]\.jpg$|^(sheet\.jpg|archive\.zip)$/.test(a.name));
         const visible = row.used_original_fallback ? publicAssets.filter(a => !/^photo-[1-4]\.jpg$/.test(a.name)) : row.published_at ? publicAssets : publicAssets.filter(a => /^(photo|original)-[1-4]\.jpg$/.test(a.name));
+        if (path === "/downloads/events") {
+          let events;
+          try { events = guestMetrics(guestBody,row,visible.map(a=>a.name)); } catch { throw new ApiError(400,"invalid_metrics"); }
+          await this.recordMetrics(events,true);
+          return reply({ accepted: events.length });
+        }
         return reply({
           state: row.published_at ? "ready" : failed ? "failed" : stalled ? "delayed" : "processing",
           style: row.style,
@@ -420,6 +452,12 @@ export class CloudApi {
         !bearer || bearer.length > 256 || !equalHash(await hash(bearer), this.config.accessKeyHash)
       ) throw new ApiError(401, "unauthorized");
       const owner = this.config.accessKeyHash;
+      if (path === "/monitoring/booth" && request.method === "POST") {
+        let events;
+        try { events = boothMetrics(await jsonBody(request)); } catch { throw new ApiError(400,"invalid_metrics"); }
+        await this.recordMetrics(events,true);
+        return reply({ accepted: events.length });
+      }
       if (path === "/booth/check" && request.method === "GET") {
         return reply({
           authenticated: true,

@@ -25,6 +25,7 @@ const payload=(count,edited)=>({mode:edited?'surprise':'original',photo_count:co
     const request=route.request();assert.equal(request.headers().authorization,undefined);
     if(disconnected)return route.abort("internetdisconnected");
     if(request.method()==="OPTIONS")return route.fulfill({status:204,headers:{"Access-Control-Allow-Origin":local,"Access-Control-Allow-Methods":"POST","Access-Control-Allow-Headers":"content-type"}});
+    if(request.url().endsWith('/downloads/events'))return route.fulfill({status:200,json:{accepted:JSON.parse(request.postData()).events.length},headers:{'Access-Control-Allow-Origin':local}});
     if(request.url().endsWith('/downloads/resolve')){requests++;assert.equal(request.method(),'POST');assert.equal(JSON.parse(request.postData()).token,'a'.repeat(64));if(delayResolve)await delayResolve;
       let result=payload(count,edited);
       if(progressive)result={...result,state:'processing',style:'halloween',assets:result.assets.filter(a=>a.name.startsWith('original-')||a.name==='photo-1.jpg')};

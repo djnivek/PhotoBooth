@@ -41,6 +41,8 @@ class FakeServices {
   sessions: Record<string, unknown>[] = [];
   jobs: Record<string, unknown>[] = [];
   assets: Record<string, unknown>[] = [];
+  metrics: Record<string, unknown>[] = [];
+  metricsFail = false;
   providerCreates = 0;
   providerMode = "completed";
   providerFail = false;
@@ -102,6 +104,11 @@ class FakeServices {
       }
       this.storage.set(path, new Uint8Array(init!.body as Uint8Array));
       return reply({});
+    }
+    if (path.endsWith("/rpc/booth_metrics_ingest")) {
+      if(this.metricsFail) return reply({},503);
+      for(const e of body.p_events) if(!this.metrics.some(m=>m.id===e.id))this.metrics.push(e);
+      return reply(body.p_events.length);
     }
     if (path.endsWith("/rpc/booth_claim_job")) {
       if (this.claimError) return reply({ code: "P0001", message: this.claimError }, 400);
@@ -544,4 +551,39 @@ Deno.test("stored direct output survives a lost completion update; old Responses
   fake.jobs.push({ session_id: id, shot_index: 1, state: "running", response_id: "resp_test" });
   const legacy = await (await api.handle(request(`/sessions/${id}/photos/1?transport=direct`))).json();
   assert(legacy.state === "ready" && legacy.asset_stored && fake.providerCreates === 0);
+});
+Deno.test("monitoring requires booth auth, validates dimensions and never reaches OpenAI", async () => {
+  const f=new FakeServices();const api=new CloudApi(config,f.send);
+  const event={id:crypto.randomUUID(),session_id:id,kind:"capture_saved",occurred_at:new Date().toISOString(),mode:"surprise",photo_count:4,requested_style:"chef",source:"fixture",shot_index:0};
+  assert((await api.handle(request("/monitoring/booth","POST",{events:[event]},false))).status===401);
+  assert(Number(f.metrics.length)===0);
+  assert((await api.handle(request("/monitoring/booth","POST",{events:[{...event,source:"provider"}]}))).status===400);
+  assert((await api.handle(request("/monitoring/booth","POST",{events:[{...event,kind:"upload",asset:"https://secret.invalid/key",duration_ms:10,bytes:100,outcome:"success"}]}))).status===400);
+  assert((await api.handle(request("/monitoring/booth","POST",{events:[event]}))).status===200);
+  assert(Number(f.metrics.length)===1 && f.metrics[0].origin==="booth" && f.metrics[0].source==="fixture");
+  assert((await api.handle(request("/monitoring/booth","POST",{events:[event]}))).status===200);
+  assert(Number(f.metrics.length)===1 && f.providerCreates===0);
+});
+Deno.test("guest counters validate capability and uploaded public assets without generation", async()=>{
+  const f=new FakeServices();const api=new CloudApi(config,f.send);
+  await api.handle(request("/sessions","POST",{id,photo_count:1,mode:"surprise",style:"halloween"}));
+  const token="a".repeat(64);
+  await api.handle(request(`/sessions/${id}/gallery`,"POST",{token}));
+  await api.handle(request(`/sessions/${id}/assets/input-1.jpg`,"PUT",fixture));
+  await api.handle(request(`/sessions/${id}/assets/original-1.jpg`,"PUT",fixture));
+  const event={id:crypto.randomUUID(),view_id:crypto.randomUUID(),kind:"gallery_view"};
+  assert((await api.handle(request("/downloads/events","POST",{token:"b".repeat(64),events:[event]},false))).status===404);
+  assert((await api.handle(request("/downloads/events","POST",{token,events:[event]},false))).status===200);
+  assert((await api.handle(request("/downloads/events","POST",{token,events:[{...event,id:crypto.randomUUID(),kind:"download_requested",asset:"input-1.jpg"}]},false))).status===400);
+  assert((await api.handle(request("/downloads/events","POST",{token,events:[{...event,id:crypto.randomUUID(),kind:"download_requested",asset:"photo-1.jpg"}]},false))).status===400);
+  assert((await api.handle(request("/downloads/events","POST",{token,events:[{...event,id:crypto.randomUUID(),kind:"download_requested",asset:"original-1.jpg"}]},false))).status===200);
+  assert(Number(f.metrics.length)===2 && f.metrics.every(e=>e.origin==="guest"));assert(f.providerCreates===0);
+});
+Deno.test("a monitoring outage cannot turn a successful paid generation into failure",async()=>{
+  const f=new FakeServices();const api=new CloudApi(config,f.send);f.metricsFail=true;
+  await api.handle(request("/sessions","POST",{id,photo_count:1,mode:"surprise",style:"halloween"}));
+  await api.handle(request(`/sessions/${id}/assets/input-1.jpg`,"PUT",fixture));
+  assert((await api.handle(request(`/sessions/${id}/photos/0`,"POST",{}))).status===202);
+  assert(f.jobs[0].state==="ready" && f.providerCreates===1);
+  assert(typeof (f.jobs[0].usage as Record<string,unknown>).provider_elapsed_ms==="number");
 });

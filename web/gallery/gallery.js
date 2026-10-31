@@ -1,7 +1,7 @@
 const origin = "https://frkckrvsdsiwivdfyjau.supabase.co";
 const api = origin + "/functions/v1/photobooth-api";
 // The capability remains in the fragment: never sent to the host or in a referrer.
-// It is needed when a guest copies/reopens the URL. No analytics or third-party scripts.
+// It is needed when a guest copies/reopens the URL. First-party counters only; no third-party scripts or persistent visitor identifier.
 const token = location.hash.slice(1);
 // A phone may reuse an existing tab for the next QR instead of loading a new page.
 addEventListener("hashchange", () => location.reload());
@@ -17,6 +17,44 @@ let loading = false;
 let pollTimer;
 let polls = 0;
 let renderKey = "";
+
+// One identifier per document, not a unique-person or cross-session identifier.
+const viewId = globalThis.crypto?.randomUUID?.();
+const eventQueue = new Map();
+const viewedAssets = new Set();
+let galleryViewed = false, sendingEvents = false, eventTimer, eventRetries = 0;
+async function flushEvents(leaving = false) {
+  if (!viewId || sendingEvents || !eventQueue.size) return;
+  sendingEvents = true;
+  const events = [...eventQueue.values()].slice(0, 10);
+  try {
+    const response = await fetch(api + "/downloads/events", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, events }), credentials: "omit", referrerPolicy: "no-referrer", keepalive: true,
+      signal: AbortSignal.timeout(8000) });
+    if (!response.ok || (await response.json()).accepted !== events.length) throw new Error("event not acknowledged");
+    events.forEach(e => eventQueue.delete(e.id)); eventRetries = 0;
+  } catch { eventRetries++; } finally {
+    sendingEvents = false;
+    if (!leaving && eventQueue.size && eventRetries < 3) eventTimer = setTimeout(() => flushEvents(), 10000);
+  }
+}
+function track(kind, asset = null) {
+  if (!viewId || eventQueue.size >= 100) return;
+  const event = { id: crypto.randomUUID(), view_id: viewId, kind, asset };
+  eventQueue.set(event.id, event); clearTimeout(eventTimer);
+  eventTimer = setTimeout(() => flushEvents(), 250);
+}
+function watchImage(image, asset) {
+  if (!viewId || viewedAssets.has(asset) || typeof IntersectionObserver === "undefined") return;
+  let visible = false;
+  const check = () => {
+    if (visible && image.complete && image.naturalWidth > 0 && !viewedAssets.has(asset)) {
+      viewedAssets.add(asset); track("image_view", asset); observer.disconnect();
+    }
+  };
+  const observer = new IntersectionObserver(entries => { visible = entries.some(e => e.isIntersecting); check(); }, { threshold: 0.1 });
+  image.addEventListener("load", check); observer.observe(image);
+}
 
 function validate(result) {
   if (![1, 4].includes(result.photo_count) || !["original", "surprise"].includes(result.mode) ||
@@ -54,6 +92,9 @@ function figure(address, label, filename) {
   const link = document.createElement("a"); link.href = download(address, filename); link.textContent = "Télécharger";
   link.setAttribute("aria-label", `Télécharger ${label.toLocaleLowerCase("fr-FR")}`);
   link.rel = "noreferrer";
+  const asset = address.pathname.split("/").at(-1);
+  link.addEventListener("click", () => track("download_requested", asset));
+  watchImage(image, asset);
   caption.append(name, link); item.append(image, caption); return item;
 }
 function pendingFigure(label, failed) {
@@ -75,6 +116,7 @@ async function load(automatic = false) {
     });
     if (!response.ok) throw new Error(response.status === 404 ? "Ce lien est introuvable ou a expiré." : "Le partage est momentanément indisponible. Réessayez dans un instant.");
     const result = await response.json(); const assets = validate(result);
+    if (!galleryViewed) { galleryViewed = true; track("gallery_view"); }
     const state = result.state ?? "ready";
     const processing = state === "processing";
     document.body.className = processing ? "processing" : "";
@@ -125,5 +167,6 @@ async function load(automatic = false) {
   } finally { loading = false; retry.hidden = !/^[a-f0-9]{64}$/.test(token); retry.disabled = false; }
 }
 retry.addEventListener("click", () => { polls = 0; return load(); });
-addEventListener("pagehide", () => clearTimeout(pollTimer));
+archive.addEventListener("click", () => track("download_requested", "archive.zip"));
+addEventListener("pagehide", () => { clearTimeout(pollTimer); clearTimeout(eventTimer); void flushEvents(true); });
 load();

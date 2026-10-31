@@ -127,3 +127,7 @@ l’événement, via l’API Storage avant suppression des métadonnées. Vérif
 Les six univers embarqués sont remplacés en mémoire par GET /styles au lancement ou sur action opérateur. La réponse tardive attend l’accueil si un invité choisit déjà. Les prompts restent serveur ; seule la scène est figée en base par séance. Voir [UNIVERS](UNIVERS.md).
 
 Avant chaque décompte : nouvelle visée, préparation caméra, contrôle de fraîcheur. Un seul déclenchement, transfert JPEG entier, puis reprise de visée. La voie WPD refuse l’autofocus non confirmé ; le secours explicitement configuré exige un objectif en MF et une netteté vérifiée par l’opérateur. Aucun délai arbitraire ne vaut confirmation de focus.
+
+## Monitoring 0.7
+
+Borne → file locale durable → POST monitoring/booth → RPC privé → table booth_metrics. Fournisseur → mesure de réponse indépendante du stockage → même table, sans bloquer les images si la collecte échoue. Galerie → événements de consultation/clic validés par capacité → table privée. Aucun endpoint public de lecture des statistiques. Admin Mac → serveur 127.0.0.1 authentifié → CLI Supabase connectée → fonction SQL de rapport en lecture seule. Tailscale Serve sera configuré sur le Mac ; le dashboard graphique reste à réaliser.

@@ -49,6 +49,7 @@ public sealed partial class MainWindow : Window
     private readonly string credentialPath;
     private string cloudKey = "";
     private BoothCloudClient? cloud;
+    private readonly Dictionary<string,BoothTelemetry> telemetryClients = [];
     private CancellationTokenSource? sharingCancellation;
     private readonly DispatcherTimer pulse = new() { Interval = TimeSpan.FromMilliseconds(30) };
     private DateTimeOffset pulseStarted;
@@ -129,7 +130,7 @@ public sealed partial class MainWindow : Window
         {
             if (kioskLocked) { e.Cancel = true; _ = RequestOperatorAsync(true); }
         };
-        Closed += async (_, _) => { pulse.Stop(); flashTimer.Stop(); StopProcessing(); cornerTimer.Stop(); lifetime.Cancel(); sharingCancellation?.Cancel(); await controller.DisposeAsync(); foreach (var pending in detachedControllers.ToArray()) await pending.DisposeAsync(); currentBitmap?.Dispose(); resultBitmap?.Dispose(); foreach (var bitmap in artwork.Values) bitmap.Dispose(); lifetime.Dispose(); };
+        Closed += async (_, _) => { pulse.Stop(); flashTimer.Stop(); StopProcessing(); cornerTimer.Stop(); lifetime.Cancel(); sharingCancellation?.Cancel(); await controller.DisposeAsync(); foreach (var pending in detachedControllers.ToArray()) await pending.DisposeAsync(); foreach(var metrics in telemetryClients.Values) await metrics.DisposeAsync(); currentBitmap?.Dispose(); resultBitmap?.Dispose(); foreach (var bitmap in artwork.Values) bitmap.Dispose(); lifetime.Dispose(); };
         KeyDown += (_, e) =>
         {
             if (e.Key == Key.F11 || (e.Key == Key.Escape && kioskLocked))
@@ -141,9 +142,21 @@ public sealed partial class MainWindow : Window
     private BoothController CreateController()
     {
         cloud = boothSettings.CloudEnabled ? cloudFactoryOverride?.Invoke(store) ?? new BoothCloudClient(boothSettings.ApiBaseUrl, cloudKey, store, boothSettings.GalleryBaseUrl) : null;
+        BoothTelemetry? metrics=null;
+        try
+        {
+            var metricKey = SessionStore.Hash(System.Text.Encoding.UTF8.GetBytes(boothSettings.ApiBaseUrl+cloudKey+boothSettings.CanonCamera));
+            if(!telemetryClients.TryGetValue(metricKey,out metrics))
+            {
+                metrics = new BoothTelemetry(Path.GetDirectoryName(store.Root)!,boothSettings.ApiBaseUrl,cloudKey,boothSettings.CanonCamera ? "camera" : "fixture",automatic:cloudFactoryOverride is null && cameraFactoryOverride is null);
+                telemetryClients[metricKey]=metrics;
+            }
+        }
+        catch(Exception) { /* Monitoring configuration never blocks the local booth. */ }
+        if(cloud is not null) cloud.Telemetry=metrics;
         var result = new BoothController(store, () => cameraFactoryOverride is not null ? cameraFactoryOverride(store) : boothSettings.CanonCamera ?
             (boothSettings.CanonUseOfficialSdk ? new CanonCamera(store, boothSettings.CanonManualFocusConfirmed) : new CanonWpdCamera(store, manualFocusConfirmed: boothSettings.CanonManualFocusConfirmed)) : new FixtureCamera(store, fixtureFiles),
-            transformFactoryOverride?.Invoke() ?? (IPhotoTransform?)cloud ?? new RehearsalTransform(), rehearsalDelay);
+            transformFactoryOverride?.Invoke() ?? (IPhotoTransform?)cloud ?? new RehearsalTransform(), rehearsalDelay, metrics);
         var client = cloud;
         result.Changed += () => Dispatcher.UIThread.Post(() =>
         {

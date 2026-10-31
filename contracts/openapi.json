@@ -2,8 +2,8 @@
   "openapi": "3.0.3",
   "info": {
     "title": "PhotoBooth API",
-    "version": "0.6.0",
-    "description": "Personal booth API. Server-only OpenAI key, background xhigh edits, one durable claim per pose, private storage. No paid automated tests. Printing is local."
+    "version": "0.7.0",
+    "description": "Personal booth API. Direct medium square image edits, idempotent claims, private storage and first-party business metrics. No public analytics read API. Printing stays local."
   },
   "servers": [
     {
@@ -487,6 +487,133 @@
           }
         ]
       }
+    },
+    "/monitoring/booth": {
+      "post": {
+        "operationId": "recordBoothMetrics",
+        "summary": "Authenticated durable booth measurements",
+        "security": [
+          {
+            "boothKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "events"
+                ],
+                "properties": {
+                  "events": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "items": {
+                      "$ref": "#/components/schemas/BoothMetric"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Input acknowledged, including duplicate event IDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accepted": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid metric or private/unavailable asset"
+          },
+          "401": {
+            "description": "Booth code required"
+          },
+          "404": {
+            "description": "Unavailable or expired gallery"
+          },
+          "503": {
+            "description": "Monitoring temporarily unavailable; retain the queue"
+          }
+        }
+      }
+    },
+    "/downloads/events": {
+      "post": {
+        "operationId": "recordGuestCounters",
+        "summary": "Capability-scoped first-party counters",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token",
+                  "events"
+                ],
+                "properties": {
+                  "events": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "items": {
+                      "$ref": "#/components/schemas/GuestMetric"
+                    }
+                  },
+                  "token": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Input acknowledged, including duplicate event IDs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "accepted": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid metric or private/unavailable asset"
+          },
+          "401": {
+            "description": "Booth code required"
+          },
+          "404": {
+            "description": "Unavailable or expired gallery"
+          },
+          "503": {
+            "description": "Monitoring temporarily unavailable; retain the queue"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -836,6 +963,124 @@
           "expires_at": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "BoothMetric": {
+        "type": "object",
+        "required": [
+          "id",
+          "session_id",
+          "kind",
+          "occurred_at",
+          "mode",
+          "photo_count",
+          "requested_style",
+          "source",
+          "shot_index"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "session_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "original",
+              "surprise"
+            ]
+          },
+          "photo_count": {
+            "type": "integer",
+            "enum": [
+              1,
+              4
+            ]
+          },
+          "requested_style": {
+            "type": "string"
+          },
+          "style": {
+            "type": "string",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "camera",
+              "fixture"
+            ]
+          },
+          "shot_index": {
+            "type": "integer",
+            "minimum": -1,
+            "maximum": 3
+          },
+          "duration_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 900000,
+            "nullable": true
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 52428800,
+            "nullable": true
+          },
+          "asset": {
+            "type": "string",
+            "nullable": true
+          },
+          "outcome": {
+            "type": "string",
+            "nullable": true
+          },
+          "view_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "GuestMetric": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "view_id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "view_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "gallery_view",
+              "image_view",
+              "download_requested"
+            ]
+          },
+          "asset": {
+            "type": "string",
+            "nullable": true
           }
         }
       }

@@ -134,6 +134,39 @@ try
         Check(handler.UploadCalls==16,"Two sessions upload only eight optimized inputs and eight originals");
     }
     {
+        var handler=new FakeHttp(originals[0]){Fixtures=originals,DirectStored=true,ExpectedParallelStarts=4,RejectMetrics=true};
+        var store=new SessionStore(root);
+        await using(var metrics=new BoothTelemetry(root,"https://test.supabase.co/functions/v1/photobooth-api","fake-booth","fixture",handler,automatic:false))
+        {
+            using var cloud=new BoothCloudClient("https://test.supabase.co/functions/v1/photobooth-api","fake-booth",store,handler:handler,delay:(_,_)=>Task.CompletedTask){Telemetry=metrics};
+            await using var controller=new BoothController(store,()=>new FixtureCamera(store),cloud,(_,_)=>Task.CompletedTask,metrics);
+            await controller.BeginAsync(new SessionOptions(4,PhotoMode.Surprise,styleChoice:"halloween"));await controller.TakeAsync();
+            Check(controller.Session!.Stage==SessionStage.Ready,"Monitoring failure cannot interrupt the four-pose flow");
+            Check(metrics.PendingCount==18,"Durable outbox holds choice, four real captures, completion and twelve transfers");
+            await metrics.FlushAsync();Check(metrics.PendingCount==18,"Unacknowledged offline metrics remain on disk");
+            handler.RejectMetrics=false;await metrics.FlushAsync();
+            Check(metrics.PendingCount==0&&handler.Metrics.Count==18,"Acknowledged batch replay removes the outbox without duplicate events");
+            Check(handler.Metrics.Count(m=>m.GetProperty("kind").GetString()=="capture_saved")==4,"Captured count is measured from saved captures, not requested quantity");
+            Check(handler.Metrics.Count(m=>m.GetProperty("kind").GetString()=="upload")==8&&handler.Metrics.Count(m=>m.GetProperty("kind").GetString()=="download")==4,"Every actual transfer is measured once");
+            Check(handler.Metrics.Where(m=>m.GetProperty("kind").GetString() is "upload" or "download").All(m=>m.GetProperty("duration_ms").GetInt64()>=0&&m.GetProperty("bytes").GetInt64()>0&&m.GetProperty("outcome").GetString()=="success"),"Successful transfer timing, bytes and outcome are recorded");
+            Check(handler.Metrics.All(m=>m.GetProperty("source").GetString()=="fixture"&&m.GetProperty("requested_style").GetString()=="halloween"),"Rehearsal source and requested theme are retained");
+        }
+    }
+    {
+        var store=new SessionStore(root);var handler=new FakeHttp(originals[0]);
+        await using(var metrics=new BoothTelemetry(root,"https://test.supabase.co/functions/v1/photobooth-api","fake-booth","fixture",automatic:false))
+        {
+            await using var controller=new BoothController(store,()=>new FixtureCamera(store),new RehearsalTransform(),(_,_)=>Task.CompletedTask,metrics);
+            await controller.BeginAsync(new SessionOptions(1,PhotoMode.Original));await controller.TakeAsync();
+            Check(controller.Session!.Stage==SessionStage.Ready&&metrics.PendingCount==3,"Offline natural capture records start, saved photo and completion without generation");
+        }
+        await using(var resumed=new BoothTelemetry(root,"https://test.supabase.co/functions/v1/photobooth-api","fake-booth","fixture",handler,automatic:false))
+        {
+            Check(resumed.PendingCount==3,"Measurements survive a client restart");await resumed.FlushAsync();
+            Check(resumed.PendingCount==0&&handler.Metrics.All(m=>m.GetProperty("mode").GetString()=="original"&&m.GetProperty("requested_style").GetString()=="original"),"Reopened natural outbox is acknowledged without inventing a Chef selection");
+        }
+    }
+    {
         var secret=Path.Combine(root,"credential");await CredentialStore.SaveAsync(secret,"test-only-credential");
         Check(CredentialStore.Load(secret)=="test-only-credential","Credential roundtrip (DPAPI on Windows)");
         Check(!File.ReadAllText(secret).Contains("test-only-credential"),"Credential not stored as literal text");
@@ -152,6 +185,7 @@ sealed class FallbackPrinter:IPhotoPrinter
 }
 sealed class FakeHttp(byte[] fixture):HttpMessageHandler
 {
+    public List<JsonElement> Metrics=[];public bool RejectMetrics;
     public int Starts;public int UploadCalls;public bool DropStartResponse;public bool CredentialSentToStorage;
     public byte[][]? Fixtures;
     public bool DirectStored;public int ExpectedParallelStarts;
@@ -168,6 +202,14 @@ sealed class FakeHttp(byte[] fixture):HttpMessageHandler
             var index=int.Parse(Path.GetFileNameWithoutExtension(path));
             return new(HttpStatusCode.OK){Content=new ByteArrayContent(Fixtures?[index]??fixture)};}
         if(request.Headers.Authorization?.Parameter!="fake-booth")throw new Exception("Missing booth auth");
+        if(path.EndsWith("/monitoring/booth"))
+        {
+            if(RejectMetrics)return new(HttpStatusCode.ServiceUnavailable);
+            using var body=JsonDocument.Parse(await request.Content!.ReadAsByteArrayAsync(token));
+            var events=body.RootElement.GetProperty("events").EnumerateArray().ToArray();
+            foreach(var e in events)if(!Metrics.Any(m=>m.GetProperty("id").GetString()==e.GetProperty("id").GetString()))Metrics.Add(e.Clone());
+            return Json(new{accepted=events.Length});
+        }
         if(path.EndsWith("/sessions"))return Json(new{style="cinema"});
         if(path.EndsWith("/gallery"))
         {

@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
 const {spawn}=require('node:child_process');
 const {chromium}=require('../tests/browser/node_modules/playwright-core');
 const root=path.resolve(__dirname,'..');
-const runOutput=path.join(root,'artifacts/direct-square-0.6.0/live-smoke');
+const runOutput=path.join(root,'artifacts/monitoring-0.7.0/live-smoke');
 fs.mkdirSync(runOutput,{recursive:true});
 const started=Date.now();
 const child=spawn('dotnet',['run','--project','tools/PhotoBooth.CloudSmoke','--configuration','Release','--no-build','--','--share-synthetic-progressive-browser'],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe']});
@@ -32,7 +32,7 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     const req=route.request();const url=new URL(req.url());
     if(url.pathname.includes('/photos/')||url.hostname==='api.openai.com')return route.abort();
     if(req.method()==='POST'){
-     assert.ok(url.pathname.endsWith('/downloads/resolve'));assert.equal(req.headers().authorization,undefined);resolves++;
+     assert.ok(['/downloads/resolve','/downloads/events'].some(p=>url.pathname.endsWith(p)));assert.equal(req.headers().authorization,undefined);if(url.pathname.endsWith('/downloads/resolve'))resolves++;
     }
     return route.continue();
    });
@@ -60,7 +60,12 @@ const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
    assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
    assert.deepEqual(item.errors,[]);
    await page.screenshot({path:path.join(runOutput,'progressive-'+viewport.width+'-ready.png'),fullPage:true});
-   cases.push({viewport,initial_results:1,final_results:4,final_originals:4,automatic_refresh:true,stable_url:true,overflow:false,script_errors:0,success:true});
+   for (const [selector,asset] of [['#photos a','original-1.jpg'],['#archive','archive.zip']]) {
+    const acknowledged=page.waitForResponse(r=>r.url().endsWith('/downloads/events')&&r.status()===200&&r.request().postDataJSON().events.some(e=>e.kind==='download_requested'&&e.asset===asset));
+    const [download]=await Promise.all([page.waitForEvent('download'),page.locator(selector).first().click()]);
+    assert.equal(await download.failure(),null);await acknowledged;
+   }
+   cases.push({download_requests_verified:2,viewport,initial_results:1,final_results:4,final_originals:4,automatic_refresh:true,stable_url:true,overflow:false,script_errors:0,success:true});
   }
  }finally{await browser.close();}
  const result=await done;if(result!==0)throw new Error('Share verification failed: '+output);

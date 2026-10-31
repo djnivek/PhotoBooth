@@ -148,3 +148,7 @@ Aucun achat, upgrade payant, changement de facturation ou engagement externe n�
 Configuration 0.6 déployée après confirmation de Kevin : huit est un plafond partagé, pas un nombre d'images obligatoire. Une séance de quatre poses lance quatre éditions ; le rythme attendu est d'au plus une séance toutes les deux minutes. Plafonds actifs : huit travaux non résolus, seize départs/minute, 2400 images au total. Le test SQL a été annulé et le compteur est resté à 1. Les tests de partage n'ont pas appelé OpenAI.
 
 Le projet contient environ 3,66 Mo de fichiers après ces essais synthétiques ; ce poids ne dimensionne pas des photos Canon. Aucun abonnement n'a été modifié. Pro commence à 25 USD/mois pour une organisation avec un premier projet Micro couvert, hors OpenAI et dépassements. Conserver le Spend Cap activé lors d'un passage Pro ; il couvre les éléments prévus par Supabase, pas la facturation OpenAI ni tous les postes de coût. [Tarifs](https://supabase.com/pricing), [Spend Cap](https://supabase.com/docs/guides/platform/cost-control).
+
+## Monitoring 0.7
+
+Aucun fournisseur analytics, Log Drain payant ou abonnement ajouté. Les petites lignes de métriques utilisent les quotas Postgres et les appels Edge existants. Lots de dix côté borne, envoi toutes les quinze secondes, compteurs visiteurs groupés et plafonnés. Le serveur admin local est une lecture à la demande, avec cache de quinze secondes. Les photos et les appels OpenAI ne sont pas répétés pour collecter les statistiques.
