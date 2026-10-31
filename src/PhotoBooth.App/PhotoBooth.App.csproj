@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <AssemblyName>ColorsParty</AssemblyName>
-    <Version>0.3.1</Version>
+    <Version>0.6.0</Version>
     <RootNamespace>PhotoBooth.App</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>

@@ -1,6 +1,6 @@
 # Coûts et capacité
 
-Références vérifiées le 30 octobre 2026 ; à revérifier avant un changement de forfait.
+Références Supabase vérifiées le 30 octobre 2026 ; documentation OpenAI et circuit de transfert revus le 31 octobre. À revérifier avant un changement de forfait.
 
 ## Supabase
 
@@ -14,18 +14,19 @@ Free convient à la répétition, mais ne doit pas être considéré comme suffi
 Kevin demande maintenant la conservation cloud des originaux **et** des versions IA.
 Décision du 30 octobre au soir : conserver le forfait actuel pour les essais. Réévaluer
 le stockage demain uniquement après validation du fonctionnement ; aucun upgrade aujourd’hui.
-Dans l’implémentation actuelle, les fichiers individuels, la planche et le ZIP coexistent ;
-le résultat fournisseur intermédiaire est également conservé. Le ZIP n’est pas compressé
-une seconde fois : les JPEG sont déjà compressés, et ses octets restent stables en reprise.
+En0.5, les fichiers individuels, la planche, le ZIP et les petites copies d’entrée IA coexistent.
+Le JPEG fournisseur est directement le résultat final, sans seconde copie intermédiaire pour
+les nouveaux clients. Les anciens clients conservent leur circuit compatible. Le ZIP est
+assemblé côté serveur, sans compression supplémentaire des JPEG ni upload du ZIP depuis la borne.
 
-Hypothèse de dimensionnement, **pas une mesure de vraies photos** : original 2 Mo, résultat
-2 Mo, résultat fournisseur 2 Mo et planche 1 Mo. Pour une séance IA de quatre poses :
-8 Mo originaux + 8 Mo résultats + 8 Mo intermédiaires + 1 Mo planche + 17 Mo ZIP = **42 Mo**.
+Hypothèse de dimensionnement, **pas une mesure de vraies photos** : original2Mo, résultat
+2Mo, entrée optimisée0,325Mo et planche1Mo. Pour une séance IA de quatre poses :
+8Mo originaux + 8Mo résultats + 1,3Mo entrées + 1Mo planche + 17Mo ZIP = **35,3Mo**.
 
 | Volume | Estimation selon cette hypothèse |
 | --- | --- |
-| 600 poses, regroupées en 150 séances de 4 | 6,3 Go |
-| 600 tirages de 4 poses, donc 2400 poses | 25,2 Go |
+| 600 poses, regroupées en 150 séances de 4 | 5,3 Go |
+| 600 tirages de 4 poses, donc 2400 poses | 21,2 Go |
 | Originaux + résultats seuls pour 600 poses | 2,4 Go, avant copies/ZIP/planches |
 
 Le poids réel dépend fortement du cadrage, des détails et des résultats IA. La normalisation
@@ -39,7 +40,7 @@ sans décision de Kevin ; aucune souscription n’a été faite. Ajouter une mar
 une vraie séance ce soir. [Stockage Supabase](https://supabase.com/docs/guides/storage/pricing).
 
 Les liens expirent après 7 jours mais les fichiers restent stockés : décider du nettoyage
-après l’événement. Une optimisation future pourra enlever les résultats intermédiaires après
+après l’événement. Une optimisation future pourra enlever les copies d’entrée après
 publication vérifiée ou remplacer le ZIP permanent par une galerie ; elle ne doit pas effacer
 un original ni supprimer la possibilité de télécharger les quatre fichiers.
 
@@ -50,13 +51,15 @@ Certains abonnements ChatGPT Pro/Business peuvent fournir des crédits API aprè
 du bénéfice ; ces crédits couvrent aussi Images API. Éligibilité et solde restent à vérifier.
 [Crédits API OpenAI](https://developers.openai.com/api/docs/guides/chatgpt-api-credits).
 
-Kevin a autorisé la qualité **Extra High (`xhigh`)** et la consommation API. Il estime
+Kevin demande désormais **medium**, en appel direct et carré1024×1024. Il estime
 environ 50 USD pour 600 tirages et environ 200 USD de crédits disponibles ; ces chiffres
 ne sont pas encore vérifiés. **600 tirages à quatre poses = 2 400 éditions** : pour tenir
 50 USD, il faudrait environ 0,0208 USD par édition tout compris. À une seule pose par tirage,
-le seuil serait 0,0833 USD. Vérifier l’usage xhigh mesuré avant de reprendre cette estimation.
+le seuil serait 0,0833 USD. Vérifier l’usage medium mesuré avant de reprendre cette estimation.
 
-Les modèles candidats Flare/Sunburst affichent au moment de cette préparation :
+Configuration0.6 demandée le31octobre : `gpt-image-2.5-sunburst` directement via Images edits,
+qualité `medium`, JPEG95, sortie1024×1024. Aucun modèle Luna ni coût de modèle principal.
+Le code n'impose pas de service tier. Les modèles Flare/Sunburst affichent :
 texte entrant 5 USD/M tokens, image entrante 8 USD/M tokens, image sortante 30 USD/M tokens
 en traitement standard. Le coût par photo dépend des tokens réellement consommés, de la
 qualité et de la taille ; le calculateur GPT Image 2 ne prédit pas les tokens Image 2.5.
@@ -77,17 +80,57 @@ Exemples de budget de sensibilité, **pas des tarifs par image garantis** :
 | 0,10 USD | 0,10 USD | 0,40 USD | 80 USD |
 | 0,20 USD | 0,20 USD | 0,80 USD | 160 USD |
 
-Pas d’appel réel effectué pendant la préparation. Ce soir : un premier essai volontaire sur
-une photo, puis une série de quatre si le résultat convient, pour mesurer coût, fidélité et latence. Conserver l’usage retourné par le
-fournisseur, la version du modèle et le prompt utilisé, sans journaliser les images ou secrets.
+Aucun appel réel effectué par la suite automatisée ; Kevin avait déjà déclenché son essai et
+le compteur est resté à1 pendant la validation0.5. La prochaine mesure volontaire doit utiliser
+un portrait autorisé puis quatre poses si le résultat convient, pour comparer coût, fidélité
+et latence. Les métadonnées privées de travail enregistrent modèles demandés, tier retourné,
+usage, poids d’entrée/résultat et temps de traitement, sans secrets dans les journaux publics.
 
 ## Débit et attente
 
-Le décompte seul prend 5 ou 20 secondes ; ajouter placement, transfert, génération et aperçu.
-Avec deux éditions simultanées et une latence observée de 45 s par photo, une série de quatre
-prendrait environ 90 s plus transferts : c’est un scénario, pas une mesure. Ne pas annoncer
-« prêt en quelques secondes » avant le benchmark. La concurrence et les limites du compte
-API doivent être vérifiées, pas déduites du nombre de visiteurs.
+Le décompte utilise trois secondes par pose ; ajouter visée, repositionnement, transfert,
+génération et aperçu. Le client0.6 autorise huit éditions indépendantes, permettant deux
+séances de quatre en cours, avec deux uploads et deux téléchargements simultanés. La
+migration serveur fixe huit travaux non résolus et seize départs/minute. Le budget total
+2400 et le compteur sont conservés. Le test HTTP attend les huit départs avant d'autoriser
+le moindre résultat ; il prouve le parallélisme client, pas le délai interne d'OpenAI.
+Kevin observe environ16s en medium au Playground : repère utilisateur, pas mesure de
+l'application. Le délai de quatre images parallèles est celui de la plus lente, plus les
+transferts et la finalisation. Les quotas OpenAI restent applicables.
+
+Le benchmark synthétique local de quatre images détaillées mesure8,17Mo d’originaux contre
+1,28Mo de copies JPEG90 à1536px maximum (−84,3 %). L’estimation du total envoyé par la borne
+selon l’ancien et le nouveau circuit passe de24,22 à9,95Mo (−58,9 %), grâce au résultat direct
+et au ZIP serveur. À5Mbit/s montants constants, la seule quantité d’octets correspond à38,8
+contre15,9secondes : borne théorique sans RTT, contention ou génération. Ce n’est pas une mesure
+4G réelle. Voir `artifacts/optimization-0.5.0/transfer-benchmark.json`.
+
+L'API Images directe est documentée pour une photo/un prompt. Les nouvelles éditions
+n'utilisent pas Responses ni Fast mode. [Guide images](https://developers.openai.com/api/docs/guides/image-generation).
+
+### Free ou Pro pour la soirée
+
+La documentation ne donne pas de plafond de quatre/huit invocations concurrentes. Une même
+fonction déployée peut servir plusieurs requêtes et Supabase gère les workers. La limite
+100/1000 concerne le nombre de fonctions déployées, pas notre nombre de poses.
+Free :150s de vie d'un worker, Pro :400s ; mémoire256Mo et CPU2s/requête dans les deux cas.
+L'attente réseau OpenAI est de l'I/O, distincte du CPU. Notre timeout fournisseur110s laisse
+une marge pour stocker le résultat. Ce choix ne promet pas la survie d'un appel interrompu ;
+il reste incertain et n'est jamais relancé automatiquement. [Limites](https://supabase.com/docs/guides/functions/limits),
+[CPU](https://supabase.com/kb/troubleshooting/edge-function-cpu-limits).
+
+Free comprend500000 invocations/mois, Pro2millions : quatre/huit générations et leur polling
+ne justifient pas seuls un changement de forfait pour cet événement.
+[Invocations](https://supabase.com/docs/guides/functions/pricing).
+Free convient aux essais. Pour plusieurs centaines de poses avec originaux et ZIP conservés,
+le stockage1Go et l'egress5Go Free sont les contraintes probables ; Pro inclut100Go de
+stockage et250Go d'egress selon la documentation actuelle. Recommandation : Pro pour la
+soirée si le volume prévu est maintenu, sans achat automatique.
+[Quotas](https://supabase.com/docs/guides/platform/billing-on-supabase).
+
+La rétrogradation est immédiate. Le temps prépayé inutilisé devient un **avoir dans
+l'organisation**, valable sur les factures futures, sans remboursement sur la carte ; les
+surconsommations restent facturées. [Conditions](https://supabase.com/docs/guides/platform/manage-your-subscription).
 
 Les plafonds par borne/événement/jour, la réservation transactionnelle d’un budget avant
 génération, le nombre limité de reprises et l’arrêt sur erreur de quota font partie du MVP.

@@ -1,5 +1,6 @@
 import { Buffer } from "node:buffer";
 import catalog from "./styles.json" with { type: "json" };
+import { buildArchive } from "./archive.ts";
 
 export type Config = {
   url: string;
@@ -8,7 +9,6 @@ export type Config = {
   openAIKey: string;
   galleryOrigin: string;
   imageModel: string;
-  responseModel: string;
 };
 export type SessionRow = {
   id: string;
@@ -22,12 +22,14 @@ export type SessionRow = {
   published_at: string | null;
   used_original_fallback?: boolean;
   expires_at: string;
+  created_at?: string;
 };
 type Job = {
   state: string;
   response_id?: string;
   object_key?: string;
   updated_at?: string;
+  usage?: Record<string, unknown>;
 };
 type Asset = {
   name: string;
@@ -42,6 +44,7 @@ type ProviderResponse = {
   status: string;
   output?: ImageCall[];
   usage?: unknown;
+  service_tier?: string;
 };
 
 export class ApiError extends Error {
@@ -65,42 +68,23 @@ export const identityPrompt = "La photo jointe est l’unique référence des pe
   "Les vêtements, accessoires qui ne masquent pas les visages et le décor peuvent changer. " +
   "Le thème ne doit jamais modifier l’anatomie, la peau ou les visages. Si une consigne de thème entre en conflit, la fidélité à la référence prévaut. " +
   "Garde dans le cadre toutes les parties du corps visibles dans la photo source et les mêmes distances relatives entre les personnes. " +
-  "Rendu photographique, familial et bienveillant. Ne sexualise personne. Une seule image paysage, sans texte, logo, collage ni planche.";
+  "Rendu photographique, familial et bienveillant. Ne sexualise personne. Une seule image carrée, sans texte, logo, collage ni planche. " +
+  "Adapte le décor autour des personnes pour remplir le carré sans rogner les personnes ou les parties du corps visibles dans la référence.";
 export function publicCatalog() {
   return { version: catalog.version, styles: catalog.styles.map(({ prompt: _prompt, ...style }) => style) };
 }
 export function imageRequest(config: Config, imageUrl: string, style: string, savedPrompt?: string) {
   if (!savedPrompt && !(style in styles)) throw new ApiError(400, "invalid_style");
   return {
-    model: config.responseModel,
-    background: true,
-    store: true,
-    tool_choice: { type: "image_generation" },
-    parallel_tool_calls: false,
-    max_tool_calls: 1,
-    input: [{
-      role: "user",
-      content: [
-        {
-          type: "input_text",
-          text: "Transforme cette seule photo pour un anniversaire familial. " + identityPrompt +
-            " Univers choisi : " + (savedPrompt ?? styles[style]),
-        },
-        {
-          type: "input_image",
-          image_url: imageUrl,
-        },
-      ],
-    }],
-    tools: [{
-      type: "image_generation",
-      model: config.imageModel,
-      action: "edit",
-      quality: "xhigh",
-      size: "1536x1024",
-      output_format: "jpeg",
-      output_compression: 95,
-    }],
+    model: config.imageModel,
+    images: [{ image_url: imageUrl }],
+    prompt: "Transforme cette seule photo pour un anniversaire familial. " + identityPrompt +
+      " Univers choisi : " + (savedPrompt ?? styles[style]),
+    n: 1,
+    quality: "medium",
+    size: "1024x1024",
+    output_format: "jpeg",
+    output_compression: 95,
   };
 }
 
@@ -173,6 +157,7 @@ export class CloudApi {
   constructor(
     readonly config: Config,
     private readonly send: typeof fetch = fetch,
+    private readonly background?: (task: Promise<void>) => void,
   ) {}
 
   private async rest<T>(
@@ -272,6 +257,88 @@ export class CloudApi {
     return this.config.url + "/storage/v1" + data.signedURL;
   }
 
+  private async saveAsset(session: SessionRow, name: string, bytes: Uint8Array, contentType: string) {
+    const id = session.id; const digest = await hash(bytes);
+    const path = `booth_assets?session_id=eq.${id}&name=eq.${name}`;
+    const existing = (await this.rest<Asset[]>(path + "&select=*"))[0];
+    if (existing && existing.sha256 !== digest) throw new ApiError(409, "asset_conflict");
+    if (existing?.uploaded) return existing;
+    if (session.published_at) throw new ApiError(409, "already_published");
+    const asset = { session_id: id, name, object_key: `${id}/${name}`, sha256: digest, bytes: bytes.length };
+    await this.rest("booth_assets", "POST", asset, "resolution=ignore-duplicates,return=representation");
+    const reserved = (await this.rest<Asset[]>(path + "&select=*"))[0];
+    if (reserved?.sha256 !== digest) throw new ApiError(409, "asset_conflict");
+    if (!reserved.uploaded) {
+      await this.upload(asset.object_key, bytes, contentType);
+      await this.rest(path, "PATCH", { uploaded: true });
+    }
+    return { ...asset, uploaded: true };
+  }
+
+  private async archiveSession(session: SessionRow, assets: Asset[], fallback: boolean) {
+    const entries = Array.from({ length: session.photo_count }, (_, i) => ({
+      source: `${fallback ? "original" : "photo"}-${i + 1}.jpg`, name: `photo-${i + 1}.jpg`,
+    }));
+    if (session.mode === "surprise") entries.push(...Array.from({ length: session.photo_count }, (_, i) => ({ source: `original-${i + 1}.jpg`, name: `originaux/photo-${i + 1}.jpg` })));
+    entries.push({ source: "sheet.jpg", name: "planche-4x6.jpg" });
+    const total = entries.reduce((sum, entry) => sum + (assets.find(a => a.name === entry.source)?.bytes ?? 0), 0);
+    if (total > 50 * 1024 * 1024 - 4096) throw new ApiError(413, "archive_too_large");
+    const contents = await Promise.all(entries.map(async entry => {
+      const asset = assets.find(a => a.name === entry.source);
+      if (!asset) throw new ApiError(409, "missing_assets");
+      const response = await this.send(`${this.config.url}/storage/v1/object/authenticated/booth-private/${asset.object_key}`, {
+        headers: { apikey: this.config.serviceKey, Authorization: "Bearer " + this.config.serviceKey }, signal: AbortSignal.timeout(30000),
+      });
+      if (!response.ok) { await response.body?.cancel(); throw new ApiError(503, "storage_unavailable"); }
+      const bytes = await readBytes(new Request("https://internal.invalid", { method: "POST", body: response.body }), 10 * 1024 * 1024);
+      if (bytes.length !== asset.bytes || await hash(bytes) !== asset.sha256) throw new ApiError(503, "asset_integrity_failed");
+      return { name: entry.name, bytes };
+    }));
+    return await this.saveAsset(session, "archive.zip", buildArchive(contents), "application/zip");
+  }
+
+  // One claimed edit, executed by the Edge runtime after the 202 response.
+  // Images API has no recoverable Responses ID: never repeat an ambiguous call.
+  private async editImage(session: SessionRow, index: number, imageUrl: string,
+    inputBytes: number, direct: boolean, started: number) {
+    const usage = {
+      provider: "images", request: { image_model: this.config.imageModel, quality: "medium", size: "1024x1024" },
+      input_bytes: inputBytes, started_at: new Date(started).toISOString(),
+    };
+    try {
+      const response = await this.send("https://api.openai.com/v1/images/edits", {
+        method: "POST",
+        headers: { Authorization: "Bearer " + this.config.openAIKey, "Content-Type": "application/json",
+          "X-Client-Request-Id": `${session.id}-${index}` },
+        body: JSON.stringify(imageRequest(this.config, imageUrl, session.style, session.style_prompt)),
+        // Leave room for Storage/DB finalization within a Free Edge worker's lifetime.
+        signal: AbortSignal.timeout(110000),
+      });
+      if (!response.ok) {
+        await response.body?.cancel();
+        const rejected = response.status >= 400 && response.status < 500 && response.status !== 408;
+        await this.updateJob(session.id, index, { state: rejected ? "failed" : "uncertain",
+          usage: { ...usage, status: response.status, error_code: response.status === 429 ? "provider_rate_limited" : "generation_not_completed" } });
+        return;
+      }
+      const encoded = await readBytes(new Request("https://internal.invalid", { method: "POST", body: response.body }), 15 * 1024 * 1024);
+      const result = JSON.parse(new TextDecoder().decode(encoded));
+      if (result.data?.length !== 1 || typeof result.data[0].b64_json !== "string") throw new Error("Invalid image response");
+      const bytes = new Uint8Array(Buffer.from(result.data[0].b64_json, "base64"));
+      jpeg(bytes);
+      if (bytes.length > 10 * 1024 * 1024) throw new Error("Image too large");
+      const asset = direct ? await this.saveAsset(session, `photo-${index + 1}.jpg`, bytes, "image/jpeg") : null;
+      const objectKey = asset?.object_key ?? `${session.id}/generated-${index}.jpg`;
+      if (!direct) await this.upload(objectKey, bytes, "image/jpeg");
+      await this.updateJob(session.id, index, { state: "ready", object_key: objectKey,
+        usage: { ...usage, image: result.usage, processing_elapsed_ms: Date.now() - started, result_bytes: bytes.length, direct_storage: direct } });
+    } catch {
+      // A network loss or runtime timeout never authorizes another paid edit.
+      await this.updateJob(session.id, index, { state: "uncertain", usage: { ...usage, error_code: "generation_uncertain_no_auto_retry" } })
+        .catch(() => { /* Stale-job polling handles a failed final DB write. */ });
+    }
+  }
+
   async handle(request: Request): Promise<Response> {
     const headers = {
       "Content-Type": "application/json; charset=utf-8",
@@ -298,7 +365,7 @@ export class CloudApi {
         }
         return reply({
           service: "photobooth",
-          api_version: "0.3.1",
+          api_version: "0.6.0",
           stage: "rehearsal",
           production_ready: false,
           session_api_enabled: !!this.config.accessKeyHash,
@@ -317,18 +384,30 @@ export class CloudApi {
         );
         const row = rows[0];
         if (
-          !row || !row.published_at || Date.parse(row.expires_at) <= Date.now()
+          !row || Date.parse(row.expires_at) <= Date.now()
         ) throw new ApiError(404, "link_unavailable");
         const assets = await this.rest<Asset[]>(
           `booth_assets?session_id=eq.${row.id}&uploaded=eq.true&select=*`,
         );
+        // Guests only read already uploaded assets. Resolving a QR never starts,
+        // polls or retries a provider request, and never exposes a response ID.
+        const jobs = row.published_at ? [] : await this.rest<{ state: string }[]>(
+          `booth_jobs?session_id=eq.${row.id}&select=state`,
+        );
+        const failed = jobs.some(j => ["failed", "uncertain"].includes(j.state));
+        const stalled = !!row.created_at && Date.now() - Date.parse(row.created_at) > 10 * 60 * 1000;
+        const publicAssets = assets.filter(a => /^(photo|original)-[1-4]\.jpg$|^(sheet\.jpg|archive\.zip)$/.test(a.name));
+        const visible = row.used_original_fallback ? publicAssets.filter(a => !/^photo-[1-4]\.jpg$/.test(a.name)) : row.published_at ? publicAssets : publicAssets.filter(a => /^(photo|original)-[1-4]\.jpg$/.test(a.name));
         return reply({
+          state: row.published_at ? "ready" : failed ? "failed" : stalled ? "delayed" : "processing",
+          style: row.style,
+          completed_count: assets.filter(a => /^photo-[1-4]\.jpg$/.test(a.name)).length,
           expires_at: row.expires_at,
           photo_count: row.photo_count,
           mode: row.mode,
           used_original_fallback: row.used_original_fallback === true,
           assets: await Promise.all(
-            assets.map(async (a) => ({
+            visible.map(async (a) => ({
               name: a.name,
               url: await this.signed(a.object_key),
             })),
@@ -345,6 +424,10 @@ export class CloudApi {
         return reply({
           authenticated: true,
           image_generation_enabled: !!this.config.openAIKey,
+          image_model: this.config.imageModel,
+          generation_api: "images/edits",
+          image_quality: "medium",
+          image_size: "1024x1024",
         });
       }
       if (path === "/sessions" && request.method === "POST") {
@@ -384,11 +467,24 @@ export class CloudApi {
         }, 201);
       }
       const match = path.match(
-        /^\/sessions\/([a-f0-9-]{36})\/(photos\/([0-3])|assets\/([^/]+)|share)$/,
+        /^\/sessions\/([a-f0-9-]{36})\/(photos\/([0-3])|assets\/([^/]+)|share|gallery)$/,
       );
       if (!match || !uuid(match[1])) throw new ApiError(404, "not_found");
       const id = match[1];
       const session = await this.session(id, owner);
+      if (match[2] === "gallery" && request.method === "POST") {
+        const { token } = await jsonBody(request);
+        if (typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token)) throw new ApiError(400, "invalid_share_token");
+        const digest = await hash(token);
+        if (session.share_hash && session.share_hash !== digest) throw new ApiError(409, "share_conflict");
+        // Conditional update prevents concurrent clients replacing a capability.
+        await this.rest(`booth_sessions?id=eq.${id}&or=(share_hash.is.null,share_hash.eq.${digest})`, "PATCH", { share_hash: digest });
+        if ((await this.session(id, owner)).share_hash !== digest) throw new ApiError(409, "share_conflict");
+        return reply({
+          gallery_url: this.config.galleryOrigin.replace(/\/$/, "") + "/#" + token,
+          expires_at: session.expires_at,
+        });
+      }
       if (match[3] !== undefined) {
         const index = Number(match[3]);
         if (index >= session.photo_count || session.mode !== "surprise") {
@@ -399,7 +495,10 @@ export class CloudApi {
             throw new ApiError(503, "openai_not_configured");
           }
           await jsonBody(request);
-          const originals = await this.rest<Asset[]>(
+          let originals = await this.rest<Asset[]>(
+            `booth_assets?session_id=eq.${id}&name=eq.input-${index + 1}.jpg&uploaded=eq.true&select=*`,
+          );
+          if (!originals.length) originals = await this.rest<Asset[]>(
             `booth_assets?session_id=eq.${id}&name=eq.original-${
               index + 1
             }.jpg&uploaded=eq.true&select=*`,
@@ -418,52 +517,45 @@ export class CloudApi {
               state: (await this.job(id, index))?.state ?? "uncertain",
             }, 202);
           }
-          try {
-            const response = await this.send(
-              "https://api.openai.com/v1/responses",
-              {
-                method: "POST",
-                headers: {
-                  Authorization: "Bearer " + this.config.openAIKey,
-                  "Content-Type": "application/json",
-                  "X-Client-Request-Id": `${id}-${index}`,
-                },
-                body: JSON.stringify(
-                  imageRequest(this.config, imageUrl, session.style, session.style_prompt),
-                ),
-                signal: AbortSignal.timeout(45000),
-              },
-            );
-            if (!response.ok) {
-              await response.body?.cancel();
-              throw new ApiError(502, "generation_start_failed");
-            }
-            const result = await response.json() as ProviderResponse;
-            if (!result.id?.startsWith("resp_")) {
-              throw new ApiError(502, "invalid_provider_response");
-            }
-            await this.updateJob(id, index, {
-              state: "running",
-              response_id: result.id,
-            });
-            return reply({ state: "running" }, 202);
-          } catch {
-            await this.updateJob(id, index, { state: "uncertain" });
-            throw new ApiError(502, "generation_uncertain_no_auto_retry");
-          }
+          const started = Date.now();
+          await this.updateJob(id, index, { state: "running", usage: { provider: "images", started_at: new Date(started).toISOString() } });
+          const direct = originals[0].name.startsWith("input-") || new URL(request.url).searchParams.get("transport") === "direct";
+          const task = this.editImage(session, index, imageUrl, originals[0].bytes, direct, started);
+          if (this.background) this.background(task);
+          else await task; // deterministic test/local host without an Edge lifetime hook
+          return reply({ state: "running" }, 202);
         }
         if (request.method === "GET") {
           const job = await this.job(id, index);
           if (!job) return reply({ state: "queued" });
+          if (job.usage?.provider === "images" && job.state !== "ready") {
+            // Recover a stored result if the worker stopped before its final DB update.
+            const asset = (await this.rest<Asset[]>(`booth_assets?session_id=eq.${id}&name=eq.photo-${index + 1}.jpg&uploaded=eq.true&select=*`))[0];
+            if (asset) {
+              await this.updateJob(id, index, { state: "ready", object_key: asset.object_key });
+              return reply({ state: "ready", url: await this.signed(asset.object_key), asset_stored: true, sha256: asset.sha256 });
+            }
+            if (job.state === "running" && Date.now() - Date.parse(job.updated_at ?? "") > 180000) {
+              // Compare the timestamp as well as state: never overwrite a concurrent completion.
+              await this.rest(`booth_jobs?session_id=eq.${id}&shot_index=eq.${index}&state=eq.running&updated_at=eq.${encodeURIComponent(job.updated_at!)}`,
+                "PATCH", { state: "uncertain", updated_at: new Date().toISOString() });
+              return reply({ state: (await this.job(id, index))?.state ?? "uncertain" });
+            }
+          }
           if (job.state === "ready" && job.object_key) {
+            const asset = (await this.rest<Asset[]>(`booth_assets?session_id=eq.${id}&name=eq.photo-${index + 1}.jpg&uploaded=eq.true&select=*`))[0];
             return reply({
               state: "ready",
-              url: await this.signed(job.object_key),
+              url: await this.signed(asset?.object_key ?? job.object_key),
+              asset_stored: !!asset,
+              sha256: asset?.sha256,
             });
           }
           if (job.state !== "running" || !job.response_id) {
-            return reply({ state: job.state });
+            return reply({ state: job.state, code: job.usage?.error_code });
           }
+          // Only jobs created before 0.6 have a Responses ID. Finish them without
+          // starting a new Responses request; all new edits use Images API above.
           const response = await this.send(
             "https://api.openai.com/v1/responses/" +
               encodeURIComponent(job.response_id),
@@ -494,23 +586,26 @@ export class CloudApi {
           if (bytes.length > 10 * 1024 * 1024) {
             throw new ApiError(502, "generated_image_too_large");
           }
-          const key = `${id}/generated-${index}.jpg`;
-          await this.upload(key, bytes, "image/jpeg");
+          const direct = new URL(request.url).searchParams.get("transport") === "direct";
+          const asset = direct ? await this.saveAsset(session, `photo-${index + 1}.jpg`, bytes, "image/jpeg") : null;
+          const key = asset?.object_key ?? `${id}/generated-${index}.jpg`;
+          if (!direct) await this.upload(key, bytes, "image/jpeg");
           await this.updateJob(id, index, {
             state: "ready",
             object_key: key,
-            usage: { response: result.usage, image: images[0].usage },
+            usage: { ...job.usage, response: result.usage, image: images[0].usage, served_service_tier: result.service_tier ?? null,
+              processing_elapsed_ms: Math.max(0, Date.now() - Date.parse(job.updated_at ?? new Date().toISOString())), result_bytes: bytes.length, direct_storage: direct },
           });
-          return reply({ state: "ready", url: await this.signed(key) });
+          return reply({ state: "ready", url: await this.signed(key), asset_stored: !!asset, sha256: asset?.sha256 });
         }
       }
       if (match[4] !== undefined && request.method === "PUT") {
         const name = match[4];
         if (
-          !/^((photo|original)-[1-4]\.jpg|sheet\.jpg|archive\.zip)$/.test(
+          !/^((photo|original|input)-[1-4]\.jpg|sheet\.jpg|archive\.zip)$/.test(
             name,
           ) ||
-          ((name.startsWith("photo-") || name.startsWith("original-")) &&
+          ((name.startsWith("photo-") || name.startsWith("original-") || name.startsWith("input-")) &&
             Number(name.split("-")[1][0]) > session.photo_count)
         ) throw new ApiError(400, "invalid_asset");
         const isZip = name === "archive.zip";
@@ -524,45 +619,12 @@ export class CloudApi {
             bytes[3] !== 4
           ) throw new ApiError(400, "invalid_archive");
         } else jpeg(bytes);
-        const digest = await hash(bytes);
-        const existing = await this.rest<Asset[]>(
-          `booth_assets?session_id=eq.${id}&name=eq.${name}&select=*`,
-        );
-        if (existing.length && existing[0].sha256 !== digest) {
-          throw new ApiError(409, "asset_conflict");
-        }
-        if (existing[0]?.uploaded) return reply({ sha256: digest });
-        if (session.published_at) throw new ApiError(409, "already_published");
-        const key = `${id}/${name}`;
-        await this.rest("booth_assets", "POST", {
-          session_id: id,
-          name,
-          object_key: key,
-          sha256: digest,
-          bytes: bytes.length,
-        }, "resolution=ignore-duplicates,return=representation");
-        const reserved = await this.rest<Asset[]>(
-          `booth_assets?session_id=eq.${id}&name=eq.${name}&select=*`,
-        );
-        if (reserved[0]?.sha256 !== digest) {
-          throw new ApiError(409, "asset_conflict");
-        }
-        if (!reserved[0].uploaded) {
-          await this.upload(
-            key,
-            bytes,
-            isZip ? "application/zip" : "image/jpeg",
-          );
-          await this.rest(
-            `booth_assets?session_id=eq.${id}&name=eq.${name}`,
-            "PATCH",
-            { uploaded: true },
-          );
-        }
-        return reply({ sha256: digest }, 201);
+        const asset = await this.saveAsset(session, name, bytes, isZip ? "application/zip" : "image/jpeg");
+        return reply({ sha256: asset.sha256 }, 201);
       }
       if (match[2] === "share" && request.method === "POST") {
         const { token, used_original_fallback } = await jsonBody(request);
+        if (used_original_fallback === true && session.mode !== "surprise") throw new ApiError(400, "invalid_fallback");
         if (typeof token !== "string" || !/^[a-f0-9]{64}$/.test(token)) {
           throw new ApiError(400, "invalid_share_token");
         }
@@ -571,9 +633,8 @@ export class CloudApi {
         );
         const expected = [
           "sheet.jpg",
-          "archive.zip",
           ...Array.from(
-            { length: session.photo_count },
+            { length: used_original_fallback === true ? 0 : session.photo_count },
             (_, i) => `photo-${i + 1}.jpg`,
           ),
         ];
@@ -592,6 +653,7 @@ export class CloudApi {
         if (session.share_hash && session.share_hash !== digest) {
           throw new ApiError(409, "share_conflict");
         }
+        if (!assets.some(a => a.name === "archive.zip")) await this.archiveSession(session, assets, used_original_fallback === true);
         await this.rest(`booth_sessions?id=eq.${id}`, "PATCH", {
           share_hash: digest,
           used_original_fallback: used_original_fallback === true,

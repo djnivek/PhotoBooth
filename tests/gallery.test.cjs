@@ -16,14 +16,15 @@ function payload(count,edited){return {photo_count:count,mode:edited?'surprise':
  ...Array.from({length:count},(_,i)=>`photo-${i+1}.jpg`),...(edited?Array.from({length:count},(_,i)=>`original-${i+1}.jpg`):[]),'sheet.jpg','archive.zip'
 ].map(name=>({name,url:`${origin}/storage/v1/object/sign/booth-private/${id}/${name}?token=signed`}))};}
 async function render({count=4,edited=false,status=200,token='a'.repeat(64),modify=x=>x,offline=false}={}){
-  const elements=Object.fromEntries(['status','retry','photos','sheet','archive','expiry'].map(name=>['#'+name,new Element(name)]));
+  const elements=Object.fromEntries(['status','retry','photos','sheet','archive','expiry','waiting','waiting-art'].map(name=>['#'+name,new Element(name)]));
   const requests=[];let currentStatus=status;const events={};let reloads=0;
-  const context=vm.createContext({URL,Error,Date,AbortSignal,location:{hash:'#'+token,reload:()=>reloads++},addEventListener:(name,listener)=>events[name]=listener,
-    document:{querySelector:name=>elements[name],createElement:tag=>new Element(tag)},
+  const timers=[];
+  const context=vm.createContext({URL,Error,Date,AbortSignal,setTimeout:callback=>{timers.push(callback);return timers.length;},clearTimeout:()=>{},location:{hash:'#'+token,reload:()=>reloads++},addEventListener:(name,listener)=>events[name]=listener,
+    document:{body:new Element('body'),querySelector:name=>elements[name],createElement:tag=>new Element(tag)},
     fetch:async(url,options)=>{requests.push({url,options});if(offline)throw new TypeError('Network error');return {ok:currentStatus===200,status:currentStatus,json:async()=>modify(payload(count,edited))};}});
   vm.runInContext(source,context);
   await new Promise(resolve=>setImmediate(resolve));
-  return {elements,requests,setStatus:value=>currentStatus=value,events,reloads:()=>reloads};
+  return {elements,requests,setStatus:value=>currentStatus=value,events,reloads:()=>reloads,timers};
 }
 for(const count of [1,4])for(const edited of [false,true])test(`${count} poses, ${edited?'original/edited pairs':'original only'}, sheet and archive`,async()=>{
   const {elements,requests}=await render({count,edited});
@@ -43,6 +44,12 @@ for(const count of [1,4])for(const edited of [false,true])test(`${count} poses, 
 });
 test('explicit fallback never labels originals as transformed',async()=>{
  const {elements}=await render({edited:true,modify:x=>({...x,used_original_fallback:true})});
+ assert.equal(elements['#photos'].children[0].children[1].children.length,1);
+ assert.match(elements['#status'].textContent,/au naturel/);
+});
+test('original fallback remains complete after only some transformations succeeded',async()=>{
+ const {elements}=await render({edited:true,modify:x=>({...x,used_original_fallback:true,assets:x.assets.filter(a=>!a.name.startsWith('photo-'))})});
+ assert.equal(elements['#archive'].hidden,false);assert.equal(elements['#photos'].children.length,4);
  assert.equal(elements['#photos'].children[0].children[1].children.length,1);
  assert.match(elements['#status'].textContent,/au naturel/);
 });
@@ -72,4 +79,22 @@ test('offline gives a useful retry without credentials',async()=>{
 });
 test('opening a second QR in an existing tab reloads the capability',async()=>{
  const {events,reloads}=await render();events.hashchange();assert.equal(reloads(),1);
+});
+
+test('early gallery shows placeholders then photos arrive through read-only polling',async()=>{
+ let ready=false;
+ const {elements,requests,timers}=await render({edited:true,modify:x=>ready?x:{...x,state:'processing',style:'halloween',assets:x.assets.filter(a=>a.name==='original-1.jpg'||a.name==='photo-1.jpg')}});
+ assert.equal(elements['#waiting'].hidden,false);assert.equal(elements['#photos'].children.length,4);
+ assert.equal(elements['#archive'].hidden,true);assert.equal(elements['#sheet'].hidden,true);
+ assert.match(elements['#status'].textContent,/une à deux minutes/);
+ assert.equal(elements['#photos'].children[0].children[1].children[1].tag,'figure');
+ assert.equal(elements['#photos'].children[1].children[1].children[1].className,'waiting-photo');
+ ready=true;await timers.shift()();
+ assert.equal(elements['#waiting'].hidden,true);assert.equal(elements['#archive'].hidden,false);
+ assert.equal(requests.length,2);assert.ok(requests.every(r=>r.url.endsWith('/downloads/resolve')));
+});
+for(const state of ['failed','delayed'])test(`terminal ${state} retains available originals without automatic polling`,async()=>{
+ const {elements,timers}=await render({edited:true,modify:x=>({...x,state,assets:x.assets.filter(a=>a.name==='original-1.jpg')})});
+ assert.equal(elements['#waiting'].hidden,true);assert.equal(elements['#archive'].hidden,true);assert.equal(timers.length,0);
+ assert.equal(elements['#photos'].children[0].children[1].children[0].tag,'figure');
 });

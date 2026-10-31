@@ -4,7 +4,7 @@ using SkiaSharp;
 
 namespace PhotoBooth.Runtime;
 
-public sealed record TransformResult(string Style, IReadOnlyList<byte[]> Photos);
+public sealed record TransformResult(string Style, IReadOnlyList<byte[]> Photos, bool Normalized = false);
 public interface IPhotoTransform
 {
     Task<TransformResult> TransformAsync(Guid sessionId, IReadOnlyList<byte[]> originals,
@@ -135,14 +135,17 @@ public sealed class BoothController : IAsyncDisposable
                 if (result.Photos.Count != originals.Count) throw new InvalidDataException("Il manque une photo transformée.");
                 Session.AssignStyle(result.Style);
                 foreach (var bytes in result.Photos)
-                    final.Add(await store.SavePhotoAsync(Session.Id, await Task.Run(() => PhotoProcessor.Normalize(bytes), token), token));
+                    final.Add(await store.SavePhotoAsync(Session.Id, result.Normalized ? bytes : await Task.Run(() => PhotoProcessor.Normalize(bytes), token), token));
             }
             else
                 final.AddRange(Session.Captures.Select((photo, i) => new StoredAsset(photo.LocalAssetKey,
                     SessionStore.Hash(originals[i]), originals[i].LongLength)));
             var finalBytes = new List<byte[]>();
             foreach (var asset in final) finalBytes.Add(await store.ReadVerifiedAsync(asset, token));
-            Sheet = await store.SavePhotoAsync(Session.Id, await Task.Run(() => PhotoProcessor.Compose(finalBytes), token), token);
+            Sheet = await store.SavePhotoAsync(Session.Id, await Task.Run(() =>
+                Session.Options.Mode == PhotoMode.Surprise
+                    ? MetamorphosisSheet.Compose(finalBytes, Session.StyleId)
+                    : PhotoProcessor.Compose(finalBytes), token), token);
             FinalAssets = final;
             Session.CompleteProcessing(Session.Captures.Select((shot, i) => new FinalPhoto(shot.Id, final[i].Key)), Sheet.Key);
             Message = "Vos souvenirs sont prêts.";

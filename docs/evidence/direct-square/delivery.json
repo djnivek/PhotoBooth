@@ -1,0 +1,91 @@
+{
+  "version": "0.6.0",
+  "verified_utc": "2026-10-31T09:53:06.696Z",
+  "branch": "feat/direct-square-metamorphosis",
+  "source_base": "9c518036b5b9b3b6278c13320233885ce75dca03",
+  "package": {
+    "name": "ColorsParty-0.6.0-win-x64.zip",
+    "bytes": 91746416,
+    "sha256": "9da77f589bca34f7bdf1ecfd7f5ed1f41a13531f15eaab78581a81320398dd55",
+    "extracted_self_test": true,
+    "native_viewports": [
+      [
+        1280,
+        800
+      ],
+      [
+        960,
+        700
+      ]
+    ]
+  },
+  "local_checks": {
+    "csharp_assertions": 437,
+    "csharp_suites": {
+      "core": 26,
+      "imaging": 231,
+      "runtime": 54,
+      "printing": 26,
+      "canon_fake": 28,
+      "cloud": 72
+    },
+    "extended_native_ui": true,
+    "deno_tests": 22,
+    "deno_typecheck": true,
+    "deno_lint": true,
+    "gallery_tests": 18,
+    "openapi_valid": true,
+    "parallel_barrier": "Two four-pose sessions must start all eight requests before the fake provider returns any result."
+  },
+  "image_request": {
+    "api": "images/edits",
+    "model": "gpt-image-2.5-sunburst",
+    "quality": "medium",
+    "size": "1024x1024",
+    "output_format": "jpeg",
+    "output_compression": 95,
+    "n": 1
+  },
+  "concurrency": {
+    "client_generation": 8,
+    "uploads": 2,
+    "downloads": 2,
+    "prepared_server_in_flight": 8,
+    "prepared_server_starts_per_minute": 16,
+    "event_budget": 2400
+  },
+  "print": {
+    "master": [
+      1800,
+      1200
+    ],
+    "dpi": 300,
+    "paper_inches": [
+      6,
+      4
+    ],
+    "variants": 14,
+    "independently_visually_reviewed": 7,
+    "review_disposition": "ship for bundled-theme composition only",
+    "proofs": [
+      {
+        "name": "halloween-4.jpg",
+        "sha256": "4b5307f248c249781d7b26f3283737dd36dc5cdee7d75f9bf606f56eb51970f7"
+      },
+      {
+        "name": "space-1.jpg",
+        "sha256": "7e06ddf06d814593bbf990a6622b3112423aa5e96e871a7bf7e22347d615fe60"
+      }
+    ]
+  },
+  "deployment": {
+    "backend": "0.5.0 remains deployed; 0.6 deployment rejected by automatic approval review pending user reconfirmation",
+    "migration": "20261031094041_direct_image_concurrency.sql dry-run passed; not applied",
+    "gallery": "Existing progressive gallery deployed at https://colors-party-estelle.vercel.app",
+    "github_release": "No 0.6 release published"
+  },
+  "paid_openai_calls": 0,
+  "physical_canon_test": false,
+  "physical_dnp_test": false,
+  "real_4g_benchmark": false
+}

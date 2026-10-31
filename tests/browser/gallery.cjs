@@ -19,14 +19,16 @@ const payload=(count,edited)=>({mode:edited?'surprise':'original',photo_count:co
  const browser=await chromium.launch();const reports=[];
  try{
   for(const viewport of [{width:1280,height:900},{width:390,height:844}]){
-   const page=await browser.newPage({viewport});let count=4,edited=true,responseStatus=200,delayResolve,disconnected=false;let requests=0;
+   const page=await browser.newPage({viewport});let count=4,edited=true,responseStatus=200,delayResolve,disconnected=false,progressive=false;let requests=0;
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.route(origin+'/**',async route=>{
     const request=route.request();assert.equal(request.headers().authorization,undefined);
     if(disconnected)return route.abort("internetdisconnected");
     if(request.method()==="OPTIONS")return route.fulfill({status:204,headers:{"Access-Control-Allow-Origin":local,"Access-Control-Allow-Methods":"POST","Access-Control-Allow-Headers":"content-type"}});
     if(request.url().endsWith('/downloads/resolve')){requests++;assert.equal(request.method(),'POST');assert.equal(JSON.parse(request.postData()).token,'a'.repeat(64));if(delayResolve)await delayResolve;
-      return route.fulfill({status:responseStatus,json:payload(count,edited),headers:{'Access-Control-Allow-Origin':local}});}
+      let result=payload(count,edited);
+      if(progressive)result={...result,state:'processing',style:'halloween',assets:result.assets.filter(a=>a.name.startsWith('original-')||a.name==='photo-1.jpg')};
+      return route.fulfill({status:responseStatus,json:result,headers:{'Access-Control-Allow-Origin':local}});}
     assert.ok(request.url().includes('/storage/v1/object/sign/booth-private/'));
     const isSheet=request.url().includes('/sheet.jpg');
     return route.fulfill({contentType:'image/jpeg',body:fs.readFileSync(path.join(root,'artifacts/validation',isSheet?'four-poses-4x6.jpg':'single-pose-4x6.jpg'))});
@@ -48,6 +50,17 @@ const payload=(count,edited)=>({mode:edited?'surprise':'original',photo_count:co
     if(c===4&&e)await page.screenshot({path:path.join(output,`after-${suffix}.png`),fullPage:true});
     reports.push({viewport,count:c,edited:e,passed:true});
    }
+   progressive=true;count=4;edited=true;
+   await page.goto(`${local}/?pending#${'a'.repeat(64)}`);await page.locator('#waiting').waitFor({state:'visible'});
+   await page.getByText(/une à deux minutes/).waitFor();
+   await page.evaluate(()=>Promise.all([document.fonts.ready,...Array.from(document.images).map(i=>i.decode().catch(()=>{}))]));
+   assert.equal(await page.locator('.waiting-photo').count(),3);assert.equal(await page.locator('#archive').isVisible(),false);
+   if(viewport.width===390){const firstPhoto=await page.locator('#photos img').first().boundingBox();assert.ok(firstPhoto.y+firstPhoto.height<844,'First available photograph fits phone viewport during preparation');}
+   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+   await page.screenshot({path:path.join(output,`processing-${suffix}.png`),fullPage:true});
+   const beforePoll=requests;progressive=false;await page.locator('#archive').waitFor({state:'visible'});
+   assert.ok(requests>beforePoll);assert.equal(await page.locator('#waiting').isVisible(),false);
+   reports.push({viewport,state:'progressive-to-ready',passed:true});
    // Missing / expired / offline / loading states and recovery use the same page.
    await page.goto(local);await page.getByText(/Ce lien est incomplet/).waitFor();assert.equal(await page.locator('#archive').isVisible(),false);
    responseStatus=404;await page.goto(`${local}/#${'a'.repeat(64)}`);await page.getByText(/a expiré/).waitFor();await page.screenshot({path:path.join(output,`expired-${suffix}.png`),fullPage:true});

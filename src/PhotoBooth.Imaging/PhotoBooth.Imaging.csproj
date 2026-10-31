@@ -3,4 +3,8 @@
     <ProjectReference Include="../PhotoBooth.Core/PhotoBooth.Core.csproj" />
     <PackageReference Include="SkiaSharp" Version="3.119.4" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../PhotoBooth.App/Assets/Party/*.png" LogicalName="PhotoBooth.Print.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="../PhotoBooth.App/Assets/BricolageGrotesque.ttf" LogicalName="PhotoBooth.Print.Display.ttf" />
+  </ItemGroup>
 </Project>
