@@ -1,0 +1,24 @@
+{
+  "exit_code": 0,
+  "elapsed_seconds": 267.82,
+  "model_requested": "claude-opus-5-5",
+  "models_observed": [
+    "claude-opus-5-5"
+  ],
+  "effort": "max",
+  "max_output_tokens": 128000,
+  "tools_enabled": true,
+  "input_manifest": {
+    "files": [
+      {
+        "path": "AMENDMENTS.md",
+        "sha256": "9cec7f9718a137cc8a05eaa1a9f42263503599720986bf038f374141e2bd6212",
+        "bytes": 19882
+      }
+    ],
+    "no_secrets": true,
+    "no_photos": true
+  },
+  "result_received": true,
+  "is_error": false
+}
