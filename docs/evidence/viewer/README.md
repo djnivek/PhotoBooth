@@ -16,3 +16,5 @@ Captures : [annonce Full HD](../../../.impeccable/review/viewer/announcement-192
 Les liens de projection, QR et URL signées des essais restent uniquement dans les artefacts locaux ignorés. Aucun secret, accès admin ni identifiant de connexion n’est versionné.
 
 Le premier passage CI du paquet a révélé une course du dispositif de capture : les deux reçus natifs et le self-test étaient réussis, puis le processus se terminait avant la compilation du pont de capture externe. Le mode de recette attend désormais explicitement son reçu desktop, avec un délai borné ; le paquet complet corrigé a été extrait et exécuté sur Windows 11 avant relance CI. Le lancement normal ne dépend pas de ce mécanisme.
+
+Le conducteur Chromium fige explicitement son horloge entre les avances et attend les états réseau/affichage. Les captures ne consomment ainsi pas de secondes de projection sur une machine CI plus lente. Les tests unitaires du lecteur conservent les assertions exactes des durées de 15 et 30 secondes.
